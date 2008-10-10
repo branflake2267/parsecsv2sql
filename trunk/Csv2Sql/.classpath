@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java-6-openjdk"/>
+	<classpathentry kind="lib" path="/opt/classpath/mysql-connector-java-5.1.5/mysql-connector-java-5.1.5-bin.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/commons-lang-2.3/commons-lang-2.3.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/javacsv2.0/javacsv.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/sqljdbc_1.2/enu/sqljdbc.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
