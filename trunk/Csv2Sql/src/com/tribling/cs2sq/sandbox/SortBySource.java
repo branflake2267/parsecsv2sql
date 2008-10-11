@@ -17,8 +17,4 @@ public class SortBySource implements Comparator<DataFields> {
 		
 		return i;
 	}
-
-	
-
-
 }

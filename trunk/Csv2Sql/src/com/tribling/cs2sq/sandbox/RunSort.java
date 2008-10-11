@@ -8,45 +8,45 @@ public class RunSort {
 
 	public static void main(String[] args) {
 		
-		DataFields[] fields = new DataFields[4];
-		fields[0] = new DataFields();
-		fields[1] = new DataFields();
-		fields[2] = new DataFields();
-		fields[3] = new DataFields();
+		DataFields[] fieldsData = new DataFields[4];
+		fieldsData[0] = new DataFields();
+		fieldsData[1] = new DataFields();
+		fieldsData[2] = new DataFields();
+		fieldsData[3] = new DataFields();
 		
-		fields[0].source = "Ticket Number";
-		fields[0].destination = "TTN";
+		fieldsData[0].source = "Ticket Number";
+		fieldsData[0].destination = "TTN";
 		
-		fields[1].source = "Employee ID";
-		fields[1].destination = "EMPID";
+		fieldsData[1].source = "Employee ID";
+		fieldsData[1].destination = "EMPID";
 		
-		fields[2].source = "Survey";
-		fields[2].destination = "SurveyID";
+		fieldsData[2].source = "Survey";
+		fieldsData[2].destination = "SurveyID";
 		
-		fields[3].source = "Apple";
-		fields[3].destination = "Orange";
+		fieldsData[3].source = "Apple";
+		fieldsData[3].destination = "Orange";
 		
 		// comparator to sort by
 		Comparator<DataFields> sortBySource = new SortBySource();
 		
 		// sort it
-		Arrays.sort(fields, sortBySource);
+		Arrays.sort(fieldsData, sortBySource);
 		
-		for(int i=0; i < fields.length; i++) {
-			System.out.println(i + ". " + fields[i].source);
+		for(int i=0; i < fieldsData.length; i++) {
+			System.out.println(i + ". " + fieldsData[i].source);
 		}
 		
 		// comparator
-		SortBySource search = new SortBySource();
+		SortBySource searchComparator = new SortBySource();
 		
 		// This is what I am searching for
-		DataFields searchField = new DataFields();
-		searchField.source = "Survey";
+		DataFields searchFieldObject = new DataFields();
+		searchFieldObject.source = "Survey";
 		
 		// this is how to find it
-		int index = Arrays.binarySearch(fields, searchField, search);
+		int index = Arrays.binarySearch(fieldsData, searchFieldObject, searchComparator);
 		
-		System.out.println("Index: " + index);
+		System.out.println(searchFieldObject.source + " Found @ Index: " + index);
 		
 	}
 	
