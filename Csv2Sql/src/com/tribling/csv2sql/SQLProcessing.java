@@ -59,6 +59,9 @@ public class SQLProcessing {
 	// optmise examine how many records
 	protected int optimiseRecordsToExamine = 1000;
 
+	// don't delete empty columns (delete them if set to true)
+	private boolean deleteEmptyColumns = false;
+
 	/**
 	 * constructor
 	 */
@@ -133,6 +136,7 @@ public class SQLProcessing {
 		this.tableSchema = destinationData.tableSchema;
 		this.optimise = destinationData.optimise;
 		this.optimiseRecordsToExamine = destinationData.optimiseRecordsToExamine;
+		this.deleteEmptyColumns = destinationData.deleteEmptyColumns;
 		
 		openConnection();
 	}
@@ -163,7 +167,7 @@ public class SQLProcessing {
 		
 		String query = "";
 		if (databaseType == 1) {
-			query = "SHOW TABLES FROM `" + database + "` LIKE `" + table + "`;";
+			query = "SHOW TABLES FROM `" + database + "` LIKE '" + table + "';";
 		} else if (databaseType == 2) {
 			query = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES " +
 					"WHERE TABLE_CATALOG = '" + database + "' AND " +
@@ -178,6 +182,8 @@ public class SQLProcessing {
 	
 	/**
 	 * create table
+	 * 
+	 * TODO - logic not correct
 	 */
 	public void createTable() {
 		
@@ -188,12 +194,12 @@ public class SQLProcessing {
 				dropTable();
 			} else if (dropTable == false && doesExist == false) {
 				return;
+			} else if (dropTableOff == true && doesExist == true) {
+				return;
 			}
 			
 			
 		}
-		
-		table = fixName(table);
 		
 		String query = "";
 		if (databaseType == 1) {
@@ -201,7 +207,8 @@ public class SQLProcessing {
 					"`ImportID` int NOT NULL AUTO_INCREMENT, PRIMARY KEY (`ImportID`) " +
 					") ENGINE = MyISAM;";
 		} else if (databaseType == 2) {
-			query = "CREATE TABLE " + database + "." + tableSchema + "." + table + " ( [ImportID] [int] IDENTITY(1,1) NOT NULL);"; //[ID] [int] ,
+			query = "CREATE TABLE " + database + "." + tableSchema + "." + table + " " +
+					"( [ImportID] [int] IDENTITY(1,1) NOT NULL);";
 		}
 		
 		setUpdateQuery(query);
@@ -258,7 +265,8 @@ public class SQLProcessing {
 			query = "SHOW COLUMNS FROM `" + table + "` FROM `" + database + "`;";
 		} else if (databaseType == 2) {
 			query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.Columns " +
-					"WHERE TABLE_NAME ='" + table + "' AND TABLE_SCHEMA='" + tableSchema + "' AND TABLE_CATALOG='" + database + "'";
+					"WHERE TABLE_NAME ='" + table + "' AND " +
+					"TABLE_SCHEMA='" + tableSchema + "' AND TABLE_CATALOG='" + database + "'";
 		}
 
 		ArrayList<String> c = new ArrayList<String>();
@@ -283,11 +291,28 @@ public class SQLProcessing {
 		return columns;
 	}
 	
+	/**
+	 * create columns
+	 * 
+	 * TODO - examine rows in csv, maybe need to do TEXT as default, but date doesn't cast(alter) from text in mssql
+	 * 
+	 * @param columns
+	 * @return
+	 */
 	protected String[] createColumns(String[] columns) {
 		
 		columns = fixColumns(columns);
 		
-		String type = "VARCHAR(255)";
+		String type = "TEXT DEFAULT NULL";
+		// default creation
+		/*
+		if (databaseType == 1) {
+			type = "VARCHAR(255) DEFAULT NULL";
+		} else if (databaseType == 2) {
+			type = "VARCHAR(255)";
+		}
+		*/
+		
 		for (int i=0; i < columns.length; i++) {
 			createColumn(columns[i], type);
 		}
@@ -332,9 +357,20 @@ public class SQLProcessing {
 			type = "TEXT";
 		}
 		
+		/*
+		// when there are to many varchar 255 columns it will error
+		// when empty columns are matched, lets put them as text for now, not to waste room for none text.
+		// could make columns all text, if to deal with it on optimise, and figure out alter (cast) to text -> date
+		// logistically it would be better to do text, then change it from there, b/c of lengths to start with. 
+		// will have to do this later
+		if (column.matches("c[0-9]+")) {
+			type = "TEXT";
+		}
+		*/
+		
 		String query = "";
 		if (databaseType == 1) {
-			query = "ALTER `" + database + "`.`" + table + "` ADD '" + column + "' " + type + ";"; // TODO -> type = VARCHAR(60)
+			query = "ALTER TABLE `" + database + "`.`" + table + "` ADD COLUMN `" + column + "`  " + type + ";";
 		} else if (databaseType == 2) {
 			query = "ALTER TABLE " + database + "." + tableSchema + "." + table + " ADD [" + column + "] " + type + ";";
 		}
@@ -428,7 +464,7 @@ public class SQLProcessing {
 	 * 
 	 * @param query
 	 */
-	protected void setUpdateQuery(String query) {
+	public void setUpdateQuery(String query) {
 		
 		System.out.println("f:" + indexFile + ": row:" + index + ". " + query);
 		
@@ -468,6 +504,24 @@ public class SQLProcessing {
 		}
 		
 		return rtn;
+	}
+	
+	private int getQueryInt(String query) {
+
+		int i = 0;
+		try {
+			Statement select = conn.createStatement();
+			ResultSet result = select.executeQuery(query);
+			while(result.next()) {
+				i = result.getInt(1);
+			}
+			result.close();
+		} catch (Exception e) {
+			System.err.println("Mysql Statement Error:" + query);
+			e.printStackTrace();
+		}
+		
+		return i;
 	}
 	
 	/**
@@ -606,6 +660,143 @@ public class SQLProcessing {
 
 	}
 	
+	private String getQuery_Insert_MsSql(String[] columns, String[] values) {
+		
+		if (columns.length != values.length) {
+			//System.out.print("Colunns:" + columns.length + " != Values:" + values.length + " ");
+			
+			//if (values.length < columns.length) {
+				//return null;
+			//}
+		}
+		
+		String cs = "";
+		String vs = "";
+		for(int i=0; i < columns.length; i++) {
+			
+			String c = "";
+			String v = "";
+			
+			c =  columns[i];
+			try {
+				v = values[i];
+			} catch (Exception e1) {
+				v = "";
+			}	
+			
+			// TODO ms sql truncate error? change to alter to text
+			if (v != null) {
+				int len = v.length();
+				if (len > 255) {
+					v = v.substring(0,255);
+				}
+			}
+			
+			cs += "[" + c + "]";
+			vs += "'" + escapeForSql(values[i]) + "'";
+
+			if(i < columns.length-1) {
+				cs += ", ";
+				vs += ", "; 
+			}
+		}
+		
+		String s = "INSERT INTO " + database + "." + tableSchema + "." + table + " (" + cs + ") VALUES (" + vs + ");";
+		
+		return s;
+	}
+	
+	private String getQuery_Insert_MySql(String[] columns, String[] values) {
+		
+		if (columns.length != values.length) {
+			//System.out.print("Colunns:" + columns.length + " != Values:" + values.length + " ");
+			
+			//if (values.length < columns.length) {
+				//return null;
+			//}
+		}
+		
+		String q = "";
+		for (int i=0; i < columns.length; i++) {
+			
+			String c = "";
+			String v = "";
+			
+			c = columns[i];
+			
+			// when there a no values for this columns position
+			try {
+				v = values[i];
+			} catch (Exception e) {
+				v = "";
+			}
+			
+			// TODO truncate error? change to alter to text
+			if (v != null) {
+				int len = v.length();
+				if (len > 255) {
+					v = v.substring(0,255);
+				}
+			}
+			
+			v = escapeForSql(v);
+			
+			q += "`" + c + "`='" + v + "'";
+
+			if(i < columns.length-1) {
+				q += ", ";
+			}
+		}
+		
+		String s = "INSERT INTO `" + database + "`.`" + table + "` SET "+q+";";
+		
+		return s;
+	}
+	
+	// TODO
+	private String getQuery_Update_MsSql(String[] columns, String[] values) {
+		
+		if (columns.length != values.length) {
+			System.out.println("Error (Update) in columns lenth and values length");
+		}
+		
+
+		String q = "";
+		for (int i=0; i < columns.length; i++) {
+			
+			String c = "";
+			String v = "";
+			
+			c = columns[i].trim();
+			
+			try {
+				v = values[i];
+			} catch (Exception e) {
+				v = "";
+			}
+			
+			v = escapeForSql(v);
+			
+			q += "[" + c + "]='" + v + "'";
+			
+			if(i < columns.length-1) {
+				q += ",";
+			}
+		}
+		
+		String s = "UPDATE " + database + "." + tableSchema + "." + table + " "+q+" WHERE ";
+		
+		return s;
+	}
+	
+	// TODO
+	private String getQuery_Update_MySql(String[] columns, String[] values) {
+		
+		
+		String s = "";
+		return s;
+	}
+	
 	// TODO
 	public int doesRowExistAlready_MsSql() {
 		
@@ -621,93 +812,6 @@ public class SQLProcessing {
 		
 		return 0;
 	}
-	
-	private String getQuery_Insert_MsSql(String[] columns, String[] values) {
-		
-		if (columns.length != values.length) {
-			int count = values.length;
-			System.out.print("Colunns:" + columns.length + " != Values:" + values.length + " ");
-			
-			//if (values.length < columns.length) {
-				//return null;
-			//}
-		}
-		
-		String c = "";
-		String v = "";
-		for(int i=0; i < columns.length; i++) {
-			c += "[" + columns[i].trim() + "]";
-			
-			// ms sql truncate error?
-			if (values[i] != null) {
-				int len = values[i].length();
-				if (len > 255) {
-					values[i] = values[i].substring(0,255);
-				}
-			}
-			
-			try {
-				v += "'" + escapeForSql(values[i]) + "'";
-			} catch (Exception e) {
-				v += "''";
-			}
-			
-			if(i < columns.length-1) {
-				c += ",";
-				v += ","; 
-			}
-		}
-		
-		String s = "INSERT INTO " + database + "." + tableSchema + "." + table + " (" + c + ") VALUES (" + v + ");";
-		
-		return s;
-	}
-	
-	// TODO
-	private String getQuery_Update_MsSql(String[] columns, String[] values) {
-		
-		if (columns.length != values.length) {
-			System.out.println("Error (Update) in columns lenth and values length");
-		}
-		
-		String q = "";
-		for (int i=0; i < columns.length; i++) {
-			
-			q += "[" + columns[i].trim() + "]='" + escapeForSql(values[i]) + "'";
-			
-			if(i < columns.length-1) {
-				q += ",";
-			}
-		}
-		
-		String s = "UPDATE " + database + "." + tableSchema + "." + table + " "+q+" WHERE ";
-		
-		return s;
-	}
-	
-	private String getQuery_Insert_MySql(String[] columns, String[] values) {
-		
-		String q = "";
-		for (int i=0; i < columns.length; i++) {
-			q += "[" + columns[i] + "]='" + values[i] + "'";
-			
-			if(i < columns.length-1) {
-				q += ",";
-			}
-		}
-		
-		String s = "INSERT INTO `" + database + "`.`" + table + "` "+q+";";
-		
-		return s;
-	}
-	
-	// TODO
-	private String getQuery_Update_MySql(String[] columns, String[] values) {
-		
-		
-		String s = "";
-		return s;
-	}
 			
 	/**
 	 * escape string to db
@@ -720,16 +824,72 @@ public class SQLProcessing {
 	 */
 	protected static String escapeForSql(String s) {
 	        
-	        String rtn = StringEscapeUtils.escapeSql(s);
+	        s = StringEscapeUtils.escapeSql(s);
 	        
 	        //escape utils returns null if null
-	        if (rtn == null) {
-	                rtn = "";
+	        if (s == null) {
+	                s = "";
 	        }
 	        
-	        rtn = rtn.trim();
+	        s = s.replace("\\", "\\\\");
 	        
-	        return rtn;
+	        s = s.trim();
+	        
+	        return s;
+	}
+	
+	/**
+	 * delete empty columns - any column with no values (all null | '')
+	 */
+	public void deleteEmptyColumns() {
+		
+		if (deleteEmptyColumns == false) {
+			System.out.println("Skipping deleting empty Columns: destinationData.deleteEmptyColumns=false");
+		}
+		
+		System.out.println("Going to delete empty columns");
+		
+		String[] columns = getColumns();
+		
+		for(int i=0; i < columns.length; i++) {
+			System.out.print(".");
+			if (getColumnHasStuff(columns[i]) == false) {
+				deleteColumn(columns[i]);
+			}
+		}
+	}
+	
+	private boolean getColumnHasStuff(String column) {
+		
+		String query = "";
+		if (databaseType == 1) {
+			query = "SELECT COUNT(`" + column + "`) AS Total FROM `" + database + "`.`" + table + "` " +
+					"WHERE (`" + column + "` != '');";
+		} else if (databaseType == 2) {
+			query = "SELECT COUNT([" + column + "]) AS Total FROM " + database + "." + tableSchema + "." + table + " " +
+					"WHERE  ([" + column + "] != '');";
+		}
+		
+		int i = getQueryInt(query);
+		
+		boolean b = true;
+		if (i == 0) {
+			b = false;
+		}
+		
+		return b;
+	}
+	
+	private void deleteColumn(String column) {
+		
+		String query = "";
+		if (databaseType == 1) {
+			query = "ALTER TABLE `" + database + "`.`" + table + "` DROP COLUMN `"+column+"`;";
+		} else if (databaseType == 2) {
+			query = "ALTER TABLE " + database + "." + tableSchema + "." + table + " DROP COLUMN " + column + ";";
+		}
+		
+		setUpdateQuery(query);
 	}
 }
 

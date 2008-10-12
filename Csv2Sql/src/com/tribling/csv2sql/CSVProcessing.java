@@ -79,8 +79,11 @@ public class CSVProcessing {
 			e.printStackTrace();
 		}
 		
-		//optimise table
+		// optimise table (if set on)
 		sql.runOptimise(columns);
+		
+		// delete empty columns (if set on)
+		sql.deleteEmptyColumns();
 	}
 	
 	private void readFile() {
@@ -97,7 +100,6 @@ public class CSVProcessing {
 		try {
 			reader.readHeaders();
 			columns = reader.getHeaders();
-			//Arrays.sort(columns);
 			System.out.println("column count: " + reader.getHeaderCount());
 		} catch (IOException e) {
 			e.printStackTrace();
