@@ -1,6 +1,6 @@
 package com.tribling.csv2sql.data;
 
-public class MatchFieldData {
+public class MatchFieldData implements Comparable<MatchFieldData> {
 
 	public String sourceField;
 	public String desinationField;
@@ -9,6 +9,14 @@ public class MatchFieldData {
 	 * constructor
 	 */
 	public MatchFieldData() {
-		
 	}
+
+	@Override
+	public int compareTo(MatchFieldData b) {
+		return sourceField.compareToIgnoreCase(b.sourceField);
+	}
+
+	
+
+	
 }
