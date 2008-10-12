@@ -12,6 +12,7 @@ import java.util.Comparator;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import com.tribling.csv2sql.data.DestinationData;
+import com.tribling.csv2sql.data.IdentityData;
 import com.tribling.csv2sql.data.MatchFieldData;
 import com.tribling.csv2sql.data.SortSourceField;
 
@@ -65,6 +66,11 @@ public class SQLProcessing {
 
 	// don't delete empty columns (delete them if set to true)
 	private boolean deleteEmptyColumns = false;
+
+	private boolean checkForExistingRecordsAndUpdate = false;
+	
+	// identity columns to index and insert/update
+	private MatchFieldData[] identityColumns = null;
 
 	/**
 	 * constructor
@@ -142,6 +148,8 @@ public class SQLProcessing {
 		this.optimiseRecordsToExamine = destinationData.optimiseRecordsToExamine;
 		this.deleteEmptyColumns = destinationData.deleteEmptyColumns;
 		this.optimiseTextOnly = destinationData.optimiseTextOnly;
+		this.identityColumns = destinationData.identityColumns;
+		this.checkForExistingRecordsAndUpdate = destinationData.checkForExistingRecordsAndUpdate;
 		
 		// open a sql connection to work with
 		openConnection();
@@ -195,14 +203,13 @@ public class SQLProcessing {
 		boolean doesExist = isTableExist();
 		if(doesExist == true) {
 			
-			if (dropTable == true && dropTableOff == false) {
+			if (dropTable == true || dropTableOff == false) {
 				dropTable();
 			} else if (dropTable == false && doesExist == false) {
 				return;
 			} else if (dropTableOff == true && doesExist == true) {
 				return;
 			}
-			
 			
 		}
 		
@@ -217,16 +224,42 @@ public class SQLProcessing {
 		}
 		
 		setUpdateQuery(query);
+		
+		// track changes by date
+		String column = "DateCreated";
+		String type = "";
+		if (databaseType == 1) {
+			type = "DATETIME DEFAULT NULL";
+		} else if (databaseType == 2) {
+			type = "DATETIME DEFAULT NULL";
+		}
+		createColumn(column, type);
+		
+		if (checkForExistingRecordsAndUpdate == true) {
+			
+			// add DateUpdated column to track updates
+			column = "DateUpdated";
+			type = "";
+			if (databaseType == 1) {
+				type = "DATETIME DEFAULT NULL";
+			} else if (databaseType == 2) {
+				type = "DATETIME DEFAULT NULL";
+			}
+			createColumn(column, type);
+		} 
+			
+		
+
+		// TODO create indexes of identity columns
+		
+		
+		
 	}
 	
 	/**
 	 * sql drop table
 	 */
 	private void dropTable() {
-		
-		if (dropTableOff == true) {
-			return;
-		}
 		
 		String query = "";
 		if (databaseType == 1) {
@@ -514,6 +547,22 @@ public class SQLProcessing {
 		return i;
 	}
 	
+	private int getQueryIdent(String query) {
+		int i = 0;
+		try {
+			Statement select = conn.createStatement();
+			ResultSet result = select.executeQuery(query);
+			while(result.next()) {
+				i = result.getInt(1);
+			}
+			result.close();
+		} catch (Exception e) {
+			System.err.println("Mysql Statement Error:" + query);
+			e.printStackTrace();
+		}
+		return i;
+	}
+	
 	/**
 	 * fix the name to be sql friendly
 	 * @param s
@@ -597,30 +646,6 @@ public class SQLProcessing {
 	}
 	
 	/**
-	 * input array to a csv string
-	 * 
-	 * @param inputArray
-	 * @return
-	 */
-	private String implodeArray(String[] inputArray) {
-
-		String s;
-		if (inputArray.length == 0) {
-			s = "";
-		} else {
-			StringBuffer sb = new StringBuffer();
-			sb.append(inputArray[0]);
-			for (int i = 1; i < inputArray.length; i++) {
-				sb.append(",");
-				sb.append(inputArray[i]);
-			}
-			s = sb.toString();
-		}
-
-		return s;
-	}
-	
-	/**
 	 * add data to table
 	 * 
 	 * @param columns
@@ -630,18 +655,29 @@ public class SQLProcessing {
 		this.index = index;
 		this.indexFile = indexFile;
 		
+		// does record already exist?
+		int id = 0;
+		if (checkForExistingRecordsAndUpdate == true) {
+			id = doesIdentityExist(columns, values);
+		}
+		
 		String query = null;
 		if (databaseType == 1) {
 			
-			// TODO - is this data in database already?
-			
-			query = getQuery_Insert_MySql(columns, values);
+			if (id > 0) {
+				query = getQuery_Update_MySql(columns, values, id);
+			} else {
+				query = getQuery_Insert_MySql(columns, values);
+			}
 			
 		} else if (databaseType == 2) {
 			
-			// TODO _ is this data int he database already?
+			if (id > 0) {
+				query = getQuery_Update_MsSql(columns, values, id);
+			} else {
+				query = getQuery_Insert_MsSql(columns, values);
+			}
 			
-			query = getQuery_Insert_MsSql(columns, values);
 		}
 		
 		if (query != null) {
@@ -651,14 +687,6 @@ public class SQLProcessing {
 	}
 	
 	private String getQuery_Insert_MsSql(String[] columns, String[] values) {
-		
-		if (columns.length != values.length) {
-			//System.out.print("Colunns:" + columns.length + " != Values:" + values.length + " ");
-			
-			//if (values.length < columns.length) {
-				//return null;
-			//}
-		}
 		
 		String cs = "";
 		String vs = "";
@@ -673,15 +701,7 @@ public class SQLProcessing {
 			} catch (Exception e1) {
 				v = "";
 			}	
-			
-			// TODO ms sql truncate error? change to alter to text
-			if (v != null) {
-				int len = v.length();
-				if (len > 255) {
-					v = v.substring(0,255);
-				}
-			}
-			
+
 			cs += "[" + c + "]";
 			vs += "'" + escapeForSql(values[i]) + "'";
 
@@ -691,20 +711,13 @@ public class SQLProcessing {
 			}
 		}
 		
-		String s = "INSERT INTO " + database + "." + tableSchema + "." + table + " (" + cs + ") VALUES (" + vs + ");";
+		String s = "INSERT INTO " + database + "." + tableSchema + "." + table + " (DateCreated, " + cs + ") " +
+				"VALUES (NOW(), " + vs + ");";
 		
 		return s;
 	}
 	
 	private String getQuery_Insert_MySql(String[] columns, String[] values) {
-		
-		if (columns.length != values.length) {
-			//System.out.print("Colunns:" + columns.length + " != Values:" + values.length + " ");
-			
-			//if (values.length < columns.length) {
-				//return null;
-			//}
-		}
 		
 		String q = "";
 		for (int i=0; i < columns.length; i++) {
@@ -714,19 +727,10 @@ public class SQLProcessing {
 			
 			c = columns[i];
 			
-			// when there a no values for this columns position
 			try {
 				v = values[i];
 			} catch (Exception e) {
 				v = "";
-			}
-			
-			// TODO truncate error? change to alter to text
-			if (v != null) {
-				int len = v.length();
-				if (len > 255) {
-					v = v.substring(0,255);
-				}
 			}
 			
 			v = escapeForSql(v);
@@ -738,26 +742,195 @@ public class SQLProcessing {
 			}
 		}
 		
-		String s = "INSERT INTO `" + database + "`.`" + table + "` SET "+q+";";
+		String s = "INSERT INTO `" + database + "`.`" + table + "` " +
+				"SET DateCreated=NOW(), "+q+";";
 		
 		return s;
 	}
 	
-	// TODO
-	private String getQuery_Update_MsSql(String[] columns, String[] values) {
+	
+	
+	
+	
+	
+	
+	
+	
+	private void createIndexes() {
 		
-		if (columns.length != values.length) {
-			System.out.println("Error (Update) in columns lenth and values length");
+		if (identityColumns == null) {
+			return;
 		}
 		
+		for(int i=0; i < identityColumns.length; i++) {
+			createIndex(i, identityColumns[i].desinationField);
+		}
+		
+	}
+	
+	private void createIndex(int index, String column) {
+		
+		String indexName = "index" + index;
+		
+		String query = "";
+		if (databaseType == 1) { // ADD INDEX `"+column+"`(`"+indexName+"`),
+			query = "ALTER TABLE `" + database + "`.`" + table + "` ADD INDEX `"+column+"`(`"+indexName+"`);";
+		} else if (databaseType == 2) {
+			// TODO // CREATE INDEX customerid ON klump (CustomerID)
+			query = "ALTER TABLE " + database + "." + tableSchema + "." + table + " ADD INDEX [" + column + "](["+indexName+"]) ;";
+		}
+		
+		setUpdateQuery(query);
+	}
+	
+	private String getIdentiesWhereQuery(String[] columns, String[] values) {
+		
+		IdentityData[] identityData = findIdentityData(columns, values);
 
+		String q = "";
+		for (int i=0; i < identityData.length; i++) {
+			
+			String c = identityData[i].column;
+			String v = escapeForSql(identityData[i].value);
+			
+			if (databaseType == 1) {
+				q += "(`"+c+"`='"+v+"')";
+			} else if (databaseType == 2) {
+				q += "(["+c+"]='"+v+"');";
+			}
+			
+			if (i < identityData.length-1) {
+				q += " AND ";
+			}
+			
+		}
+		
+		return q;
+	}
+	
+	/**
+	 * find identity columns
+	 * 
+	 * @param columns
+	 * @return
+	 */
+	private IdentityData[] findIdentityData(String[] columns, String[] values) {
+		
+		IdentityData[] ident = new IdentityData[identityColumns.length];
+		for (int i=0; i < identityColumns.length; i++) {
+			String identColumnName = identityColumns[i].desinationField;
+
+			int index = searchArray(columns, identColumnName);
+			
+			ident[i] = new IdentityData();
+			ident[i].column = identityColumns[i].desinationField;
+			try {
+				ident[i].value = values[index];
+			} catch (Exception e) {
+				ident[i].value = "NO IDENTITY VALUE";
+			}
+		}
+		
+		return ident;
+	}
+	
+	private int searchArray(String[] a, String m) {
+		
+		int index = 0;
+		for (int i=0; i < a.length; i++) {
+			
+			String aa = a[i];
+			
+			if (aa.equals(m)) {
+				index = i;
+				break;
+			}
+		}
+		return index;
+	}
+	
+
+	public int doesIdentityExist(String[] columns, String[] values) {
+		
+		int id = 0;
+		if (databaseType == 1) {
+			id = doesRowExistAlready_MySql(columns, values);
+		} else if (databaseType == 2) {
+			id = doesRowExistAlready_MsSql(columns, values);
+		}
+		
+		return id;
+	}
+	
+	public int doesRowExistAlready_MySql(String[] columns, String[] values) {
+		
+		// get idents
+		String whereQuery = getIdentiesWhereQuery(columns, values);
+		
+		String query = "SELECT ImportId FROM `" + database + "`.`" + table + "` " +
+				"WHERE " + whereQuery + " LIMIT 0,1";
+		
+		int id = getQueryIdent(query);
+		
+		return id;
+	}
+
+	public int doesRowExistAlready_MsSql(String[] columns, String[] values) {
+		
+		// get idents
+		String whereQuery = getIdentiesWhereQuery(columns, values);
+		
+		String query = "SELECT TOP 1 ImportId FROM " + database + "." + tableSchema + "." + table + " " +
+				"WHERE " + whereQuery;
+		
+		int id = getQueryIdent(query);
+		
+		return id;
+	}
+	
+
+	
+	private String getQuery_Update_MySql(String[] columns, String[] values, int id) {
+		
 		String q = "";
 		for (int i=0; i < columns.length; i++) {
 			
 			String c = "";
 			String v = "";
 			
-			c = columns[i].trim();
+			c = columns[i];
+			
+			try {
+				v = values[i];
+			} catch (Exception e) {
+				v = "";
+			}
+			
+			v = escapeForSql(v);
+			
+			q += "`" + c + "`='" + v + "'";
+
+			if(i < columns.length-1) {
+				q += ", ";
+			}
+		}
+		
+		String s = "UPDATE `" + database + "`.`" + table + "` " +
+				"SET DateUpdated=NOW(), "+q+" " +
+				"WHERE (ImportID='"+id+"');";
+		
+		return s;
+	}
+	
+	private String getQuery_Update_MsSql(String[] columns, String[] values, int id) {
+		
+		String q = "";
+		for (int i=0; i < columns.length; i++) {
+			
+			String c = "";
+			String v = "";
+			
+			c = columns[i];
 			
 			try {
 				v = values[i];
@@ -770,39 +943,29 @@ public class SQLProcessing {
 			q += "[" + c + "]='" + v + "'";
 			
 			if(i < columns.length-1) {
-				q += ",";
+				q += ", ";
 			}
 		}
 		
-		String s = "UPDATE " + database + "." + tableSchema + "." + table + " "+q+" WHERE ";
+		String s = "UPDATE " + database + "." + tableSchema + "." + table + " " +
+				"SET DateUpdated=NOW(), "+q+" " +
+				"WHERE (ImportID='"+id+"');";
 		
 		return s;
 	}
 	
-	// TODO
-	private String getQuery_Update_MySql(String[] columns, String[] values) {
-		
-		
-		String s = "";
-		return s;
-	}
+
 	
-	// TODO
-	public int doesRowExistAlready_MsSql() {
-		
-		String query = "SELECT ImportId FROM " + database + "." + tableSchema + "." + table + " WHERE ";
-		
-		return 0;
-	}
-	
-	// TODO
-	public int doesRowExistAlready_MySql() {
-		
-		String query = "SELECT ImportId FROM `" + database + "`.`" + table + "` WHERE ";
-		
-		return 0;
-	}
+
 			
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * escape string to db
 	 * 

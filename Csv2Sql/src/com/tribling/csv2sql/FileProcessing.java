@@ -86,7 +86,7 @@ public class FileProcessing {
 		for (int i=0; i < files.length; i++) {
 			if (files[i].isFile() == true) {
 				
-				// when extracting a bunch of the same files, skip optimization after the first
+				// when extracting a bunch of the same files, skip optimisation after the first
 				if (isDirectory == true && i > 0) {
 					csv.dropTableOff();
 				}

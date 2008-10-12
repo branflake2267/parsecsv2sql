@@ -28,6 +28,9 @@ public class DestinationData {
 	// delete empty columns after parsing a table
 	public boolean deleteEmptyColumns = false;
 	
+	// if a record exists with identity columns update
+	// Identity Columns data needs to be exact (its explicit!)
+	public boolean checkForExistingRecordsAndUpdate = false;
 	
 	// [MySql|MsSql] - MySql or Microsoft SQL databases methods available
 	public String databaseType = "MySql";
