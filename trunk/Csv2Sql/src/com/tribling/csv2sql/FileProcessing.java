@@ -88,7 +88,7 @@ public class FileProcessing {
 				
 				// when extracting a bunch of the same files, skip optimization after the first
 				if (isDirectory == true && i > 0) {
-					//csv.dropTableOff();
+					csv.dropTableOff();
 				}
 				
 				csv.parseFile(i, files[i]);

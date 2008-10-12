@@ -69,8 +69,12 @@ public class OptimiseTable extends SQLProcessing {
 		
 		String modifyColumn = "[" + column + "] " + columnType;
 		
-		String alterQuery = "ALTER TABLE " + database + "." + tableSchema + "." + table + " ALTER COLUMN " + modifyColumn;
-
+		String alterQuery = "";
+		if (databaseType == 1) {
+			alterQuery = "ALTER TABLE `" + database + "`.`" + table + "` ALTER COLUMN " + modifyColumn;
+		} else if (databaseType == 2) {
+			alterQuery = "ALTER TABLE " + database + "." + tableSchema + "." + table + " ALTER COLUMN " + modifyColumn;
+		}
 		
 		// TODO - only alter it if its different
 		// TODO - skip after the first alter in directory format, first file sets the sizes
@@ -195,32 +199,42 @@ public class OptimiseTable extends SQLProcessing {
 	
 	private String getColumnType_MySql() {
 		
-		String columnType = "";
+		int len = getLenthForType();
 		
+		if (len == 0) {
+			len = 1;
+		}
+		
+		String columnType = "";
 		switch (fieldType) {
 		case 1: // datetime
-			columnType = "";
+			columnType = "DATETIME  DEFAULT NULL";
 			break;
 		case 2: // varchar
-			columnType = "";
+			columnType = "VARCHAR("+len+") DEFAULT NULL";
 			break;
 		case 3: // int unsigned - with zero fill
-			columnType = "";
+			columnType = "INT DEFAULT NULL";
 			break;
 		case 4: // int
-			columnType = "";
+			if (len < 8) {
+				columnType = "INT UNSIGNED ZEROFILL DEFAULT " + len;
+			} else {
+				columnType = "BIGINT UNSIGNED ZEROFILL DEFAULT " + len;
+			}
 			break;
 		case 5: // decimal
-			columnType = "";
+			//columnType = "DECIMAL(18, 2) DEFAULT NULL";
+			columnType = "VARCHAR(50) DEFAULT NULL";
 			break;
 		case 6: // empty
-			columnType = "";
+			columnType = "VARCHAR("+len+") DEFAULT NULL";
 			break;
 		case 7: // other
-			columnType = "";
+			columnType = "VARCHAR("+len+") DEFAULT NULL";
 			break;
 		default:
-			columnType = "VARCHAR(255)";
+			columnType = "VARCHAR("+len+") DEFAULT NULL";
 			break;
 		}
 		
@@ -229,38 +243,41 @@ public class OptimiseTable extends SQLProcessing {
 	
 	private String getColumnType_MsSql() {
 		
-		String columnType = null;
-		
 		int len = getLenthForType();
 		
 		if (len == 0) {
 			len = 1;
 		}
 		
+		String columnType = "";
 		switch (fieldType) {
 		case 1: // datetime
 			columnType = "[DATETIME] NULL";
 			break;
 		case 2: // varchar
-			columnType = "[VARCHAR]("+len+") COLLATE SQL_Latin1_General_CP1_CI_AS NULL";
+			columnType = "[VARCHAR]("+len+") DEFAULT NULL";
 			break;
 		case 3: // int unsigned - with zero fill
 			columnType = "[INT] NULL"; // TODO ?? for zero fill?
 			break;
 		case 4: // int
-			columnType = "[INT] NULL";
+			if (len < 8) {
+				columnType = "[INT] NULL";	
+			} else {
+				columnType = "[BIGINT] NULL";
+			}
 			break;
 		case 5: // decimal
-			columnType = "[VARCHAR](50)"; // TODO - [decimal](18, 0) NULL
+			columnType = "[VARCHAR](50) DEFAULT NULL"; // TODO - [decimal](18, 0) NULL
 			break;
 		case 6: // empty
-			columnType = "[VARCHAR]("+len+")"; // TODO - delete this column later
+			columnType = "[VARCHAR]("+len+") DEFAULT NULL"; // TODO - delete this column later
 			break;
 		case 7: // other
-			columnType = "[VARCHAR]("+len+")"; // TODO - delete this column later
+			columnType = "[VARCHAR]("+len+") DEFAULT NULL"; // TODO - delete this column later
 			break;
 		default:
-			columnType = "VARCHAR("+len+")";
+			columnType = "VARCHAR("+len+") DEFAULT NULL";
 			break;
 		}
 		

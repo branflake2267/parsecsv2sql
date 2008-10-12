@@ -11,6 +11,9 @@ public class DestinationData {
 	// how many records to examine
 	public int optimiseRecordsToExamine = 1000;
 	
+	// delete empty columns after parsing a table
+	public boolean deleteEmptyColumns = false;
+	
 	
 	// [MySql|MsSql]
 	public String databaseType = "MySql";
