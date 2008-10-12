@@ -58,6 +58,10 @@ public class SQLProcessing {
 
 	// optmise examine how many records
 	protected int optimiseRecordsToExamine = 1000;
+	
+	// only optimise (drill down alter) to varchar/text columns
+	// this has to be done first anyway, so we can alter varchar->date, varchar->int...
+	protected boolean optimiseTextOnly = true;
 
 	// don't delete empty columns (delete them if set to true)
 	private boolean deleteEmptyColumns = false;
@@ -137,7 +141,9 @@ public class SQLProcessing {
 		this.optimise = destinationData.optimise;
 		this.optimiseRecordsToExamine = destinationData.optimiseRecordsToExamine;
 		this.deleteEmptyColumns = destinationData.deleteEmptyColumns;
+		this.optimiseTextOnly = destinationData.optimiseTextOnly;
 		
+		// open a sql connection to work with
 		openConnection();
 	}
 	
@@ -183,7 +189,6 @@ public class SQLProcessing {
 	/**
 	 * create table
 	 * 
-	 * TODO - logic not correct
 	 */
 	public void createTable() {
 		
@@ -303,15 +308,11 @@ public class SQLProcessing {
 		
 		columns = fixColumns(columns);
 		
+		// Two reasons to start with text.
+		// 1. fields can have length > 255
+		// 2. 65535 length limit of sql insert
+		// NOTE: have to alter to varchar/text first then drill down further after that
 		String type = "TEXT DEFAULT NULL";
-		// default creation
-		/*
-		if (databaseType == 1) {
-			type = "VARCHAR(255) DEFAULT NULL";
-		} else if (databaseType == 2) {
-			type = "VARCHAR(255)";
-		}
-		*/
 		
 		for (int i=0; i < columns.length; i++) {
 			createColumn(columns[i], type);
@@ -356,17 +357,6 @@ public class SQLProcessing {
 		if (type == null) {
 			type = "TEXT";
 		}
-		
-		/*
-		// when there are to many varchar 255 columns it will error
-		// when empty columns are matched, lets put them as text for now, not to waste room for none text.
-		// could make columns all text, if to deal with it on optimise, and figure out alter (cast) to text -> date
-		// logistically it would be better to do text, then change it from there, b/c of lengths to start with. 
-		// will have to do this later
-		if (column.matches("c[0-9]+")) {
-			type = "TEXT";
-		}
-		*/
 		
 		String query = "";
 		if (databaseType == 1) {

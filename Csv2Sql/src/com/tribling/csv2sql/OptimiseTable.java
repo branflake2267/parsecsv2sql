@@ -128,7 +128,14 @@ public class OptimiseTable extends SQLProcessing {
 		
 		// whats the size of the field length
 		setFieldLength(s);
-			
+		
+		// NOTE: optimise only the varchar/text fields 
+		// (this has to be done first anyway so we can alter varchar->date varchar->int...)
+		if (optimiseTextOnly == true) {
+			fieldType = 2;
+			return;
+		}
+		
 		boolean isInt = false;
 		boolean isZero = false;
 		boolean isDecimal = false;
@@ -208,10 +215,14 @@ public class OptimiseTable extends SQLProcessing {
 		String columnType = "";
 		switch (fieldType) {
 		case 1: // datetime
-			columnType = "DATETIME  DEFAULT NULL";
+			columnType = "DATETIME DEFAULT NULL";
 			break;
 		case 2: // varchar
-			columnType = "VARCHAR("+len+") DEFAULT NULL";
+			if (len > 255) {
+				columnType = "TEXT DEFAULT NULL";
+			} else {
+				columnType = "VARCHAR("+len+") DEFAULT NULL";
+			}
 			break;
 		case 3: // int unsigned - with zero fill
 			columnType = "INT DEFAULT NULL";
@@ -224,7 +235,7 @@ public class OptimiseTable extends SQLProcessing {
 			}
 			break;
 		case 5: // decimal
-			//columnType = "DECIMAL(18, 2) DEFAULT NULL";
+			// TODO columnType = "DECIMAL(18, 2) DEFAULT NULL";
 			columnType = "VARCHAR(50) DEFAULT NULL";
 			break;
 		case 6: // empty
@@ -234,7 +245,11 @@ public class OptimiseTable extends SQLProcessing {
 			columnType = "VARCHAR("+len+") DEFAULT NULL";
 			break;
 		default:
-			columnType = "VARCHAR("+len+") DEFAULT NULL";
+			if (len > 255) {
+				columnType = "TEXT DEFAULT NULL";
+			} else {
+				columnType = "VARCHAR("+len+") DEFAULT NULL";
+			}
 			break;
 		}
 		
@@ -255,10 +270,15 @@ public class OptimiseTable extends SQLProcessing {
 			columnType = "[DATETIME] NULL";
 			break;
 		case 2: // varchar
-			columnType = "[VARCHAR]("+len+") DEFAULT NULL";
+			if (len > 255) {
+				columnType = "TEXT DEFAULT NULL";
+			} else {
+				columnType = "VARCHAR("+len+") DEFAULT NULL";
+			}
 			break;
 		case 3: // int unsigned - with zero fill
-			columnType = "[INT] NULL"; // TODO ?? for zero fill?
+			 // TODO ?? for zero fill?
+			columnType = "[INT] NULL";
 			break;
 		case 4: // int
 			if (len < 8) {
@@ -268,7 +288,8 @@ public class OptimiseTable extends SQLProcessing {
 			}
 			break;
 		case 5: // decimal
-			columnType = "[VARCHAR](50) DEFAULT NULL"; // TODO - [decimal](18, 0) NULL
+			// TODO - [decimal](18, 0) NULL
+			columnType = "[VARCHAR](50) DEFAULT NULL"; 
 			break;
 		case 6: // empty
 			columnType = "[VARCHAR]("+len+") DEFAULT NULL"; // TODO - delete this column later
@@ -277,13 +298,26 @@ public class OptimiseTable extends SQLProcessing {
 			columnType = "[VARCHAR]("+len+") DEFAULT NULL"; // TODO - delete this column later
 			break;
 		default:
-			columnType = "VARCHAR("+len+") DEFAULT NULL";
+			if (len > 255) {
+				columnType = "TEXT DEFAULT NULL";
+			} else {
+				columnType = "VARCHAR("+len+") DEFAULT NULL";
+			}
 			break;
 		}
 		
 		return columnType;
 	}
 	
+	/**
+	 * optimise length of a particular column Type
+	 * 
+	 * TODO - figure out decimal, watch for before and after . during parse
+	 * TODO - do I want to make a percenatage bigger than needed? like make bigger * 10%
+	 * 			although, for now I think I will skip this, make it exact, seems to work
+	 * 
+	 * @return
+	 */
 	private int getLenthForType() {
 
 		int l = 0;
@@ -404,6 +438,7 @@ public class OptimiseTable extends SQLProcessing {
 			b = true;
 		} 
 		
+		// TODO - proof this later
 		if (s.matches("[0-9]{1,2}[-/][0-9]{1,2}[-/][0-9]{2,4}.*")) {
 			b = true;
 		}
