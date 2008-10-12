@@ -4,6 +4,7 @@ import java.beans.DesignMode;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 
 import com.csvreader.CsvReader;
 import com.tribling.csv2sql.data.DestinationData;
@@ -19,7 +20,7 @@ public class CSVProcessing {
 	
 	
 	// csv reader 2.0
-	private CsvReader reader;
+	private CsvReader reader = null;
 	
 	// sql methods
 	private OptimiseTable sql = new OptimiseTable();
@@ -44,30 +45,42 @@ public class CSVProcessing {
 			e.printStackTrace();
 		}
 		sql.setMatchFields(matchFields);
+		
+	}
+	
+	public void dropTableOff() {
+		sql.dropTableOff();
 	}
 	
 	/** 
 	 * start extracting the data
 	 */
-	protected void parseFile(File file) {
+	protected void parseFile(int indexFile, File file) {
 		this.file = file;
 		
+		// create table
+		sql.createTable();
+		
+		// open the file
 		readFile();
 		
+		// create columns
 		try {
 			getColumns();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
+		// loop through data rows
 		try {
-			loopRowsData();
+			loopRowsData(indexFile);
 		} catch (IOException e) {
 			System.err.println("CSV Reader, Could not read data");
 			e.printStackTrace();
 		}
 		
-		// TODO - Optimise it
+		//optimise table
+		sql.runOptimise(columns);
 	}
 	
 	private void readFile() {
@@ -82,14 +95,17 @@ public class CSVProcessing {
 	private void getColumns() throws Exception {
 				
 		try {
+			reader.readHeaders();
 			columns = reader.getHeaders();
+			//Arrays.sort(columns);
+			System.out.println("column count: " + reader.getHeaderCount());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
 		// insert/update columns
 		if (columns != null) {
-			sql.createColumns(columns);
+			this.columns = sql.createColumns(columns);
 		} else {
 			System.err.println("CSV Reader could not get columns");
 			throw new Exception();
@@ -97,15 +113,18 @@ public class CSVProcessing {
 		
 	}
 	
-	private void loopRowsData() throws IOException {
+	private void loopRowsData(int indexFile) throws IOException {
 		
 		String[] values;
+		int index = 0;
 		while (reader.readRecord())
 		{
 			values = reader.getValues();
 			
 			// add data to table
-			sql.addData(columns, values);
+			sql.addData(indexFile, index, columns, values);
+			
+			index++;
 		}
 		
 	}

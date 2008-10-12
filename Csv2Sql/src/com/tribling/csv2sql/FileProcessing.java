@@ -1,6 +1,7 @@
 package com.tribling.csv2sql;
 
 import java.io.File;
+import java.util.Arrays;
 
 import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.MatchFieldData;
@@ -16,6 +17,7 @@ public class FileProcessing {
 
 	private char delimiter;
 	
+	private boolean isDirectory = false;
 	
 	/**
 	 * constructor
@@ -32,6 +34,8 @@ public class FileProcessing {
 	public void setData(SourceData sourceData, DestinationData destinationData, MatchFieldData[] matchFields) {
 		this.delimiter = sourceData.delimiter;
 		this.desinationData = destinationData;
+		
+		Arrays.sort(matchFields);
 		this.matchFields = matchFields;
 		
 		csv.setData(delimiter, destinationData, matchFields);
@@ -55,7 +59,7 @@ public class FileProcessing {
 		File[] files;
 		
 		// is the file  a file or directory
-		boolean isDirectory = sourceData.file.isDirectory();
+		isDirectory = sourceData.file.isDirectory();
 		if (isDirectory == true) {
 			files = sourceData.file.listFiles();
 		} else {
@@ -68,6 +72,8 @@ public class FileProcessing {
 		}
 		
 		loop(files);
+		
+		System.out.println("All Done");
 	}
 	
 	/**
@@ -79,7 +85,14 @@ public class FileProcessing {
 	
 		for (int i=0; i < files.length; i++) {
 			if (files[i].isFile() == true) {
-				csv.parseFile(files[i]);
+				
+				// when extracting a bunch of the same files, skip optimization after the first
+				if (isDirectory == true && i > 0) {
+					//csv.dropTableOff();
+				}
+				
+				csv.parseFile(i, files[i]);
+
 			}
 		}
 		

@@ -5,11 +5,16 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+
+import org.apache.commons.lang.StringEscapeUtils;
 
 import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.MatchFieldData;
-import com.tribling.csv2sql.data.SourceData;
+import com.tribling.csv2sql.data.SortSourceField;
+
 
 /**
  * sql processing
@@ -20,24 +25,48 @@ import com.tribling.csv2sql.data.SourceData;
 public class SQLProcessing {
 
 	// [MySQL=1|MsSql=2]
-	private int databaseType = 1;
+	protected int databaseType = 1;
 	
-	private String database;
-	private String table;
+	protected String database;
+	protected String table;
+	
 	private String username;
 	private String password;
+	
 	private String host;
 	private String port;
 
-	private Connection conn;
+	protected Connection conn;
 
 	// match source to destination field
 	private MatchFieldData[] matchFields;
+
+	// if a user wants to drop a table on insert
+	private boolean dropTable = true;
 	
+	// can turn it off for files greater than 0
+	private boolean dropTableOff = false;
+	
+	protected String tableSchema;
+	
+	// track where at in the importing
+	private int index = 0;
+	private int indexFile = 0;
+
+	// optimise on or off
+	protected boolean optimise = false;
+
+	// optmise examine how many records
+	protected int optimiseRecordsToExamine = 1000;
+
 	/**
 	 * constructor
 	 */
 	public SQLProcessing() {
+	}
+	
+	public void dropTableOff() {
+		this.dropTableOff = true;
 	}
 	
 	/**
@@ -46,7 +75,7 @@ public class SQLProcessing {
 	 * @param destinationData
 	 * @throws Exception
 	 */
-	protected void setDestinationData(DestinationData destinationData) throws Exception {
+	public void setDestinationData(DestinationData destinationData) throws Exception {
 		
 		if (destinationData.databaseType.equals("MySql")) {
 			this.databaseType = 1;
@@ -67,14 +96,14 @@ public class SQLProcessing {
 		if (destinationData.username.length() > 0) {
 			this.username = destinationData.username;
 		} else {
-			System.err.println("ERROR: No username: Whats the sql database username?");
+			System.err.println("ERROR: No username: What is the sql database username?");
 			throw new Exception();
 		}
 		
 		if (destinationData.password.length() > 0) {
 			this.password = destinationData.password;
 		} else {
-			System.err.println("ERROR: No password: Whats the sql database password?");
+			System.err.println("ERROR: No password: What is the sql database password?");
 			throw new Exception();
 		}
 		
@@ -88,9 +117,24 @@ public class SQLProcessing {
 		if (destinationData.port.length() > 0) {
 			this.port = destinationData.port;
 		} else {
-			System.err.println("ERROR: No port: what doorway is the sql server behind? ie. [3306|1433]");
+			System.err.println("ERROR: No port: What doorway is the sql server behind? ie. [3306|1433]");
 			throw new Exception();
 		}
+		
+		if (destinationData.table.length() > 0) {
+			this.table = destinationData.table;
+		} else {
+			System.err.println("ERROR: No destination table: What table do you want to import this data to?");
+			throw new Exception();
+		}
+		
+		this.dropTable = destinationData.dropTable;
+		this.table = destinationData.table;
+		this.tableSchema = destinationData.tableSchema;
+		this.optimise = destinationData.optimise;
+		this.optimiseRecordsToExamine = destinationData.optimiseRecordsToExamine;
+		
+		openConnection();
 	}
 	
 	protected void setMatchFields(MatchFieldData[] matchFields) {
@@ -102,7 +146,7 @@ public class SQLProcessing {
 	 * 
 	 * @throws Exception 
 	 */
-	protected void openConnection() {
+	private void openConnection() {
 		if (databaseType == 1) {
 			conn = getConn_MySql();
 		} else if (databaseType == 2) {
@@ -121,7 +165,10 @@ public class SQLProcessing {
 		if (databaseType == 1) {
 			query = "SHOW TABLES FROM `" + database + "` LIKE `" + table + "`;";
 		} else if (databaseType == 2) {
-			query = "SELECT NAME FROM [" + database + "].SYSOBJECTS WHERE TYPE='U' AND NAME='" + table + "';";
+			query = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES " +
+					"WHERE TABLE_CATALOG = '" + database + "' AND " +
+					"TABLE_SCHEMA = '" + tableSchema + "' AND " +
+					"TABLE_NAME = '" + table + "'";
 		}
 		
 		boolean rtn = getBooleanQuery(query);
@@ -132,11 +179,18 @@ public class SQLProcessing {
 	/**
 	 * create table
 	 */
-	private void createTable() {
+	public void createTable() {
 		
 		boolean doesExist = isTableExist();
 		if(doesExist == true) {
-			return;
+			
+			if (dropTable == true && dropTableOff == false) {
+				dropTable();
+			} else if (dropTable == false && doesExist == false) {
+				return;
+			}
+			
+			
 		}
 		
 		table = fixName(table);
@@ -147,7 +201,7 @@ public class SQLProcessing {
 					"`ImportID` int NOT NULL AUTO_INCREMENT, PRIMARY KEY (`ImportID`) " +
 					") ENGINE = MyISAM;";
 		} else if (databaseType == 2) {
-			query = "CREATE TABLE [" + database + "].[" + table + "] ( ImportID int identity primary key );";
+			query = "CREATE TABLE " + database + "." + tableSchema + "." + table + " ( [ImportID] [int] IDENTITY(1,1) NOT NULL);"; //[ID] [int] ,
 		}
 		
 		setUpdateQuery(query);
@@ -157,12 +211,17 @@ public class SQLProcessing {
 	 * sql drop table
 	 */
 	private void dropTable() {
+		
+		if (dropTableOff == true) {
+			return;
+		}
+		
 		String query = "";
 		if (databaseType == 1) {
 			query = "DROP TABLE IF EXISTS `" + database + "`.`" + table + "`;";
 		} else if (databaseType == 2) {
 			if (isTableExist()) {
-				query = "DROP TABLE [" + database + "].[" + table + "];";
+				query = "DROP TABLE " + database + "." + tableSchema + "." + table + ";";
 			}
 		}
 		
@@ -181,7 +240,10 @@ public class SQLProcessing {
 		if (databaseType == 1) {
 			query = "SHOW COLUMNS FROM `" + table + "` FROM `" + database + "` LIKE '" + column + "';";
 		} else if (databaseType == 2) {
-			query = "SELECT * FROM [" + database + "].INFORMATION_SCHEMA.Columns WHERE TABLE_NAME='[" + table + "]';";
+			query = "SELECT COLUMN_NAME FROM " + database + ".INFORMATION_SCHEMA.Columns " +
+					"WHERE TABLE_SCHEMA='" + tableSchema + "' AND " +
+					"TABLE_NAME='" + table + "' AND " +
+					"COLUMN_NAME = '" + column + "';";
 		}
 		
 		boolean rtn = getBooleanQuery(query);
@@ -195,21 +257,16 @@ public class SQLProcessing {
 		if (databaseType == 1) {
 			query = "SHOW COLUMNS FROM `" + table + "` FROM `" + database + "`;";
 		} else if (databaseType == 2) {
-			query = "SELECT * FROM [" + database + "].INFORMATION_SCHEMA.Columns;";
+			query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.Columns " +
+					"WHERE TABLE_NAME ='" + table + "' AND TABLE_SCHEMA='" + tableSchema + "' AND TABLE_CATALOG='" + database + "'";
 		}
 
-		String[] columns = null;
+		ArrayList<String> c = new ArrayList<String>();
 		try {
 			Statement select = conn.createStatement();
 			ResultSet result = select.executeQuery(query);
-			
-			int rcount = getResultSetSize(result);
-			columns = new String[rcount];
-			
-			int i=0;
 			while(result.next()) {
-				columns[i] = result.getString(1);
-				i++;
+				c.add(result.getString(1));
 			}
 			result.close();
 		} catch (Exception e) {
@@ -217,16 +274,46 @@ public class SQLProcessing {
 			e.printStackTrace();
 		}
 		
+		// have to use array list due to not knowing result size on ms jdbc
+		String[] columns = new String[c.size()];
+		for(int i=0; i < c.size(); i++) {
+			columns[i] = (String) c.get(i);
+		}
+		
 		return columns;
 	}
 	
-	protected void createColumns(String[] columns) {
+	protected String[] createColumns(String[] columns) {
 		
-		String type = "TEXT";
+		columns = fixColumns(columns);
 		
+		String type = "VARCHAR(255)";
 		for (int i=0; i < columns.length; i++) {
 			createColumn(columns[i], type);
 		}
+		
+		return columns;
+	}
+	
+	protected String[] fixColumns(String[] columns) {
+		
+		ArrayList<String> aColumns = new ArrayList<String>();
+		for(int i=0; i < columns.length; i++) {
+			if (columns[i] == "") {
+				columns[i] = "c" + i;
+			}
+			aColumns.add(columns[i].trim());
+		}
+		
+		columns = new String[aColumns.size()];
+		
+		for (int i=0; i < aColumns.size(); i++) {
+			String c = aColumns.get(i);
+			columns[i] = replaceToMatchingColumn(c);
+			columns[i] = fixName(columns[i]);
+		}
+		
+		return columns;
 	}
 	
 	/**
@@ -236,15 +323,11 @@ public class SQLProcessing {
 	 */
 	private void createColumn(String column, String type) {
 		
-		column = replaceToMatchingColumn(column);
-		
 		boolean exist = isColumnExist(column);
 		if(exist == true) {
 			return;
 		}
-		
-		column = fixName(column);
-		
+
 		if (type == null) {
 			type = "TEXT";
 		}
@@ -253,7 +336,7 @@ public class SQLProcessing {
 		if (databaseType == 1) {
 			query = "ALTER `" + database + "`.`" + table + "` ADD '" + column + "' " + type + ";"; // TODO -> type = VARCHAR(60)
 		} else if (databaseType == 2) {
-			query = "ALTER TABLE [" + database + "].[" + table + "] ADD '" + column + "' " + type + ";";
+			query = "ALTER TABLE " + database + "." + tableSchema + "." + table + " ADD [" + column + "] " + type + ";";
 		}
 		
 		setUpdateQuery(query);
@@ -261,10 +344,21 @@ public class SQLProcessing {
 	
 	private String replaceToMatchingColumn(String column) {
 		
-		//TODO - search array for source column ???????????????????????????????
-		int index = Arrays.binarySearch(matchFields, column);
+		if (matchFields == null) {
+			//System.out.println("No matching fields entered: skipping (replaceToMatchingColumn)");
+			return column;
+		}
 		
-		if (index > 0) {
+		System.out.println("Match Column: " + column);
+		
+		Comparator<MatchFieldData> searchByComparator = new SortSourceField();
+		
+		MatchFieldData searchFor = new MatchFieldData();
+		searchFor.sourceField = column;
+		
+		int index = Arrays.binarySearch(matchFields, searchFor, searchByComparator);
+		
+		if (index >= 0) {
 			column = matchFields[index].desinationField;
 		}
 		
@@ -334,7 +428,10 @@ public class SQLProcessing {
 	 * 
 	 * @param query
 	 */
-	private void setUpdateQuery(String query) {
+	protected void setUpdateQuery(String query) {
+		
+		System.out.println("f:" + indexFile + ": row:" + index + ". " + query);
+		
 		try {
             Statement update = conn.createStatement();
             update.executeUpdate(query);
@@ -383,7 +480,7 @@ public class SQLProcessing {
 		s = s.replace("[\"\r\n\t]", "");
 		s = s.replace("!", "");
 		s = s.replace("@", "");
-		s = s.replace("#", "");
+		s = s.replace("#", "_Num");
 		s = s.replace("$", "");
 		s = s.replace("^", "");
 		s = s.replace("\\*", "");
@@ -397,17 +494,19 @@ public class SQLProcessing {
 		s = s.replace("\\[", "");
 		s = s.replace("\\]", "");
 		s = s.replace("\\|", "");
-		s = s.replace("\\.", "");
+		s = s.replace(".", "_");
 		s = s.replace(",", "");
 		s = s.replace("\\.", "");
 		s = s.replace("<", "");
 		s = s.replace(">", "");
-		s = s.replace("\\?", "");
+		s = s.replace("?", "");
 		s = s.replace("&", "");
-		s = s.replace("\\/", "");
-		s = s.replace("%", "");
+		s = s.replace("/", "");
+		s = s.replace("%", "_per");
 		s = s.replace(" ", "_");
-			
+		s = s.replace("(", "");
+		s = s.replace(")", "");
+	
 		return s;
 	}
 	
@@ -483,21 +582,154 @@ public class SQLProcessing {
 	 * @param columns
 	 * @param values
 	 */
-	public void addData(String[] columns, String[] values) {
+	public void addData(int indexFile, int index, String[] columns, String[] values) {
+		this.index = index;
+		this.indexFile = indexFile;
 		
-
-		
-	}
-	
-	private void updateData() {
-
-		String query = "";
+		String query = null;
 		if (databaseType == 1) {
-			query = "";
+			
+			// TODO - is this data in database already?
+			
+			query = getQuery_Insert_MySql(columns, values);
+			
 		} else if (databaseType == 2) {
-			query = "";
+			
+			// TODO _ is this data int he database already?
+			
+			query = getQuery_Insert_MsSql(columns, values);
+		}
+		
+		if (query != null) {
+			setUpdateQuery(query);
 		}
 
+	}
+	
+	// TODO
+	public int doesRowExistAlready_MsSql() {
+		
+		String query = "SELECT ImportId FROM " + database + "." + tableSchema + "." + table + " WHERE ";
+		
+		return 0;
+	}
+	
+	// TODO
+	public int doesRowExistAlready_MySql() {
+		
+		String query = "SELECT ImportId FROM `" + database + "`.`" + table + "` WHERE ";
+		
+		return 0;
+	}
+	
+	private String getQuery_Insert_MsSql(String[] columns, String[] values) {
+		
+		if (columns.length != values.length) {
+			int count = values.length;
+			System.out.print("Colunns:" + columns.length + " != Values:" + values.length + " ");
+			
+			//if (values.length < columns.length) {
+				//return null;
+			//}
+		}
+		
+		String c = "";
+		String v = "";
+		for(int i=0; i < columns.length; i++) {
+			c += "[" + columns[i].trim() + "]";
+			
+			// ms sql truncate error?
+			if (values[i] != null) {
+				int len = values[i].length();
+				if (len > 255) {
+					values[i] = values[i].substring(0,255);
+				}
+			}
+			
+			try {
+				v += "'" + escapeForSql(values[i]) + "'";
+			} catch (Exception e) {
+				v += "''";
+			}
+			
+			if(i < columns.length-1) {
+				c += ",";
+				v += ","; 
+			}
+		}
+		
+		String s = "INSERT INTO " + database + "." + tableSchema + "." + table + " (" + c + ") VALUES (" + v + ");";
+		
+		return s;
+	}
+	
+	// TODO
+	private String getQuery_Update_MsSql(String[] columns, String[] values) {
+		
+		if (columns.length != values.length) {
+			System.out.println("Error (Update) in columns lenth and values length");
+		}
+		
+		String q = "";
+		for (int i=0; i < columns.length; i++) {
+			
+			q += "[" + columns[i].trim() + "]='" + escapeForSql(values[i]) + "'";
+			
+			if(i < columns.length-1) {
+				q += ",";
+			}
+		}
+		
+		String s = "UPDATE " + database + "." + tableSchema + "." + table + " "+q+" WHERE ";
+		
+		return s;
+	}
+	
+	private String getQuery_Insert_MySql(String[] columns, String[] values) {
+		
+		String q = "";
+		for (int i=0; i < columns.length; i++) {
+			q += "[" + columns[i] + "]='" + values[i] + "'";
+			
+			if(i < columns.length-1) {
+				q += ",";
+			}
+		}
+		
+		String s = "INSERT INTO `" + database + "`.`" + table + "` "+q+";";
+		
+		return s;
+	}
+	
+	// TODO
+	private String getQuery_Update_MySql(String[] columns, String[] values) {
+		
+		
+		String s = "";
+		return s;
+	}
+			
+	/**
+	 * escape string to db
+	 * 
+	 * remove harmfull db content
+	 * remove harmfull tags
+	 *
+	 * @param s
+	 * @return
+	 */
+	protected static String escapeForSql(String s) {
+	        
+	        String rtn = StringEscapeUtils.escapeSql(s);
+	        
+	        //escape utils returns null if null
+	        if (rtn == null) {
+	                rtn = "";
+	        }
+	        
+	        rtn = rtn.trim();
+	        
+	        return rtn;
 	}
 }
 
