@@ -37,7 +37,9 @@ public class SQLProcessing {
 	private String host;
 	private String port;
 
-	protected Connection conn;
+	int connLoadBalance = 0;
+	protected Connection conn1;
+	protected Connection conn2;
 
 	// match source to destination field
 	private MatchFieldData[] matchFields;
@@ -71,6 +73,8 @@ public class SQLProcessing {
 	
 	// identity columns to index and insert/update
 	private MatchFieldData[] identityColumns = null;
+
+	
 
 	/**
 	 * constructor
@@ -166,9 +170,15 @@ public class SQLProcessing {
 	 */
 	private void openConnection() {
 		if (databaseType == 1) {
-			conn = getConn_MySql();
+			conn1 = getConn_MySql();
 		} else if (databaseType == 2) {
-			conn = getConn_MsSql();
+			conn1 = getConn_MsSql();
+		}
+		
+		if (databaseType == 1) {
+			conn2 = getConn_MySql();
+		} else if (databaseType == 2) {
+			conn2 = getConn_MsSql();
 		}
 	}
 	
@@ -203,7 +213,7 @@ public class SQLProcessing {
 		boolean doesExist = isTableExist();
 		if(doesExist == true) {
 			
-			if (dropTable == true || dropTableOff == false) {
+			if (dropTable == true && dropTableOff == false) {
 				dropTable();
 			} else if (dropTable == false && doesExist == false) {
 				return;
@@ -309,6 +319,7 @@ public class SQLProcessing {
 
 		ArrayList<String> c = new ArrayList<String>();
 		try {
+			Connection conn = getConnection();
 			Statement select = conn.createStatement();
 			ResultSet result = select.executeQuery(query);
 			while(result.next()) {
@@ -443,6 +454,24 @@ public class SQLProcessing {
 	}
 	
 	/**
+	 * go back in forth over a connection to load balance over more than one cpu
+	 * @return
+	 */
+	protected Connection getConnection() {
+		
+		Connection c = null;
+		if (connLoadBalance == 0) {
+			connLoadBalance = 1;
+			c = conn1;
+		} else {
+			connLoadBalance = 0;
+			c = conn2;
+		}
+		
+		return c;
+	}
+	
+	/**
 	 * get ms sql connection
 	 * 
 	 *  // Note: this class name changes for ms sql server 2000 thats it
@@ -492,6 +521,7 @@ public class SQLProcessing {
 		System.out.println("f:" + indexFile + ": row:" + index + ". " + query);
 		
 		try {
+			Connection conn = getConnection();
             Statement update = conn.createStatement();
             update.executeUpdate(query);
         } catch(Exception e) { 
@@ -510,6 +540,7 @@ public class SQLProcessing {
 
 		String value = null;
 		try {
+			Connection conn = getConnection();
 			Statement select = conn.createStatement();
 			ResultSet result = select.executeQuery(query);
 			while(result.next()) {
@@ -533,6 +564,7 @@ public class SQLProcessing {
 
 		int i = 0;
 		try {
+			Connection conn = getConnection();
 			Statement select = conn.createStatement();
 			ResultSet result = select.executeQuery(query);
 			while(result.next()) {
@@ -550,6 +582,7 @@ public class SQLProcessing {
 	private int getQueryIdent(String query) {
 		int i = 0;
 		try {
+			Connection conn = getConnection();
 			Statement select = conn.createStatement();
 			ResultSet result = select.executeQuery(query);
 			while(result.next()) {
