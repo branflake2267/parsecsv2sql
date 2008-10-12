@@ -87,7 +87,7 @@ public class FileProcessing {
 			if (files[i].isFile() == true) {
 				
 				// when extracting a bunch of the same files, skip optimisation after the first
-				if (isDirectory == true && i > 0) {
+				if (isDirectory == true && i > 0 && howManyAreFiles(files) > 1) {
 					csv.dropTableOff();
 				}
 				
@@ -98,6 +98,19 @@ public class FileProcessing {
 		
 	}
 
-	               
+	/**
+	 * how many real files are we going to process, this delegates the drop table
+	 * @param files
+	 * @return
+	 */
+	private int howManyAreFiles(File[] files) {
+		int is = 0;
+		for (int i=0; i < files.length; i++) {
+			if (files[i].isFile()) {
+				is++;
+			}
+		}
+		return is;
+	}
 	
 }

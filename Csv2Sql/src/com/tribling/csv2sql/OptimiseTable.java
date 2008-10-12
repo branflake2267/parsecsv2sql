@@ -1,5 +1,6 @@
 package com.tribling.csv2sql;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -109,6 +110,7 @@ public class OptimiseTable extends SQLProcessing {
 		}
 		
 		try {
+			Connection conn = getConnection();
 			Statement select = conn.createStatement();
 			ResultSet result = select.executeQuery(query);
 			while(result.next()) {
