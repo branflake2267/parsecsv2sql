@@ -67,12 +67,14 @@ public class OptimiseTable extends SQLProcessing {
 	
 	private void setAlterStatement(String column, String columnType) {
 		
-		String modifyColumn = "[" + column + "] " + columnType;
+		String modifyColumn = "";
 		
 		String alterQuery = "";
 		if (databaseType == 1) {
-			alterQuery = "ALTER TABLE `" + database + "`.`" + table + "` ALTER COLUMN " + modifyColumn;
+			modifyColumn = "`" + column + "` " + columnType;
+			alterQuery = "ALTER TABLE `" + database + "`.`" + table + "` MODIFY COLUMN " + modifyColumn;
 		} else if (databaseType == 2) {
+			modifyColumn = "[" + column + "] " + columnType;
 			alterQuery = "ALTER TABLE " + database + "." + tableSchema + "." + table + " ALTER COLUMN " + modifyColumn;
 		}
 		
@@ -101,7 +103,7 @@ public class OptimiseTable extends SQLProcessing {
 		
 		String query = "";
 		if (databaseType == 1) {
-			query = "SELECT " + column + " FROM " + database + "." + table + " " + getLimitQuery() + " ORDER BY RAND();";
+			query = "SELECT " + column + " FROM " + database + "." + table + " ORDER BY RAND() " + getLimitQuery() + ";";
 		} else if (databaseType == 2) {
 			query = "SELECT " + getLimitQuery() + " " + column + " FROM " + database + "." + tableSchema + "." + table + " ORDER BY NEWID();";
 		}
