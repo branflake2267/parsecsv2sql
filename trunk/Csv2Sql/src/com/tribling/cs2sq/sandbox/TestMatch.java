@@ -1,4 +1,4 @@
-package com.tribling.cs2sq.sandbox;
+package com.tribling.csv2sql.sandbox;
 
 public class TestMatch {
 
