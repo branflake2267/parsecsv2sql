@@ -3,7 +3,6 @@ package com.tribling.csv2sql;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
 
 public class OptimiseTable extends SQLProcessing {
 	
@@ -67,6 +66,10 @@ public class OptimiseTable extends SQLProcessing {
 	}
 	
 	private void setAlterStatement(String column, String columnType) {
+		
+		if (column.equals("ImportID")) {
+			return;
+		}
 		
 		String modifyColumn = "";
 		
@@ -275,9 +278,9 @@ public class OptimiseTable extends SQLProcessing {
 			break;
 		case 2: // varchar
 			if (len > 255) {
-				columnType = "TEXT DEFAULT NULL";
+				columnType = "TEXT NULL";
 			} else {
-				columnType = "VARCHAR("+len+") DEFAULT NULL";
+				columnType = "VARCHAR("+len+") NULL";
 			}
 			break;
 		case 3: // int unsigned - with zero fill
@@ -293,19 +296,19 @@ public class OptimiseTable extends SQLProcessing {
 			break;
 		case 5: // decimal
 			// TODO - [decimal](18, 0) NULL
-			columnType = "[VARCHAR](50) DEFAULT NULL"; 
+			columnType = "[VARCHAR](50) NULL"; 
 			break;
 		case 6: // empty
-			columnType = "[VARCHAR]("+len+") DEFAULT NULL"; // TODO - delete this column later
+			columnType = "[VARCHAR]("+len+") NULL"; // TODO - delete this column later
 			break;
 		case 7: // other
-			columnType = "[VARCHAR]("+len+") DEFAULT NULL"; // TODO - delete this column later
+			columnType = "[VARCHAR]("+len+") NULL"; // TODO - delete this column later
 			break;
 		default:
 			if (len > 255) {
 				columnType = "TEXT DEFAULT NULL";
 			} else {
-				columnType = "VARCHAR("+len+") DEFAULT NULL";
+				columnType = "VARCHAR("+len+") NULL";
 			}
 			break;
 		}
