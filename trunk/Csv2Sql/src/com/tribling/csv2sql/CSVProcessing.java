@@ -1,10 +1,8 @@
 package com.tribling.csv2sql;
 
-import java.beans.DesignMode;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
 
 import com.csvreader.CsvReader;
 import com.tribling.csv2sql.data.DestinationData;
@@ -50,6 +48,10 @@ public class CSVProcessing {
 	
 	public void dropTableOff() {
 		sql.dropTableOff();
+	}
+	
+	public void closeConnection() {
+		sql.closeConnection();
 	}
 	
 	/** 

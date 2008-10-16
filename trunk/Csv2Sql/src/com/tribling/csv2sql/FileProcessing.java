@@ -73,6 +73,9 @@ public class FileProcessing {
 		
 		loop(files);
 		
+		// close sql connections
+		csv.closeConnection();
+		
 		System.out.println("All Done");
 	}
 	
@@ -84,6 +87,9 @@ public class FileProcessing {
 	private void loop(File[] files) {
 	
 		for (int i=0; i < files.length; i++) {
+			
+			System.out.println("File: " + files[i].getName());
+			
 			if (files[i].isFile() == true) {
 				
 				// when extracting a bunch of the same files, skip optimisation after the first
@@ -96,6 +102,8 @@ public class FileProcessing {
 			}
 		}
 		
+		System.out.println("done with files");
+
 	}
 
 	/**

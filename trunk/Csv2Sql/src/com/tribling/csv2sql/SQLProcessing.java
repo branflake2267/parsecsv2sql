@@ -182,6 +182,17 @@ public class SQLProcessing {
 		}
 	}
 	
+	public void closeConnection() {
+		try {
+			conn1.close();
+		} catch (Exception e) {
+		}
+		try {
+			conn2.close();
+		} catch (SQLException e) {
+		}
+	}
+	
 	/**
 	 * does table exist?
 	 * 
@@ -226,11 +237,11 @@ public class SQLProcessing {
 		String query = "";
 		if (databaseType == 1) {
 			query = "CREATE TABLE `" + database + "`.`" + table + "` (" +
-					"`ImportID` int NOT NULL AUTO_INCREMENT, PRIMARY KEY (`ImportID`) " +
+					"`ImportID` INT NOT NULL AUTO_INCREMENT, PRIMARY KEY (`ImportID`) " +
 					") ENGINE = MyISAM;";
 		} else if (databaseType == 2) {
 			query = "CREATE TABLE " + database + "." + tableSchema + "." + table + " " +
-					"( [ImportID] [int] IDENTITY(1,1) NOT NULL);";
+					"( [ImportID] [INT] IDENTITY(1,1) NOT NULL);";
 		}
 		
 		setUpdateQuery(query);
@@ -241,7 +252,7 @@ public class SQLProcessing {
 		if (databaseType == 1) {
 			type = "DATETIME DEFAULT NULL";
 		} else if (databaseType == 2) {
-			type = "DATETIME DEFAULT NULL";
+			type = "DATETIME NULL";
 		}
 		createColumn(column, type);
 		
@@ -253,7 +264,7 @@ public class SQLProcessing {
 			if (databaseType == 1) {
 				type = "DATETIME DEFAULT NULL";
 			} else if (databaseType == 2) {
-				type = "DATETIME DEFAULT NULL";
+				type = "DATETIME NULL";
 			}
 			createColumn(column, type);
 		} 
@@ -356,7 +367,12 @@ public class SQLProcessing {
 		// 1. fields can have length > 255
 		// 2. 65535 length limit of sql insert
 		// NOTE: have to alter to varchar/text first then drill down further after that
-		String type = "TEXT DEFAULT NULL";
+		String type = "";
+		if (databaseType == 1) {
+			type = "TEXT DEFAULT NULL";
+		} else if (databaseType == 2) {
+			type = "VARCHAR(255) NULL"; // TODO -aggregate functions don't work with this. Need to alter to text with lenths greather than text
+		}
 		
 		for (int i=0; i < columns.length; i++) {
 			createColumn(columns[i], type);
@@ -399,7 +415,13 @@ public class SQLProcessing {
 		}
 
 		if (type == null) {
-			type = "TEXT";
+			if (databaseType == 1) {
+				type = "TEXT";
+			} else if (databaseType == 2) {
+				// For some reason I don't undertand why I cant alter from text->varchar dump, mysql does it fine
+				type = "VARHCAR(255)"; //
+			}
+			
 		}
 		
 		String query = "";
@@ -419,7 +441,7 @@ public class SQLProcessing {
 			return column;
 		}
 		
-		System.out.println("Match Column: " + column);
+		//System.out.println("Match Column: " + column);
 		
 		Comparator<MatchFieldData> searchByComparator = new SortSourceField();
 		
@@ -736,8 +758,12 @@ public class SQLProcessing {
 			}	
 
 			cs += "[" + c + "]";
-			vs += "'" + escapeForSql(values[i]) + "'";
-
+			try {
+				vs += "'" + escapeForSql(values[i]) + "'";
+			} catch (Exception e) {
+				vs += "''";
+			}
+			
 			if(i < columns.length-1) {
 				cs += ", ";
 				vs += ", "; 
@@ -745,7 +771,7 @@ public class SQLProcessing {
 		}
 		
 		String s = "INSERT INTO " + database + "." + tableSchema + "." + table + " (DateCreated, " + cs + ") " +
-				"VALUES (NOW(), " + vs + ");";
+				"VALUES (GETDATE(), " + vs + ");";
 		
 		return s;
 	}
@@ -981,7 +1007,7 @@ public class SQLProcessing {
 		}
 		
 		String s = "UPDATE " + database + "." + tableSchema + "." + table + " " +
-				"SET DateUpdated=NOW(), "+q+" " +
+				"SET DateUpdated=GETDATE(), "+q+" " +
 				"WHERE (ImportID='"+id+"');";
 		
 		return s;
@@ -1052,8 +1078,8 @@ public class SQLProcessing {
 			query = "SELECT COUNT(`" + column + "`) AS Total FROM `" + database + "`.`" + table + "` " +
 					"WHERE (`" + column + "` != '');";
 		} else if (databaseType == 2) {
-			query = "SELECT COUNT([" + column + "]) AS Total FROM " + database + "." + tableSchema + "." + table + " " +
-					"WHERE  ([" + column + "] != '');";
+			query = "SELECT COUNT(*) AS Total FROM " + database + "." + tableSchema + "." + table + " " +
+					"WHERE  ([" + column + "] IS NOT NULL);"; // TODO - confirm not null... stinking can't use aggregate on text types...
 		}
 		
 		int i = getQueryInt(query);
