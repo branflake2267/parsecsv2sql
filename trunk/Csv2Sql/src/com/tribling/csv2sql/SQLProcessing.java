@@ -546,6 +546,7 @@ public class SQLProcessing {
 			Connection conn = getConnection();
             Statement update = conn.createStatement();
             update.executeUpdate(query);
+            update.close();
         } catch(Exception e) { 
         	System.err.println("Mysql Statement Error: " + query);
         	e.printStackTrace();
