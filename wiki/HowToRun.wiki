@@ -40,7 +40,8 @@ public class Run_Test_Import_Sql {
 		destinationData.optimise = false;
 		
 		// this will only do varchar optimisation, but if false, will do ints and dates too
-		destinationData.optimiseTextOnly = true;
+		destinationData.optimiseTextOnly = true; // if false will do ints and dates and more
+
 		destinationData.deleteEmptyColumns = true;
 		destinationData.checkForExistingRecordsAndUpdate = false; 
 		destinationData.optimiseRecordsToExamine = 2500;
