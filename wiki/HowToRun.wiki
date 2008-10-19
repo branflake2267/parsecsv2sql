@@ -1,4 +1,4 @@
-#summary Sample Running Script
+#summary Sample Running Code
 
 = How To Run CSV 2 SQL =
 
