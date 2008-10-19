@@ -3,7 +3,7 @@ package com.tribling.csv2sql;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
- 
+
 import com.csvreader.CsvReader;
 import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.MatchFieldData;
