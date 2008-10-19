@@ -40,13 +40,14 @@ public class DestinationData {
 	public String password;
 	public String port;
 	
-	// table for records to exist
+	// table for records to exist. will create if doesn't exist in schema
 	public String table;
 
-	// this only appears in MsSql that I know of. select * from [catalog].[tableSchema].[table]
+	// this only appears in MsSql that I know of. select * from [catalog].[tableSchema].[table]. If there are other methods let me know.
 	public String tableSchema;
 
 	// identiy columns to match update instead of insert?
+        // if this identity exists and fields match, it will update instead of insert.
 	public MatchFieldData[] identityColumns;
 }
 }}}
