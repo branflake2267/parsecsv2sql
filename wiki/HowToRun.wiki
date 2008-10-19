@@ -2,6 +2,9 @@
 
 = How To Run CSV 2 SQL =
 
+== Reference == 
+ [DestinationData] - what the vars do.
+
 {{{
 /**
 * can run either MySql or MsSql
