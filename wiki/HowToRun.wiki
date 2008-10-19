@@ -32,6 +32,8 @@ public class Run_Test_Import_Sql {
 	public static void run() {
 		char delimiter = '	';
 		
+                // choose a file or directory to import files.
+                // if more than one file, it will import them all into the same table
 		String file = "C:\\Archive\\parse\\filesInthisDir";
 		SourceData sourceData = new SourceData();
 		sourceData.delimiter = delimiter;
