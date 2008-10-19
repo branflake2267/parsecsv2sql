@@ -45,7 +45,7 @@ public class Run_Test_Import_Sql {
 		destinationData.checkForExistingRecordsAndUpdate = false; 
 		destinationData.optimiseRecordsToExamine = 2500;
 		
-		destinationData.databaseType = "MsSql";
+		destinationData.databaseType = "MsSql"; // [MySql | MsSql]
 		destinationData.host = "";
 		destinationData.database = "";
 		destinationData.username = "";
