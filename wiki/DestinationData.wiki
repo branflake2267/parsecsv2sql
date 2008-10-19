@@ -20,7 +20,7 @@ public class DestinationData {
 	
 	// optimise lengths into varchar and text only
 	// this will have to be done first every time, so that
-	// one can go from varchar->date, varchar->int (instead of text>date=will not work)
+	// one can go from varchar->date, varchar->int (instead of text>date=will not work, at least not on mssql)
 	public boolean optimiseTextOnly = true;
 	
 	// delete empty columns after parsing a table
