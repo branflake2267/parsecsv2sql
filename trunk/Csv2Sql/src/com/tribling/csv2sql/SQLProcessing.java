@@ -269,12 +269,10 @@ public class SQLProcessing {
 			createColumn(column, type);
 		} 
 			
-		
 
 		// TODO create indexes of identity columns
 		
-		
-		
+
 	}
 	
 	/**
@@ -371,7 +369,7 @@ public class SQLProcessing {
 		if (databaseType == 1) {
 			type = "TEXT DEFAULT NULL";
 		} else if (databaseType == 2) {
-			type = "VARCHAR(255) NULL"; // TODO -aggregate functions don't work with this. Need to alter to text with lenths greather than text
+			type = "TEXT NULL"; // VARCHAR(255) // TODO -aggregate functions don't work with this. Need to alter to text with lenths greather than text
 		}
 		
 		for (int i=0; i < columns.length; i++) {
@@ -409,19 +407,21 @@ public class SQLProcessing {
 	 */
 	private void createColumn(String column, String type) {
 		
+		column = fixName(column);
+		
 		boolean exist = isColumnExist(column);
 		if(exist == true) {
 			return;
 		}
 
+		// default column type for creation
 		if (type == null) {
-			if (databaseType == 1) {
+			if (databaseType == 1) { //mysql
 				type = "TEXT";
 			} else if (databaseType == 2) {
 				// For some reason I don't undertand why I cant alter from text->varchar dump, mysql does it fine
-				type = "VARHCAR(255)"; //
+				type = "VARHCAR(255)"; //mssql
 			}
-			
 		}
 		
 		String query = "";
@@ -621,11 +621,20 @@ public class SQLProcessing {
 	
 	/**
 	 * fix the name to be sql friendly
+	 * 
+	 * 
+	 * mysql table, and columns should be < 64 char
+	 * 
 	 * @param s
 	 * @return
 	 */
 	private String fixName(String s) {
 		
+		if (s.length() > 64) { 
+			s = s.substring(0, 63);
+		}
+		
+		s = s.replace("'", "");
 		s = s.replace("[\"\r\n\t]", "");
 		s = s.replace("!", "");
 		s = s.replace("@", "");
