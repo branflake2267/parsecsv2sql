@@ -128,9 +128,22 @@ public class CSVProcessing {
 			// add data to table
 			sql.addData(indexFile, index, columns, values);
 			
+			// debug
+			//listValues(index, values);
+			
 			index++;
 		}
 		
+	}
+	
+	private void listValues(int index, String[] values) {
+		
+		String s = "";
+		for (int i=0; i < values.length; i++) {
+			s += ", " + values[i];
+		}
+		
+		System.out.println(index + ". " + s);
 	}
 	
 }
