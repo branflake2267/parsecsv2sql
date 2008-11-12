@@ -14,6 +14,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.IdentityData;
 import com.tribling.csv2sql.data.MatchFieldData;
+import com.tribling.csv2sql.data.SortDestinationField;
 import com.tribling.csv2sql.data.SortSourceField;
 
 /**
@@ -184,7 +185,7 @@ public class SQLProcessing {
 					"( [ImportID] [INT] IDENTITY(1,1) NOT NULL);";
 		}
 		
-		setUpdateQuery(query);
+		updateSql(query);
 		
 		// track changes by date - Create DateCreated column
 		String column = "DateCreated";
@@ -230,7 +231,7 @@ public class SQLProcessing {
 			}
 		}
 		
-		setUpdateQuery(query);
+		updateSql(query);
 	}
 
 	/**
@@ -360,6 +361,7 @@ public class SQLProcessing {
 	 */
 	private void createColumn(String column, String type) {
 		
+		// fix column name to ok for mysql
 		column = fixName(column);
 		
 		boolean exist = isColumnExist(column);
@@ -384,7 +386,7 @@ public class SQLProcessing {
 			query = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + " ADD [" + column + "] " + type + ";";
 		}
 		
-		setUpdateQuery(query);
+		updateSql(query);
 	}
 	
 	private String replaceToMatchingColumn(String column) {
@@ -492,7 +494,12 @@ public class SQLProcessing {
 	 * 
 	 * @param query
 	 */
-	public void setUpdateQuery(String query) {
+	public void updateSql(String query) {
+		
+		if (query == null) {
+			System.out.println("no query given");
+			return;
+		}
 		
 		System.out.println("f:" + indexFile + ": row:" + index + ". " + query);
 		
@@ -698,7 +705,7 @@ public class SQLProcessing {
 		}
 		
 		if (query != null) {
-			setUpdateQuery(query);
+			updateSql(query);
 		}
 
 	}
@@ -810,7 +817,7 @@ public class SQLProcessing {
 					"ADD INDEX [" + s + "]([" + indexName + "]) ;";
 		}
 		
-		setUpdateQuery(query);
+		updateSql(query);
 	}
 	
 	private String getIdentiesWhereQuery(String[] columns, String[] values) {
@@ -848,30 +855,29 @@ public class SQLProcessing {
 		
 		IdentityData[] ident = new IdentityData[dd.identityColumns.length];
 		for (int i=0; i < dd.identityColumns.length; i++) {
-			String identColumnName = dd.identityColumns[i].desinationField;
+			String column = dd.identityColumns[i].desinationField;
 
-			int index = searchArray(columns, identColumnName);
+			int index = searchArray(columns, column);
+			//int index = Arrays.binarySearch(columns, column);
 			
 			ident[i] = new IdentityData();
 			ident[i].column = dd.identityColumns[i].desinationField;
 			try {
 				ident[i].value = values[index];
 			} catch (Exception e) {
-				ident[i].value = "NO IDENTITY VALUE";
+				ident[i].value = "NO IDENTITY value exists in this row";
 			}
 		}
 		
 		return ident;
 	}
 	
-	private int searchArray(String[] a, String m) {
+	private int searchArray(String[] ar, String key) {
 		
 		int index = 0;
-		for (int i=0; i < a.length; i++) {
+		for (int i=0; i < ar.length; i++) {
 			
-			String aa = a[i];
-			
-			if (aa.equals(m)) {
+			if (ar[i].equals(key)) {
 				index = i;
 				break;
 			}
@@ -892,6 +898,15 @@ public class SQLProcessing {
 		return id;
 	}
 	
+	/**
+	 * does the row already exist in mysql?
+	 * 
+	 * TODO - confirm that this works in all cases - need limit 0,1
+	 * 
+	 * @param columns
+	 * @param values
+	 * @return
+	 */
 	public int doesRowExistAlready_MySql(String[] columns, String[] values) {
 		
 		// get idents
@@ -899,6 +914,8 @@ public class SQLProcessing {
 		
 		String query = "SELECT ImportId FROM `" + dd.database + "`.`" + dd.table + "` " +
 				"WHERE " + whereQuery + " LIMIT 0,1";
+		
+		System.out.println("does this row exist: " + query);
 		
 		int id = getQueryIdent(query);
 		
@@ -917,9 +934,7 @@ public class SQLProcessing {
 		
 		return id;
 	}
-	
-
-	
+		
 	private String getQuery_Update_MySql(String[] columns, String[] values, int id) {
 		
 		String q = "";
@@ -994,19 +1009,14 @@ public class SQLProcessing {
 	 * @return
 	 */
 	protected static String escapeForSql(String s) {
-	        
-	        s = StringEscapeUtils.escapeSql(s);
-	        
-	        //escape utils returns null if null
-	        if (s == null) {
-	                s = "";
-	        }
-	        
-	        s = s.replace("\\", "\\\\");
-	        
-	        s = s.trim();
-	        
-	        return s;
+        s = StringEscapeUtils.escapeSql(s);
+        //escape utils returns null if null
+        if (s == null) {
+                s = "";
+        }
+        s = s.replace("\\", "\\\\");
+        s = s.trim();
+        return s;
 	}
 	
 	/**
@@ -1019,7 +1029,7 @@ public class SQLProcessing {
 		    return;
 		}
 		
-		System.out.println("Going to delete empty columns");
+		System.out.println("Going to delete empty columns: ");
 		
 		String[] columns = getColumns();
 		
@@ -1054,14 +1064,46 @@ public class SQLProcessing {
 	
 	private void deleteColumn(String column) {
 		
-		String query = "";
-		if (databaseType == 1) {
-			query = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` DROP COLUMN `" + column + "`;";
-		} else if (databaseType == 2) {
-			query = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + " DROP COLUMN " + column + ";";
+		if (dd.deleteEmptyColumns == false) {
+			return;
 		}
 		
-		setUpdateQuery(query);
+		// do not delete indexed columns
+		if (isIndexedColumn(column) == true) {
+			System.out.println("Can't delete this column, its indexed");
+			return;
+		}
+		
+		String query = "";
+		if (databaseType == 1) {
+			query = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` " +
+					"DROP COLUMN `" + column + "`;";
+		} else if (databaseType == 2) {
+			query = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + " " +
+					"DROP COLUMN " + column + ";";
+		}
+		
+		updateSql(query);
+	}
+	
+	private boolean isIndexedColumn(String column) {
+		
+		if (column == null) {
+			return false;
+		}
+		
+		Comparator<MatchFieldData> searchByComparator = new SortDestinationField();
+		MatchFieldData searchFor = new MatchFieldData();
+		searchFor.desinationField = column;
+		
+		int index = Arrays.binarySearch(matchFields, searchFor, searchByComparator);
+		
+		boolean rtn = false;
+		if (index > 0 ) {
+			rtn = true;
+		}
+		
+		return rtn;
 	}
 }
 

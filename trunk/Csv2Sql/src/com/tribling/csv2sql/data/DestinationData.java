@@ -55,6 +55,7 @@ public class DestinationData {
 	// create indexes of the identity columns
 	public boolean createIndexs = true;
 	
+	
 	/**
 	 * make database type an integer
 	 * @return

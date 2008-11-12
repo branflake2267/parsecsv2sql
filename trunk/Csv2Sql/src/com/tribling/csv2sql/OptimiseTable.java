@@ -84,7 +84,7 @@ public class OptimiseTable extends SQLProcessing {
 		
 		// TODO - only alter it if its different
 		// TODO - skip after the first alter in directory format, first file sets the sizes
-		setUpdateQuery(alterQuery);
+		updateSql(alterQuery);
 		
 	}
 	
