@@ -326,6 +326,8 @@ public class SQLProcessing {
 					"TABLE_SCHEMA='" + tableSchema + "' AND TABLE_CATALOG='" + database + "'";
 		}
 
+		System.out.println("query: " + query);
+		
 		ArrayList<String> c = new ArrayList<String>();
 		try {
 			Connection conn = getConnection();
@@ -470,6 +472,8 @@ public class SQLProcessing {
 		} catch (Exception e) {
 			System.err.println("MySql Connection Error:");
 			e.printStackTrace();
+			System.out.println("Fix Connection.");
+			System.exit(1);
 		}
 
 		return conn;
