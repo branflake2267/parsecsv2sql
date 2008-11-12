@@ -54,7 +54,7 @@ public class FileProcessing {
 	 * @param sourceData
 	 * @throws Exception 
 	 */
-	private void run(SourceData sourceData) throws Exception {
+	private void run(SourceData sourceData) {
 	
 		File[] files;
 		
@@ -67,7 +67,7 @@ public class FileProcessing {
 			files[0] = sourceData.file;
 			if (sourceData.file.isFile() == false) {
 				System.err.println("File is not a file; It has to be a valid directory or file.");
-				throw new Exception();
+				System.exit(1);
 			}
 		}
 		
