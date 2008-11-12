@@ -778,6 +778,8 @@ public class SQLProcessing {
 	
 	/**
 	 * create indexes of the identities given
+	 * 
+	 * mysql index can't be over a 1000 bytes
 	 */
 	private void createIndexes() {
 		
@@ -789,7 +791,7 @@ public class SQLProcessing {
 		String indexes = "";
 		for(int i=0; i < dd.identityColumns.length; i++) {
 			String column = dd.identityColumns[i].desinationField;
-			createColumn(column, "VARCHAR(255)");
+			createColumn(column, "VARCHAR(50)");
 			
 			indexes += "`" + column + "`";
 			if (i < dd.identityColumns.length - 1) {
@@ -810,7 +812,7 @@ public class SQLProcessing {
 		String query = "";
 		if (databaseType == 1) {
 			query = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` " +
-					"ADD INDEX `" + indexName + "` USING BTREE(" + s + ");";
+					"ADD INDEX `" + indexName + "`(" + s + ");";
 		} else if (databaseType == 2) {
 			// TODO - make this work!
 			query = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + " " +
@@ -1090,6 +1092,11 @@ public class SQLProcessing {
 		
 		if (column == null) {
 			return false;
+		}
+		
+		// don't delete this column
+		if (column.equals("DateCreated") | column.equals("DateUpdated")) {
+			return true;
 		}
 		
 		Comparator<MatchFieldData> searchByComparator = new SortDestinationField();
