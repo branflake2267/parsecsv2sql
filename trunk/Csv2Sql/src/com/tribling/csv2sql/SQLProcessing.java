@@ -304,22 +304,31 @@ public class SQLProcessing {
 		
 		columns = fixColumns(columns);
 		
-		// Two reasons to start with text.
-		// 1. fields can have length > 255
-		// 2. 65535 length limit of sql insert
-		// NOTE: have to alter to varchar/text first then drill down further after that
+		for (int i=0; i < columns.length; i++) {
+			createColumn(columns[i]);
+		}
+		
+		return columns;
+	}
+	
+	/**
+	 * Create a column with text default
+	 * 
+	 * Two reasons to start with text.
+	 * 1. fields can have length > 255
+	 * 2. 65535 length limit of sql insert
+	 * NOTE: have to alter to varchar/text first then drill down further after that
+	 *
+	 * @param column
+	 */
+	private void createColumn(String column) {
 		String type = "";
 		if (databaseType == 1) {
 			type = "TEXT DEFAULT NULL";
 		} else if (databaseType == 2) {
 			type = "TEXT NULL"; // VARCHAR(255) // TODO -aggregate functions don't work with this. Need to alter to text with lenths greather than text
 		}
-		
-		for (int i=0; i < columns.length; i++) {
-			createColumn(columns[i], type);
-		}
-		
-		return columns;
+		createColumn(column,type);
 	}
 	
 	protected String[] fixColumns(String[] columns) {
@@ -345,6 +354,7 @@ public class SQLProcessing {
 	
 	/**
 	 * create a column
+	 * 
 	 * @param column
 	 * @param type
 	 */
@@ -425,7 +435,6 @@ public class SQLProcessing {
 	 * @return
 	 */
 	protected Connection getConnection() {
-		
 		Connection c = null;
 		if (connLoadBalance == 0) {
 			connLoadBalance = 1;
@@ -434,7 +443,6 @@ public class SQLProcessing {
 			connLoadBalance = 0;
 			c = conn2;
 		}
-		
 		return c;
 	}
 	
@@ -622,7 +630,6 @@ public class SQLProcessing {
 	 */
 	protected static int getResultSetSize(ResultSet result) {
 		int size = -1;
-
 		try {
 			result.last();
 			size = result.getRow();
@@ -630,7 +637,6 @@ public class SQLProcessing {
 		} catch (SQLException e) {
 			return size;
 		}
-
 		return size;
 	}
 	
@@ -763,6 +769,9 @@ public class SQLProcessing {
 		return s;
 	}
 	
+	/**
+	 * create indexes of the identities given
+	 */
 	private void createIndexes() {
 		
 		if (dd.identityColumns == null) {
@@ -770,22 +779,35 @@ public class SQLProcessing {
 			return;
 		}
 		
+		String indexes = "";
 		for(int i=0; i < dd.identityColumns.length; i++) {
-			createIndex(i, dd.identityColumns[i].desinationField);
+			String column = dd.identityColumns[i].desinationField;
+			createColumn(column, "VARCHAR(255)");
+			
+			indexes += "`" + column + "`";
+			if (i < dd.identityColumns.length - 1) {
+				indexes += ", ";
+			}
 		}
-		
+		createIndex(indexes);
 	}
 	
-	private void createIndex(int index, String column) {
-		
-		String indexName = "index" + index;
-		
+	/**
+	 * create index for identities given
+	 * 
+	 * @param column
+	 */
+	private void createIndex(String s) {
+	
+		String indexName = "index_auto";
 		String query = "";
-		if (databaseType == 1) { // ADD INDEX `"+column+"`(`"+indexName+"`),
-			query = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` ADD INDEX `" + column + "`(`"+indexName+"`);";
+		if (databaseType == 1) {
+			query = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` " +
+					"ADD INDEX `" + indexName + "` USING BTREE(" + s + ");";
 		} else if (databaseType == 2) {
-			// TODO // CREATE INDEX customerid ON klump (CustomerID)
-			query = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + " ADD INDEX [" + column + "](["+indexName+"]) ;";
+			// TODO - make this work!
+			query = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + " " +
+					"ADD INDEX [" + s + "]([" + indexName + "]) ;";
 		}
 		
 		setUpdateQuery(query);
