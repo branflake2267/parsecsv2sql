@@ -16,7 +16,6 @@ import com.tribling.csv2sql.data.IdentityData;
 import com.tribling.csv2sql.data.MatchFieldData;
 import com.tribling.csv2sql.data.SortSourceField;
 
-
 /**
  * sql processing
  * 
@@ -187,7 +186,7 @@ public class SQLProcessing {
 		
 		setUpdateQuery(query);
 		
-		// track changes by date
+		// track changes by date - Create DateCreated column
 		String column = "DateCreated";
 		String type = "";
 		if (databaseType == 1) {
@@ -197,9 +196,8 @@ public class SQLProcessing {
 		}
 		createColumn(column, type);
 		
+		// add DateUpdated column to track updates - Create DateUpdated column
 		if (dd.checkForExistingRecordsAndUpdate == true) {
-			
-			// add DateUpdated column to track updates
 			column = "DateUpdated";
 			type = "";
 			if (databaseType == 1) {
@@ -209,9 +207,11 @@ public class SQLProcessing {
 			}
 			createColumn(column, type);
 		} 
-			
-
-		// TODO create indexes of identity columns
+		
+		// create indexes of identity columns listed
+		if (dd.createIndexs == true) {
+			createIndexes();
+		}
 		
 
 	}
@@ -766,6 +766,7 @@ public class SQLProcessing {
 	private void createIndexes() {
 		
 		if (dd.identityColumns == null) {
+			System.out.println("skipping creating indexes, b/c there are no identiy columns listed");
 			return;
 		}
 		
