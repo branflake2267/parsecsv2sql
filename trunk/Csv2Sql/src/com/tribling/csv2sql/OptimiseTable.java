@@ -17,7 +17,7 @@ public class OptimiseTable extends SQLProcessing {
 	
 	protected void runOptimise(String[] columns) {
 
-		if (optimise == false) {
+		if (dd.optimise == false) {
 			System.out.println("skipping optimising: destinationData.optimise = false");
 			return;
 		}
@@ -30,7 +30,7 @@ public class OptimiseTable extends SQLProcessing {
 
 	public void runOptimise() {
 		
-		if (optimise == false) {
+		if (dd.optimise == false) {
 			System.out.println("skipping optimising: destinationData.optimise = false");
 			return;
 		}
@@ -76,10 +76,10 @@ public class OptimiseTable extends SQLProcessing {
 		String alterQuery = "";
 		if (databaseType == 1) {
 			modifyColumn = "`" + column + "` " + columnType;
-			alterQuery = "ALTER TABLE `" + database + "`.`" + table + "` MODIFY COLUMN " + modifyColumn;
+			alterQuery = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` MODIFY COLUMN " + modifyColumn;
 		} else if (databaseType == 2) {
 			modifyColumn = "[" + column + "] " + columnType;
-			alterQuery = "ALTER TABLE " + database + "." + tableSchema + "." + table + " ALTER COLUMN " + modifyColumn;
+			alterQuery = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + " ALTER COLUMN " + modifyColumn;
 		}
 		
 		// TODO - only alter it if its different
@@ -90,15 +90,15 @@ public class OptimiseTable extends SQLProcessing {
 	
 	private String getLimitQuery() {
 		
-		if (optimiseRecordsToExamine == 0) {
-			optimiseRecordsToExamine = 500;
+		if (dd.optimiseRecordsToExamine == 0) {
+			dd.optimiseRecordsToExamine = 500;
 		}
 		
 		String s = "";
 		if (databaseType == 1) {
-			s = " LIMIT 0," + optimiseRecordsToExamine + " ";
+			s = " LIMIT 0," + dd.optimiseRecordsToExamine + " ";
 		} else if (databaseType == 2) {
-			s = " TOP " + optimiseRecordsToExamine + " ";
+			s = " TOP " + dd.optimiseRecordsToExamine + " ";
 		}
 		return s;
 	}
@@ -107,9 +107,9 @@ public class OptimiseTable extends SQLProcessing {
 		
 		String query = "";
 		if (databaseType == 1) {
-			query = "SELECT " + column + " FROM " + database + "." + table + " ORDER BY RAND() " + getLimitQuery() + ";";
+			query = "SELECT " + column + " FROM " + dd.database + "." + dd.table + " ORDER BY RAND() " + getLimitQuery() + ";";
 		} else if (databaseType == 2) {
-			query = "SELECT " + getLimitQuery() + " " + column + " FROM " + database + "." + tableSchema + "." + table + " ORDER BY NEWID();";
+			query = "SELECT " + getLimitQuery() + " " + column + " FROM " + dd.database + "." + dd.tableSchema + "." + dd.table + " ORDER BY NEWID();";
 		}
 		
 		try {
@@ -138,7 +138,7 @@ public class OptimiseTable extends SQLProcessing {
 		
 		// NOTE: optimise only the varchar/text fields 
 		// (this has to be done first anyway so we can alter varchar->date varchar->int...)
-		if (optimiseTextOnly == true) {
+		if (dd.optimiseTextOnly == true) {
 			fieldType = 2;
 			return;
 		}

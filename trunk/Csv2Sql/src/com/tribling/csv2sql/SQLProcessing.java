@@ -25,57 +25,24 @@ import com.tribling.csv2sql.data.SortSourceField;
  */
 public class SQLProcessing {
 
-	// [MySQL=1|MsSql=2]
-	protected int databaseType = 1;
-	
-	protected String database;
-	protected String table;
-	
-	private String username;
-	private String password;
-	
-	private String host;
-	private String port;
-
 	int connLoadBalance = 0;
 	protected Connection conn1;
 	protected Connection conn2;
-
-	// match source to destination field
-	private MatchFieldData[] matchFields;
-
-	// if a user wants to drop a table on insert
-	private boolean dropTable = true;
-	
-	// can turn it off for files greater than 0
-	private boolean dropTableOff = false;
-	
-	protected String tableSchema;
 	
 	// track where at in the importing
 	private int index = 0;
 	private int indexFile = 0;
 
-	// optimise on or off
-	protected boolean optimise = false;
+	protected DestinationData dd = null;
 
-	// optmise examine how many records
-	protected int optimiseRecordsToExamine = 1000;
+	private boolean dropTableOff = false;
 	
-	// only optimise (drill down alter) to varchar/text columns
-	// this has to be done first anyway, so we can alter varchar->date, varchar->int...
-	protected boolean optimiseTextOnly = true;
+	// replace these fields
+	private MatchFieldData[] matchFields;
 
-	// don't delete empty columns (delete them if set to true)
-	private boolean deleteEmptyColumns = false;
-
-	private boolean checkForExistingRecordsAndUpdate = false;
+	// what database brand?
+	protected int databaseType;
 	
-	// identity columns to index and insert/update
-	private MatchFieldData[] identityColumns = null;
-
-	
-
 	/**
 	 * constructor
 	 */
@@ -92,68 +59,42 @@ public class SQLProcessing {
 	 * @param destinationData
 	 * @throws Exception
 	 */
-	public void setDestinationData(DestinationData destinationData) throws Exception {
+	public void setDestinationData(DestinationData destinationData) {
 		
-		if (destinationData.databaseType.equals("MySql")) {
-			this.databaseType = 1;
-		} else if (destinationData.databaseType.equals("MsSql")) {
-			this.databaseType = 2;
-		} else {
-			System.err.println("ERROR: No DatabaseTye: [MySql|MsSql]");
-			throw new Exception();
-		}
+		dd = destinationData;
+	
+		// test for db type
+		this.databaseType = dd.getDbType();
 		
-		if (destinationData.database.length() > 0) {
-			this.database = destinationData.database;
-		} else {
+		if (dd.database.length() == 0)  {
 			System.err.println("ERROR: No Database: Whats the database name?");
-			throw new Exception();
+			System.exit(1);
 		}
 		
-		if (destinationData.username.length() > 0) {
-			this.username = destinationData.username;
-		} else {
+		if (dd.username.length() == 0) {
 			System.err.println("ERROR: No username: What is the sql database username?");
-			throw new Exception();
+			System.exit(1);
 		}
 		
-		if (destinationData.password.length() > 0) {
-			this.password = destinationData.password;
-		} else {
+		if (dd.password.length() == 0) {
 			System.err.println("ERROR: No password: What is the sql database password?");
-			throw new Exception();
+			System.exit(1);
 		}
 		
-		if (destinationData.host.length() > 0) {
-			this.host = destinationData.host;
-		} else {
+		if (destinationData.host.length() == 0) {
 			System.err.println("ERROR: No host: Where is the server located? ie. [IpAddress|host.domain.tld]");
-			throw new Exception();
+			System.exit(1);
 		}
 		
-		if (destinationData.port.length() > 0) {
-			this.port = destinationData.port;
-		} else {
+		if (destinationData.port.length() == 0) {
 			System.err.println("ERROR: No port: What doorway is the sql server behind? ie. [3306|1433]");
-			throw new Exception();
+			System.exit(1);
 		}
 		
-		if (destinationData.table.length() > 0) {
-			this.table = destinationData.table;
-		} else {
+		if (destinationData.table.length() == 0) {
 			System.err.println("ERROR: No destination table: What table do you want to import this data to?");
-			throw new Exception();
+			System.exit(1);
 		}
-		
-		this.dropTable = destinationData.dropTable;
-		this.table = destinationData.table;
-		this.tableSchema = destinationData.tableSchema;
-		this.optimise = destinationData.optimise;
-		this.optimiseRecordsToExamine = destinationData.optimiseRecordsToExamine;
-		this.deleteEmptyColumns = destinationData.deleteEmptyColumns;
-		this.optimiseTextOnly = destinationData.optimiseTextOnly;
-		this.identityColumns = destinationData.identityColumns;
-		this.checkForExistingRecordsAndUpdate = destinationData.checkForExistingRecordsAndUpdate;
 		
 		// open a sql connection to work with
 		openConnection();
@@ -202,12 +143,12 @@ public class SQLProcessing {
 		
 		String query = "";
 		if (databaseType == 1) {
-			query = "SHOW TABLES FROM `" + database + "` LIKE '" + table + "';";
+			query = "SHOW TABLES FROM `" + dd.database + "` LIKE '" + dd.table + "';";
 		} else if (databaseType == 2) {
 			query = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES " +
-					"WHERE TABLE_CATALOG = '" + database + "' AND " +
-					"TABLE_SCHEMA = '" + tableSchema + "' AND " +
-					"TABLE_NAME = '" + table + "'";
+					"WHERE TABLE_CATALOG = '" + dd.database + "' AND " +
+					"TABLE_SCHEMA = '" + dd.tableSchema + "' AND " +
+					"TABLE_NAME = '" + dd.table + "'";
 		}
 		
 		boolean rtn = getBooleanQuery(query);
@@ -224,9 +165,9 @@ public class SQLProcessing {
 		boolean doesExist = isTableExist();
 		if(doesExist == true) {
 			
-			if (dropTable == true && dropTableOff == false) {
+			if (dd.dropTable == true && dropTableOff == false) {
 				dropTable();
-			} else if (dropTable == false && doesExist == false) {
+			} else if (dd.dropTable == false && doesExist == false) {
 				return;
 			} else if (dropTableOff == true && doesExist == true) {
 				return;
@@ -236,11 +177,11 @@ public class SQLProcessing {
 		
 		String query = "";
 		if (databaseType == 1) {
-			query = "CREATE TABLE `" + database + "`.`" + table + "` (" +
+			query = "CREATE TABLE `" + dd.database + "`.`" + dd.table + "` (" +
 					"`ImportID` INT NOT NULL AUTO_INCREMENT, PRIMARY KEY (`ImportID`) " +
 					") ENGINE = MyISAM;";
 		} else if (databaseType == 2) {
-			query = "CREATE TABLE " + database + "." + tableSchema + "." + table + " " +
+			query = "CREATE TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + " " +
 					"( [ImportID] [INT] IDENTITY(1,1) NOT NULL);";
 		}
 		
@@ -256,7 +197,7 @@ public class SQLProcessing {
 		}
 		createColumn(column, type);
 		
-		if (checkForExistingRecordsAndUpdate == true) {
+		if (dd.checkForExistingRecordsAndUpdate == true) {
 			
 			// add DateUpdated column to track updates
 			column = "DateUpdated";
@@ -282,10 +223,10 @@ public class SQLProcessing {
 		
 		String query = "";
 		if (databaseType == 1) {
-			query = "DROP TABLE IF EXISTS `" + database + "`.`" + table + "`;";
+			query = "DROP TABLE IF EXISTS `" + dd.database + "`.`" + dd.table + "`;";
 		} else if (databaseType == 2) {
 			if (isTableExist()) {
-				query = "DROP TABLE " + database + "." + tableSchema + "." + table + ";";
+				query = "DROP TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + ";";
 			}
 		}
 		
@@ -302,11 +243,11 @@ public class SQLProcessing {
 		
 		String query = "";
 		if (databaseType == 1) {
-			query = "SHOW COLUMNS FROM `" + table + "` FROM `" + database + "` LIKE '" + column + "';";
+			query = "SHOW COLUMNS FROM `" + dd.table + "` FROM `" + dd.database + "` LIKE '" + column + "';";
 		} else if (databaseType == 2) {
-			query = "SELECT COLUMN_NAME FROM " + database + ".INFORMATION_SCHEMA.Columns " +
-					"WHERE TABLE_SCHEMA='" + tableSchema + "' AND " +
-					"TABLE_NAME='" + table + "' AND " +
+			query = "SELECT COLUMN_NAME FROM " + dd.database + ".INFORMATION_SCHEMA.Columns " +
+					"WHERE TABLE_SCHEMA='" + dd.tableSchema + "' AND " +
+					"TABLE_NAME='" + dd.table + "' AND " +
 					"COLUMN_NAME = '" + column + "';";
 		}
 		
@@ -319,11 +260,11 @@ public class SQLProcessing {
 	protected String[] getColumns() {
 		String query = "";
 		if (databaseType == 1) {
-			query = "SHOW COLUMNS FROM `" + table + "` FROM `" + database + "`;";
+			query = "SHOW COLUMNS FROM `" + dd.table + "` FROM `" + dd.database + "`;";
 		} else if (databaseType == 2) {
 			query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.Columns " +
-					"WHERE TABLE_NAME ='" + table + "' AND " +
-					"TABLE_SCHEMA='" + tableSchema + "' AND TABLE_CATALOG='" + database + "'";
+					"WHERE TABLE_NAME ='" + dd.table + "' AND " +
+					"TABLE_SCHEMA='" + dd.tableSchema + "' AND TABLE_CATALOG='" + dd.database + "'";
 		}
 
 		System.out.println("query: " + query);
@@ -428,9 +369,9 @@ public class SQLProcessing {
 		
 		String query = "";
 		if (databaseType == 1) {
-			query = "ALTER TABLE `" + database + "`.`" + table + "` ADD COLUMN `" + column + "`  " + type + ";";
+			query = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` ADD COLUMN `" + column + "`  " + type + ";";
 		} else if (databaseType == 2) {
-			query = "ALTER TABLE " + database + "." + tableSchema + "." + table + " ADD [" + column + "] " + type + ";";
+			query = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + " ADD [" + column + "] " + type + ";";
 		}
 		
 		setUpdateQuery(query);
@@ -461,14 +402,14 @@ public class SQLProcessing {
 	
 	private Connection getConn_MySql() {
 
-		String url = "jdbc:mysql://"+host+":"+port+"/";
+		String url = "jdbc:mysql://" + dd.host + ":" + dd.port + "/";
 		String driver = "com.mysql.jdbc.Driver";
-		System.out.println("getConn_MySql: url:" + url + " user: " + username + " driver: " + driver);
+		System.out.println("getConn_MySql: url:" + url + " user: " + dd.username + " driver: " + driver);
 		
 		Connection conn = null;
 		try {
 			Class.forName(driver).newInstance();
-			conn = DriverManager.getConnection(url + database, username, password);
+			conn = DriverManager.getConnection(url + dd.database, dd.username, dd.password);
 		} catch (Exception e) {
 			System.err.println("MySql Connection Error:");
 			e.printStackTrace();
@@ -507,9 +448,9 @@ public class SQLProcessing {
 	 */
 	private Connection getConn_MsSql() {
 
-		String url = "jdbc:sqlserver://" + host + ";user=" + username + ";password=" + password + ";databaseName=" + database + ";";
+		String url = "jdbc:sqlserver://" + dd.host + ";user=" + dd.username + ";password=" + dd.password + ";databaseName=" + dd.database + ";";
 		String driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-		System.out.println("getConn_MsSql: url:" + url + " user: " + username + " driver: " + driver);
+		System.out.println("getConn_MsSql: url:" + url + " user: " + dd.username + " driver: " + driver);
 		
 		Connection conn = null;
 		try {
@@ -518,6 +459,7 @@ public class SQLProcessing {
 		} catch (Exception e) {
 			System.err.println("MsSql Connection Error: " + e.getMessage());
 			e.printStackTrace();
+			System.exit(1);
 		}
 		return conn;
 	}
@@ -726,7 +668,7 @@ public class SQLProcessing {
 		
 		// does record already exist?
 		int id = 0;
-		if (checkForExistingRecordsAndUpdate == true) {
+		if (dd.checkForExistingRecordsAndUpdate == true) {
 			id = doesIdentityExist(columns, values);
 		}
 		
@@ -784,7 +726,7 @@ public class SQLProcessing {
 			}
 		}
 		
-		String s = "INSERT INTO " + database + "." + tableSchema + "." + table + " (DateCreated, " + cs + ") " +
+		String s = "INSERT INTO " + dd.database + "." + dd.tableSchema + "." + dd.table + " (DateCreated, " + cs + ") " +
 				"VALUES (GETDATE(), " + vs + ");";
 		
 		return s;
@@ -815,28 +757,20 @@ public class SQLProcessing {
 			}
 		}
 		
-		String s = "INSERT INTO `" + database + "`.`" + table + "` " +
+		String s = "INSERT INTO `" + dd.database + "`.`" + dd.table + "` " +
 				"SET DateCreated=NOW(), "+q+";";
 		
 		return s;
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
 	private void createIndexes() {
 		
-		if (identityColumns == null) {
+		if (dd.identityColumns == null) {
 			return;
 		}
 		
-		for(int i=0; i < identityColumns.length; i++) {
-			createIndex(i, identityColumns[i].desinationField);
+		for(int i=0; i < dd.identityColumns.length; i++) {
+			createIndex(i, dd.identityColumns[i].desinationField);
 		}
 		
 	}
@@ -847,10 +781,10 @@ public class SQLProcessing {
 		
 		String query = "";
 		if (databaseType == 1) { // ADD INDEX `"+column+"`(`"+indexName+"`),
-			query = "ALTER TABLE `" + database + "`.`" + table + "` ADD INDEX `"+column+"`(`"+indexName+"`);";
+			query = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` ADD INDEX `" + column + "`(`"+indexName+"`);";
 		} else if (databaseType == 2) {
 			// TODO // CREATE INDEX customerid ON klump (CustomerID)
-			query = "ALTER TABLE " + database + "." + tableSchema + "." + table + " ADD INDEX [" + column + "](["+indexName+"]) ;";
+			query = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + " ADD INDEX [" + column + "](["+indexName+"]) ;";
 		}
 		
 		setUpdateQuery(query);
@@ -889,14 +823,14 @@ public class SQLProcessing {
 	 */
 	private IdentityData[] findIdentityData(String[] columns, String[] values) {
 		
-		IdentityData[] ident = new IdentityData[identityColumns.length];
-		for (int i=0; i < identityColumns.length; i++) {
-			String identColumnName = identityColumns[i].desinationField;
+		IdentityData[] ident = new IdentityData[dd.identityColumns.length];
+		for (int i=0; i < dd.identityColumns.length; i++) {
+			String identColumnName = dd.identityColumns[i].desinationField;
 
 			int index = searchArray(columns, identColumnName);
 			
 			ident[i] = new IdentityData();
-			ident[i].column = identityColumns[i].desinationField;
+			ident[i].column = dd.identityColumns[i].desinationField;
 			try {
 				ident[i].value = values[index];
 			} catch (Exception e) {
@@ -940,7 +874,7 @@ public class SQLProcessing {
 		// get idents
 		String whereQuery = getIdentiesWhereQuery(columns, values);
 		
-		String query = "SELECT ImportId FROM `" + database + "`.`" + table + "` " +
+		String query = "SELECT ImportId FROM `" + dd.database + "`.`" + dd.table + "` " +
 				"WHERE " + whereQuery + " LIMIT 0,1";
 		
 		int id = getQueryIdent(query);
@@ -953,7 +887,7 @@ public class SQLProcessing {
 		// get idents
 		String whereQuery = getIdentiesWhereQuery(columns, values);
 		
-		String query = "SELECT TOP 1 ImportId FROM " + database + "." + tableSchema + "." + table + " " +
+		String query = "SELECT TOP 1 ImportId FROM " + dd.database + "." + dd.tableSchema + "." + dd.table + " " +
 				"WHERE " + whereQuery;
 		
 		int id = getQueryIdent(query);
@@ -988,7 +922,7 @@ public class SQLProcessing {
 			}
 		}
 		
-		String s = "UPDATE `" + database + "`.`" + table + "` " +
+		String s = "UPDATE `" + dd.database + "`.`" + dd.table + "` " +
 				"SET DateUpdated=NOW(), "+q+" " +
 				"WHERE (ImportID='"+id+"');";
 		
@@ -1020,24 +954,12 @@ public class SQLProcessing {
 			}
 		}
 		
-		String s = "UPDATE " + database + "." + tableSchema + "." + table + " " +
+		String s = "UPDATE " + dd.database + "." + dd.tableSchema + "." + dd.table + " " +
 				"SET DateUpdated=GETDATE(), "+q+" " +
 				"WHERE (ImportID='"+id+"');";
 		
 		return s;
 	}
-	
-
-	
-
-			
-	
-	
-	
-	
-	
-	
-	
 	
 	/**
 	 * escape string to db
@@ -1069,8 +991,9 @@ public class SQLProcessing {
 	 */
 	public void deleteEmptyColumns() {
 		
-		if (deleteEmptyColumns == false) {
+		if (dd.deleteEmptyColumns == false) {
 			System.out.println("Skipping deleting empty Columns: destinationData.deleteEmptyColumns=false");
+		    return;
 		}
 		
 		System.out.println("Going to delete empty columns");
@@ -1089,10 +1012,10 @@ public class SQLProcessing {
 		
 		String query = "";
 		if (databaseType == 1) {
-			query = "SELECT COUNT(`" + column + "`) AS Total FROM `" + database + "`.`" + table + "` " +
+			query = "SELECT COUNT(`" + column + "`) AS Total FROM `" + dd.database + "`.`" + dd.table + "` " +
 					"WHERE (`" + column + "` != '');";
 		} else if (databaseType == 2) {
-			query = "SELECT COUNT(*) AS Total FROM " + database + "." + tableSchema + "." + table + " " +
+			query = "SELECT COUNT(*) AS Total FROM " + dd.database + "." + dd.tableSchema + "." + dd.table + " " +
 					"WHERE  ([" + column + "] IS NOT NULL);"; // TODO - confirm not null... stinking can't use aggregate on text types...
 		}
 		
@@ -1110,9 +1033,9 @@ public class SQLProcessing {
 		
 		String query = "";
 		if (databaseType == 1) {
-			query = "ALTER TABLE `" + database + "`.`" + table + "` DROP COLUMN `"+column+"`;";
+			query = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` DROP COLUMN `" + column + "`;";
 		} else if (databaseType == 2) {
-			query = "ALTER TABLE " + database + "." + tableSchema + "." + table + " DROP COLUMN " + column + ";";
+			query = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + " DROP COLUMN " + column + ";";
 		}
 		
 		setUpdateQuery(query);

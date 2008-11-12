@@ -50,4 +50,18 @@ public class DestinationData {
 
 	// identiy columns to match update instead of insert?
 	public MatchFieldData[] identityColumns;
+	
+	
+	public int getDbType() {
+		int type = 0;
+		if (this.databaseType.equals("mysql")) {
+			type = 1;
+		} else if (databaseType.equals("mssql")) {
+			type = 2;
+		} else {
+			System.err.println("ERROR: No DatabaseTye: [MySql|MsSql]");
+			System.exit(1);
+		}
+		return type;
+	}
 }
