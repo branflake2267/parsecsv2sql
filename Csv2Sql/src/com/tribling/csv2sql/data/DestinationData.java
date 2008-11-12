@@ -51,8 +51,16 @@ public class DestinationData {
 	// identiy columns to match update instead of insert?
 	public MatchFieldData[] identityColumns;
 	
+	// if identity columns are given, and this is true, 
+	// create indexes of the identity columns
+	public boolean createIndexs = true;
 	
+	/**
+	 * make database type an integer
+	 * @return
+	 */
 	public int getDbType() {
+		databaseType = databaseType.toLowerCase();
 		int type = 0;
 		if (this.databaseType.equals("mysql")) {
 			type = 1;
