@@ -112,7 +112,7 @@ public class CSVProcessing {
 			this.columns = sql.createColumns(columns);
 		} else {
 			System.err.println("CSV Reader could not get columns");
-			throw new Exception();
+			System.exit(1);
 		}
 		
 	}
