@@ -726,18 +726,23 @@ public class SQLProcessing {
 				v = "";
 			}	
 
-			cs += "[" + c + "]";
-			try {
-				vs += "'" + escapeForSql(values[i]) + "'";
-			} catch (Exception e) {
-				vs += "''";
-			}
-			
-			if(i < columns.length-1) {
-				cs += ", ";
-				vs += ", "; 
+			if (c.length() > 0) {
+				cs += "[" + c + "]";
+				try {
+					vs += "'" + escapeForSql(values[i]) + "'";
+				} catch (Exception e) {
+					vs += "''";
+				}
+				
+				if(i < columns.length-1) {
+					cs += ", ";
+					vs += ", "; 
+				}
 			}
 		}
+		
+		cs = fixcomma(cs);
+		vs = fixcomma(vs);
 		
 		String s = "INSERT INTO " + dd.database + "." + dd.tableSchema + "." + dd.table + " (DateCreated, " + cs + ") " +
 				"VALUES (GETDATE(), " + vs + ");";
@@ -763,16 +768,30 @@ public class SQLProcessing {
 			
 			v = escapeForSql(v);
 			
-			q += "`" + c + "`='" + v + "'";
-
-			if(i < columns.length-1) {
-				q += ", ";
+			if (c.length() > 0) {
+				q += "`" + c + "`='" + v + "'";
+	
+				if(i < columns.length-1) {
+					q += ", ";
+				}
 			}
 		}
 		
+		q = fixcomma(q);
+				
 		String s = "INSERT INTO `" + dd.database + "`.`" + dd.table + "` " +
 				"SET DateCreated=NOW(), "+q+";";
 		
+		return s;
+	}
+	
+	private String fixcomma(String s) {
+
+		s = s.trim();
+		
+		if (s.matches(".*[,]")) {
+			s = s.substring(0, s.length()-1);
+		}
 		return s;
 	}
 	
@@ -955,12 +974,16 @@ public class SQLProcessing {
 			
 			v = escapeForSql(v);
 			
-			q += "`" + c + "`='" + v + "'";
-
-			if(i < columns.length-1) {
-				q += ", ";
+			if (c.length() > 0) {
+				q += "`" + c + "`='" + v + "'";
+	
+				if(i < columns.length-1) {
+					q += ", ";
+				}
 			}
 		}
+		
+		q = fixcomma(q);
 		
 		String s = "UPDATE `" + dd.database + "`.`" + dd.table + "` " +
 				"SET DateUpdated=NOW(), "+q+" " +
@@ -987,12 +1010,15 @@ public class SQLProcessing {
 			
 			v = escapeForSql(v);
 			
-			q += "[" + c + "]='" + v + "'";
-			
-			if(i < columns.length-1) {
-				q += ", ";
+			if (c.length() > 0) {
+				q += "[" + c + "]='" + v + "'";
+				if(i < columns.length-1) {
+					q += ", ";
+				}
 			}
 		}
+		
+		q = fixcomma(q);
 		
 		String s = "UPDATE " + dd.database + "." + dd.tableSchema + "." + dd.table + " " +
 				"SET DateUpdated=GETDATE(), "+q+" " +
