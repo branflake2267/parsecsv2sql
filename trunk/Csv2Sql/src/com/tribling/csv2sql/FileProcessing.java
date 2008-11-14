@@ -35,7 +35,9 @@ public class FileProcessing {
 		this.delimiter = sourceData.delimiter;
 		this.desinationData = destinationData;
 		
-		Arrays.sort(matchFields);
+		if (matchFields != null) {
+			Arrays.sort(matchFields);
+		}
 		this.matchFields = matchFields;
 		
 		csv.setData(delimiter, destinationData, matchFields);
