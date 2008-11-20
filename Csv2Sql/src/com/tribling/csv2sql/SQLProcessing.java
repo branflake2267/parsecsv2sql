@@ -210,11 +210,9 @@ public class SQLProcessing {
 		} 
 		
 		// create indexes of identity columns listed
-		if (dd.createIndexs == true) {
+		if (dd.createIndexs == true && dd.identityColumns != null) {
 			createIndexes();
 		}
-		
-
 	}
 	
 	/**
@@ -389,15 +387,18 @@ public class SQLProcessing {
 		updateSql(query);
 	}
 	
+	/**
+	 * replace the field name with another field name that was listed
+	 * 
+	 * @param column
+	 * @return
+	 */
 	private String replaceToMatchingColumn(String column) {
 		
 		if (matchFields == null) {
-			//System.out.println("No matching fields entered: skipping (replaceToMatchingColumn)");
 			return column;
 		}
-		
-		//System.out.println("Match Column: " + column);
-		
+
 		Comparator<MatchFieldData> searchByComparator = new SortSourceField();
 		
 		MatchFieldData searchFor = new MatchFieldData();
@@ -412,6 +413,11 @@ public class SQLProcessing {
 		return column;
 	}
 	
+	/**
+	 * get a mysql database connection
+	 * 
+	 * @return
+	 */
 	private Connection getConn_MySql() {
 
 		String url = "jdbc:mysql://" + dd.host + ":" + dd.port + "/";
@@ -434,6 +440,7 @@ public class SQLProcessing {
 	
 	/**
 	 * go back in forth over a connection to load balance over more than one cpu
+	 * 
 	 * @return
 	 */
 	protected Connection getConnection() {
