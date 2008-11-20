@@ -11,6 +11,7 @@ import java.util.Comparator;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
+import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.IdentityData;
 import com.tribling.csv2sql.data.MatchFieldData;
@@ -42,6 +43,10 @@ public class SQLProcessing {
 
 	// what database brand?
 	protected int databaseType;
+
+	// keep track of the columns name, type and length
+	// to make sure the data will fit into the columns that already exist
+	private ColumnData[] columns;
 	
 	/**
 	 * constructor
@@ -238,7 +243,7 @@ public class SQLProcessing {
 	 * @param column
 	 * @return
 	 */
-	private boolean isColumnExist(String column) {
+	private boolean getColumnExist(String column) {
 		
 		String query = "";
 		if (databaseType == 1) {
@@ -255,7 +260,13 @@ public class SQLProcessing {
 		return rtn;
 	}
 	
-	
+	/**
+	 * get columns name, type, length info
+	 * 
+	 * TODO change this to save into data object ColumnData
+	 * 
+	 * @return
+	 */
 	protected String[] getColumns() {
 		String query = "";
 		if (databaseType == 1) {
@@ -362,7 +373,7 @@ public class SQLProcessing {
 		// fix column name to ok for mysql
 		column = fixName(column);
 		
-		boolean exist = isColumnExist(column);
+		boolean exist = getColumnExist(column);
 		if(exist == true) {
 			return;
 		}
@@ -689,8 +700,11 @@ public class SQLProcessing {
 		// does record already exist?
 		int id = 0;
 		if (dd.checkForExistingRecordsAndUpdate == true && dd.identityColumns != null) {
-			id = doesRecordExist(columns, values);
+			id = getRecordExist(columns, values);
 		}
+		
+		// check to see if the lengths of the columns/fields will fit
+		doDataLengthsfit(columns, values);
 		
 		String query = null;
 		if (databaseType == 1) {
@@ -914,13 +928,13 @@ public class SQLProcessing {
 	}
 	
 
-	public int doesRecordExist(String[] columns, String[] values) {
+	public int getRecordExist(String[] columns, String[] values) {
 		
 		int id = 0;
 		if (databaseType == 1) {
-			id = doesRecordExist_MySql(columns, values);
+			id = getRecordExist_MySql(columns, values);
 		} else if (databaseType == 2) {
-			id = doesRecordExist_MsSql(columns, values);
+			id = getRecordExist_MsSql(columns, values);
 		}
 		
 		return id;
@@ -935,7 +949,7 @@ public class SQLProcessing {
 	 * @param values
 	 * @return
 	 */
-	public int doesRecordExist_MySql(String[] columns, String[] values) {
+	public int getRecordExist_MySql(String[] columns, String[] values) {
 		
 		// get idents
 		String whereQuery = getIdentiesWhereQuery(columns, values);
@@ -950,7 +964,7 @@ public class SQLProcessing {
 		return id;
 	}
 
-	public int doesRecordExist_MsSql(String[] columns, String[] values) {
+	public int getRecordExist_MsSql(String[] columns, String[] values) {
 		
 		// get idents
 		String whereQuery = getIdentiesWhereQuery(columns, values);
@@ -1028,8 +1042,8 @@ public class SQLProcessing {
 		q = fixcomma(q);
 		
 		String s = "UPDATE " + dd.database + "." + dd.tableSchema + "." + dd.table + " " +
-				"SET DateUpdated=GETDATE(), "+q+" " +
-				"WHERE (ImportID='"+id+"');";
+				"SET DateUpdated=GETDATE(), " + q + " " +
+				"WHERE (ImportID='" + id + "');";
 		
 		return s;
 	}
@@ -1066,17 +1080,17 @@ public class SQLProcessing {
 		
 		System.out.println("Going to delete empty columns: ");
 		
+		// loop through columns and see if they are empty
 		String[] columns = getColumns();
-		
 		for(int i=0; i < columns.length; i++) {
 			System.out.print(".");
-			if (getColumnHasStuff(columns[i]) == false) {
+			if (getColumnHaveStuff(columns[i]) == false) {
 				deleteColumn(columns[i]);
 			}
 		}
 	}
 	
-	private boolean getColumnHasStuff(String column) {
+	private boolean getColumnHaveStuff(String column) {
 		
 		String query = "";
 		if (databaseType == 1) {
@@ -1104,7 +1118,7 @@ public class SQLProcessing {
 		}
 		
 		// do not delete indexed columns
-		if (isIndexedColumn(column) == true) {
+		if (getColumnIndexed(column) == true) {
 			System.out.println("Can't delete this column, its indexed");
 			return;
 		}
@@ -1121,7 +1135,7 @@ public class SQLProcessing {
 		updateSql(query);
 	}
 	
-	private boolean isIndexedColumn(String column) {
+	private boolean getColumnIndexed(String column) {
 		
 		if (column == null) {
 			return false;
@@ -1145,7 +1159,25 @@ public class SQLProcessing {
 		
 		return rtn;
 	}
-}
+	
+	
+	/**
+	 * will the data fit into the columns if not resize them
+	 * 
+	 * @param columns
+	 * @param values
+	 */
+	private void doDataLengthsfit(String[] columns, String[] values) {
+	
+		// TODO - columns change to column data
+	
+		// TODO - loop through and check data lengths compare against column length
+		
+		// TODO - use column data to store this methods
+	}
+	
+	
+}// end class
 
 
 
