@@ -681,8 +681,8 @@ public class SQLProcessing {
 		
 		// does record already exist?
 		int id = 0;
-		if (dd.checkForExistingRecordsAndUpdate == true) {
-			id = doesIdentityExist(columns, values);
+		if (dd.checkForExistingRecordsAndUpdate == true && dd.identityColumns != null) {
+			id = doesRecordExist(columns, values);
 		}
 		
 		String query = null;
@@ -907,13 +907,13 @@ public class SQLProcessing {
 	}
 	
 
-	public int doesIdentityExist(String[] columns, String[] values) {
+	public int doesRecordExist(String[] columns, String[] values) {
 		
 		int id = 0;
 		if (databaseType == 1) {
-			id = doesRowExistAlready_MySql(columns, values);
+			id = doesRecordExist_MySql(columns, values);
 		} else if (databaseType == 2) {
-			id = doesRowExistAlready_MsSql(columns, values);
+			id = doesRecordExist_MsSql(columns, values);
 		}
 		
 		return id;
@@ -928,7 +928,7 @@ public class SQLProcessing {
 	 * @param values
 	 * @return
 	 */
-	public int doesRowExistAlready_MySql(String[] columns, String[] values) {
+	public int doesRecordExist_MySql(String[] columns, String[] values) {
 		
 		// get idents
 		String whereQuery = getIdentiesWhereQuery(columns, values);
@@ -936,14 +936,14 @@ public class SQLProcessing {
 		String query = "SELECT ImportId FROM `" + dd.database + "`.`" + dd.table + "` " +
 				"WHERE " + whereQuery + " LIMIT 0,1";
 		
-		System.out.println("does this row exist: " + query);
+		//System.out.println("does this row exist: " + query);
 		
 		int id = getQueryIdent(query);
 		
 		return id;
 	}
 
-	public int doesRowExistAlready_MsSql(String[] columns, String[] values) {
+	public int doesRecordExist_MsSql(String[] columns, String[] values) {
 		
 		// get idents
 		String whereQuery = getIdentiesWhereQuery(columns, values);
