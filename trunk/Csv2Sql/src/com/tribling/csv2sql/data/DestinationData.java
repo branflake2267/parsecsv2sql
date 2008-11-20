@@ -8,7 +8,7 @@ package com.tribling.csv2sql.data;
  */
 public class DestinationData {
 
-	// drop table before insert 
+	// drop table if exists before insert 
 	// (if looping files in a directory, it will drop table in the beginning)
 	public boolean dropTable = false;
 	
