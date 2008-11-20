@@ -90,9 +90,11 @@ public class OptimiseTable extends SQLProcessing {
 	
 	private String getLimitQuery() {
 		
+		// when this is set to 0 sample all
 		if (dd.optimiseRecordsToExamine == 0) {
-			dd.optimiseRecordsToExamine = 500;
+			return "";
 		}
+		
 		
 		String s = "";
 		if (databaseType == 1) {
@@ -105,11 +107,23 @@ public class OptimiseTable extends SQLProcessing {
 	
 	private void queryColumn(String column) {
 		
+		// when a selection is noted, sample randomly
+		String random = "";
+		if (dd.optimiseRecordsToExamine == 0) {
+			if (databaseType == 1) {
+				random = "ORDER BY RAND()";
+			} else if(databaseType == 2) {
+				random = "ORDER BY NEWID()";
+			}
+		}
+		
 		String query = "";
 		if (databaseType == 1) {
-			query = "SELECT " + column + " FROM " + dd.database + "." + dd.table + " ORDER BY RAND() " + getLimitQuery() + ";";
+			query = "SELECT " + column + " " +
+					"FROM " + dd.database + "." + dd.table + " " + random + " " + getLimitQuery() + ";";
 		} else if (databaseType == 2) {
-			query = "SELECT " + getLimitQuery() + " " + column + " FROM " + dd.database + "." + dd.tableSchema + "." + dd.table + " ORDER BY NEWID();";
+			query = "SELECT " + getLimitQuery() + " " + column + " " +
+					"FROM " + dd.database + "." + dd.tableSchema + "." + dd.table + " "+random+";";
 		}
 		
 		try {
