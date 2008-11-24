@@ -21,7 +21,7 @@ public class ColumnData {
 	 * @param type
 	 */
 	public void setType(String type) {
-		this.type = type;
+		this.type = type.toLowerCase();
 		
 		String regex = "([0-9]+)";
 		Pattern p = Pattern.compile(regex);
@@ -39,15 +39,48 @@ public class ColumnData {
 	}
 
 	/**
-	 * compare columns to see if they values will all fit
-	 * @param columns
-	 * @param col
-	 * @param val
+	 * test value length to see if it will fit
+	 * 
+	 * @param value
 	 * @return
 	 */
-	public boolean compare(ColumnData[] columns, String[] col, String[] val) {
+	public int testValue(String value) {
 		
-		return false;
+		int resize = 0;
+		if (type.contains("text")) {
+			resize = testText(value);
+		} else if (type.contains("varchar")) {
+			resize = testVarchar(value);
+		} 
+		
+		// TODO test other types
+		
+		return resize;
+	}
+
+	/**
+	 * test text, nothing to do here
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public int testText(String value) {
+		return 0;
+	}
+	
+	/**
+	 * test varchar length
+	 * @param value
+	 * @return
+	 */
+	public int testVarchar(String value) {
+		
+		int resize = 0;
+		if (value.length() > length) {
+			resize = value.length();
+		}
+		
+		return resize;
 	}
 	
 	

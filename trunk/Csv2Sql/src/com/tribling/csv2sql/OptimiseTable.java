@@ -45,6 +45,27 @@ public class OptimiseTable extends SQLProcessing {
 		loopThroughColumns(columns);
 	}
 	
+	/**
+	 * resize a column
+	 * 
+	 * @param column
+	 * @param columnType
+	 * @param length
+	 */
+	public void resizeColumn(String column, String columnType, int length) {
+		this.fieldLength = length;
+		this.fieldType = getFieldType(columnType);
+		
+		String type = "";
+		if (databaseType == 1) {
+			type = getColumnType_MySql();
+		} else if (databaseType == 2) {
+			type = getColumnType_MsSql();
+		}
+		
+		alterColumn(column, type);
+	}
+	
 	private void loopThroughColumns(ColumnData[] columns) {
 		
 		for(int i=0; i < columns.length; i++) {
@@ -62,12 +83,12 @@ public class OptimiseTable extends SQLProcessing {
 			String columnType = getColumnType();
 			
 			// alter column
-			setAlterStatement(columns[i].column, columnType);
+			alterColumn(columns[i].column, columnType);
 		}
 		
 	}
-	
-	private void setAlterStatement(String column, String columnType) {
+
+	private void alterColumn(String column, String columnType) {
 		
 		if (column.equals("ImportID")) {
 			return;
@@ -209,6 +230,28 @@ public class OptimiseTable extends SQLProcessing {
 		}
 		
 		System.out.println("fieldType: " + fieldType + " Length: " + fieldLength + " Value::: " + s);
+	}
+	
+	private int getFieldType(String columnType) {
+		
+		String type = columnType.toLowerCase();
+		
+		int fieldType = 0;
+		if (type.contains("text")) {
+			fieldType = 2;
+		} else if (type.contains("date")) {
+			fieldType = 1;
+		} else if (type.contains("varchar")) {
+			fieldType = 2;
+		} else if (type.contains("int")) {
+			fieldType = 3;
+		} else if (type.contains("decimal")) {
+			fieldType = 5;
+		} else if (type.length() == 0) {
+			fieldType = 6;
+		}
+		
+		return fieldType;
 	}
 	
 	/**

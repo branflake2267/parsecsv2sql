@@ -99,6 +99,11 @@ public class CSVProcessing {
 		}
 	}
 	
+	/**
+	 * get columns from file, and create them in database if need be
+	 * 
+	 * @throws Exception
+	 */
 	private void getColumns() throws Exception {
 				
 		try {
@@ -109,7 +114,7 @@ public class CSVProcessing {
 			e.printStackTrace();
 		}
 		
-		// insert/update columns
+		// insert columns if need be
 		if (columns != null) {
 			this.columns = sql.createColumns(columns);
 		} else {
