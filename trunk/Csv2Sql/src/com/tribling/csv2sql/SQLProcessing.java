@@ -174,6 +174,8 @@ public class SQLProcessing {
 				return;
 			} else if (dropTableOff == true && doesExist == true) {
 				return;
+			} else if (doesExist == true) {
+				return;
 			}
 			
 		}
@@ -943,10 +945,23 @@ public class SQLProcessing {
 		updateSql(query);
 	}
 	
+	/**
+	 * get where query
+	 * 
+	 * TODO - deal with what happens when these columns do not exist
+	 * 
+	 * @param columns
+	 * @param values
+	 * @return
+	 */
 	private String getIdentiesWhereQuery(ColumnData[] columns, String[] values) {
 		
 		IdentityData[] identityData = findIdentityData(columns, values);
 
+		if (identityData.length == 0) {
+			return "";
+		}
+		
 		String q = "";
 		for (int i=0; i < identityData.length; i++) {
 			
@@ -976,28 +991,39 @@ public class SQLProcessing {
 	 */
 	private IdentityData[] findIdentityData(ColumnData[] columns, String[] values) {
 		
-		IdentityData[] ident = new IdentityData[dd.identityColumns.length];
+		ArrayList<IdentityData> ident = new ArrayList<IdentityData>();
 		for (int i=0; i < dd.identityColumns.length; i++) {
 			String column = dd.identityColumns[i].desinationField;
 
 			int index = searchForColumn(columns, column);
-			//int index = Arrays.binarySearch(columns, column);
-			
-			ident[i] = new IdentityData();
-			ident[i].column = dd.identityColumns[i].desinationField;
-			try {
-				ident[i].value = values[index];
-			} catch (Exception e) {
-				ident[i].value = "NO IDENTITY value exists in this row";
+			if (index > 0) {
+				IdentityData id = new IdentityData();
+				id.column = column;
+				
+				String value = "";
+				try {
+					value = values[index];
+				} catch (Exception e) {
+				}
+				
+				id.value = value;
+				ident.add(id);
 			}
+
 		}
 		
-		return ident;
+		IdentityData[] idents = new IdentityData[ident.size()];
+		for (int i=0; i < ident.size(); i++) {
+			idents[i] = new IdentityData();
+			idents[i] = ident.get(i);
+		}
+		
+		return idents;
 	}
 	
 	private int searchForColumn(ColumnData[] ar, String key) {
 		
-		int index = 0;
+		int index = -1;
 		for (int i=0; i < ar.length; i++) {
 			
 			if (ar[i].column.equals(key)) {
@@ -1035,10 +1061,12 @@ public class SQLProcessing {
 		// get idents
 		String whereQuery = getIdentiesWhereQuery(columns, values);
 		
+		if (whereQuery.length() == 0) {
+			return -1;
+		}
+		
 		String query = "SELECT ImportId FROM `" + dd.database + "`.`" + dd.table + "` " +
 				"WHERE " + whereQuery + " LIMIT 0,1";
-		
-		//System.out.println("does this row exist: " + query);
 		
 		int id = getQueryIdent(query);
 		
@@ -1049,6 +1077,10 @@ public class SQLProcessing {
 		
 		// get idents
 		String whereQuery = getIdentiesWhereQuery(columns, values);
+		
+		if (whereQuery.length() == 0) {
+			return -1;
+		}
 		
 		String query = "SELECT TOP 1 ImportId FROM " + dd.database + "." + dd.tableSchema + "." + dd.table + " " +
 				"WHERE " + whereQuery;
@@ -1251,7 +1283,13 @@ public class SQLProcessing {
 
 		int resize = 0;
 		for (int i=0; i < columns.length; i++) {
-			resize = columns[i].testValue(values[i]);
+			
+			String value = "";
+			try {
+				value = values[i];
+			} catch (Exception e) {
+			}
+			resize = columns[i].testValue(value);
 			String type = resizeColumnLength(columns[i].column, columns[i].type, resize);
 			if (resize > 0) {
 				columns[i].setType(type);
