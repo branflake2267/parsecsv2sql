@@ -275,9 +275,32 @@ public class SQLProcessing {
 		return columns;
 	}
 	
+	protected ColumnData getColumn(String column) {
+		ColumnData[] columns = null;
+		if (databaseType == 1) {
+			columns = getColumn_Mysql(column);
+		} else if (databaseType == 2) {
+			columns = getColumn_MsSql(column);
+		}
+		ColumnData col = columns[0];
+		return col;
+	}
+	
 	private ColumnData[] getColumns_Mysql() {
+		return getColumn_Mysql(null);
+	}
+	
+	private ColumnData[] getColumn_Mysql(String column) {
 		
-		String query = "SHOW COLUMNS FROM `" + dd.table + "` FROM `" + dd.database + "`;";;
+		String cquery = "";
+		if (column != null) {
+			if (column.length() > 1) {
+				cquery = " LIKE 'column' ";
+			}
+		}
+		
+		String query = "SHOW COLUMNS FROM `" + dd.table + "` " +
+				"FROM `" + dd.database + "` "+cquery+" ;";;
 		
 		System.out.println("query: " + query);
 		
@@ -308,11 +331,22 @@ public class SQLProcessing {
 	}
 	
 	private ColumnData[] getColumns_MsSql() {
+		return getColumn_MsSql(null);
+	}
+	
+	private ColumnData[] getColumn_MsSql(String column) {
+		
+		String cquery = "";
+		if (column != null) {
+			if (column.length() > 1) {
+				cquery = " TABLE_COLUMN='column' ";
+			}
+		}
 		
 		String query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.Columns "
 				+ "WHERE TABLE_NAME ='" + dd.table + "' AND "
 				+ "TABLE_SCHEMA='" + dd.tableSchema + "' AND TABLE_CATALOG='"
-				+ dd.database + "'";
+				+ dd.database + "' "+cquery+" ";
 
 		System.out.println("query: " + query);
 
@@ -322,11 +356,11 @@ public class SQLProcessing {
 			Statement select = conn.createStatement();
 			ResultSet result = select.executeQuery(query);
 			while (result.next()) {
-				ColumnData column = new ColumnData();
-				column.column = result.getString(1);
-				column.setType(result.getString(2));
+				ColumnData col = new ColumnData();
+				col.column = result.getString(1);
+				col.setType(result.getString(2));
 				
-				c.add(column);
+				c.add(col);
 			}
 			result.close();
 		} catch (Exception e) {
@@ -351,18 +385,20 @@ public class SQLProcessing {
 	 * @return
 	 */
 	protected ColumnData[] createColumns(ColumnData[] columns) {
-		
 		columns = fixColumns(columns);
 		
+		ColumnData[] cols = new ColumnData[columns.length];
 		for (int i=0; i < columns.length; i++) {
 			createColumn(columns[i].column);
+			
+			cols[i] = new ColumnData();
+			cols[i] = getColumn(columns[i].column);
 		}
-		
 		return columns;
 	}
 	
 	/**
-	 * Create a column with text default
+	 * Create a column always starts with text as the default
 	 * 
 	 * Two reasons to start with text.
 	 * 1. fields can have length > 255
@@ -1211,7 +1247,6 @@ public class SQLProcessing {
 		return rtn;
 	}
 	
-	
 	/**
 	 * will the data fit into the columns if not resize them
 	 * 
@@ -1219,12 +1254,22 @@ public class SQLProcessing {
 	 * @param values
 	 */
 	private void doDataLengthsfit(ColumnData[] columns, String[] values) {
+
+		int resize = 0;
+		for (int i=0; i < columns.length; i++) {
+			resize = columns[i].testValue(values[i]);
+			resizeColumnLength(columns[i].column, columns[i].type, resize);                    
+		}
+	}
 	
-		// TODO - columns change to column data
-	
-		// TODO - loop through and check data lengths compare against column length
+	private void resizeColumnLength(String column, String columnType, int length) {
 		
-		// TODO - use column data to store this methods
+		if (length == 0) {
+			return;
+		}
+		
+		OptimiseTable optimise = new OptimiseTable();
+		optimise.resizeColumn(column, columnType, length);
 	}
 	
 	
