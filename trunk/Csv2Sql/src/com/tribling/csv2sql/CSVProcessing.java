@@ -14,18 +14,14 @@ public class CSVProcessing {
 	// variables
 	private File file;
 	private char delimiter;
-	private DestinationData desinationData;
-	private MatchFieldData[] matchFields;
+
 	
-	
+
 	// csv reader 2.0
 	private CsvReader reader = null;
 	
 	// sql methods
 	private OptimiseTable sql = new OptimiseTable();
-	
-	// the columns for the file
-	private ColumnData[] columns;
 	
 	/**
 	 * constructor
@@ -35,9 +31,6 @@ public class CSVProcessing {
 	
 	protected void setData(char delimiter, DestinationData destinationData, MatchFieldData[] matchFields) {
 		this.delimiter = delimiter;
-		this.file = file;
-		this.desinationData = destinationData;
-		this.matchFields = matchFields;
 		
 		try {
 			sql.setDestinationData(destinationData);
@@ -84,7 +77,7 @@ public class CSVProcessing {
 		}
 		
 		// optimise table (if set on)
-		sql.runOptimise(columns);
+		sql.runOptimise();
 		
 		// delete empty columns (if set on)
 		sql.deleteEmptyColumns();
@@ -105,10 +98,10 @@ public class CSVProcessing {
 	 * @throws Exception
 	 */
 	private void getColumns() throws Exception {
-				
+		ColumnData[] columns = null;	
 		try {
 			reader.readHeaders();
-			makeColumnlist(reader.getHeaders());
+			columns = makeColumnlist(reader.getHeaders());
 			System.out.println("column count: " + reader.getHeaderCount());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -116,7 +109,7 @@ public class CSVProcessing {
 		
 		// insert columns if need be
 		if (columns != null) {
-			this.columns = sql.createColumns(columns);
+			sql.createColumns(columns);
 		} else {
 			System.err.println("CSV Reader could not get columns");
 			System.exit(1);
@@ -133,7 +126,7 @@ public class CSVProcessing {
 			values = reader.getValues();
 			
 			// add data to table
-			sql.addData(indexFile, index, columns, values);
+			sql.addData(indexFile, index, values);
 			
 			// debug
 			//listValues(index, values);
@@ -153,13 +146,13 @@ public class CSVProcessing {
 		System.out.println(index + ". " + s);
 	}
 	
-	private void makeColumnlist(String[] columns) {
+	private ColumnData[] makeColumnlist(String[] columns) {
 		ColumnData[] cols = new ColumnData[columns.length];
 		for(int i=0; i < columns.length; i++) {
 			cols[i] = new ColumnData();
 			cols[i].column = columns[i];
 		}
-		this.columns = cols;
+		return cols;
 	}
 	
 	
