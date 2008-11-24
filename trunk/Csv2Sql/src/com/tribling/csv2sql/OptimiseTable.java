@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+import com.tribling.csv2sql.data.ColumnData;
+
 public class OptimiseTable extends SQLProcessing {
 	
 	private int fieldType = 0;
@@ -15,7 +17,7 @@ public class OptimiseTable extends SQLProcessing {
 	public OptimiseTable() {
 	}
 	
-	protected void runOptimise(String[] columns) {
+	protected void runOptimise(ColumnData[] columns) {
 
 		if (dd.optimise == false) {
 			System.out.println("skipping optimising: destinationData.optimise = false");
@@ -43,7 +45,7 @@ public class OptimiseTable extends SQLProcessing {
 		loopThroughColumns(columns);
 	}
 	
-	private void loopThroughColumns(String[] columns) {
+	private void loopThroughColumns(ColumnData[] columns) {
 		
 		for(int i=0; i < columns.length; i++) {
 			
@@ -55,12 +57,12 @@ public class OptimiseTable extends SQLProcessing {
 				System.out.println("pause");
 			}
 			
-			queryColumn(columns[i]);
+			queryColumn(columns[i].column);
 			
 			String columnType = getColumnType();
 			
 			// alter column
-			setAlterStatement(columns[i], columnType);
+			setAlterStatement(columns[i].column, columnType);
 		}
 		
 	}

@@ -350,12 +350,12 @@ public class SQLProcessing {
 	 * @param columns
 	 * @return
 	 */
-	protected String[] createColumns(String[] columns) {
+	protected ColumnData[] createColumns(ColumnData[] columns) {
 		
 		columns = fixColumns(columns);
 		
 		for (int i=0; i < columns.length; i++) {
-			createColumn(columns[i]);
+			createColumn(columns[i].column);
 		}
 		
 		return columns;
@@ -381,25 +381,32 @@ public class SQLProcessing {
 		createColumn(column,type);
 	}
 	
+	/**
+	 * replace column names, fix column names with sql friendly version
+	 * 
+	 * @param columns
+	 * @return
+	 */
 	protected ColumnData[] fixColumns(ColumnData[] columns) {
 		
 		ArrayList<ColumnData> aColumns = new ArrayList<ColumnData>();
 		for(int i=0; i < columns.length; i++) {
-			if (columns[i].column == "") {
+			
+			if (columns[i].column.length() == 0) {
 				columns[i].column = "c" + i;
 			}
-			columns[i].column = columns[i].column.trim();
+			
+			String column = columns[i].column;
+			column = replaceToMatchingColumn(column); // replace with matching column name
+			column = fixName(column); // fix column name if need be, make it sql friendly
+			columns[i].column = column;
 			aColumns.add(columns[i]);
 		}
 		
-		columns = new ColumnData[aColumns.size()];
+		// change to object
+		ColumnData[] cols = new ColumnData[aColumns.size()];
 		for (int i=0; i < aColumns.size(); i++) {
-			
-			String c = aColumns.get(i);
-			
-			columns[i] = replaceToMatchingColumn(c);
-			
-			columns[i] = fixName(columns[i]);
+			cols[i] = aColumns.get(i);
 		}
 		
 		return columns;
@@ -655,6 +662,7 @@ public class SQLProcessing {
 		if (s.length() > 64) { 
 			s = s.substring(0, 63);
 		}
+		s = s.trim();
 		
 		s = s.replace("'", "");
 		s = s.replace("[\"\r\n\t]", "");
@@ -736,7 +744,7 @@ public class SQLProcessing {
 	 * @param columns
 	 * @param values
 	 */
-	public void addData(int indexFile, int index, String[] columns, String[] values) {
+	public void addData(int indexFile, int index, ColumnData[] columns, String[] values) {
 		this.index = index;
 		this.indexFile = indexFile;
 		
@@ -774,7 +782,7 @@ public class SQLProcessing {
 
 	}
 	
-	private String getQuery_Insert_MsSql(String[] columns, String[] values) {
+	private String getQuery_Insert_MsSql(ColumnData[] columns, String[] values) {
 		
 		String cs = "";
 		String vs = "";
@@ -783,7 +791,7 @@ public class SQLProcessing {
 			String c = "";
 			String v = "";
 			
-			c =  columns[i];
+			c =  columns[i].column;
 			try {
 				v = values[i];
 			} catch (Exception e1) {
@@ -814,7 +822,7 @@ public class SQLProcessing {
 		return s;
 	}
 	
-	private String getQuery_Insert_MySql(String[] columns, String[] values) {
+	private String getQuery_Insert_MySql(ColumnData[] columns, String[] values) {
 		
 		String q = "";
 		for (int i=0; i < columns.length; i++) {
@@ -822,7 +830,7 @@ public class SQLProcessing {
 			String c = "";
 			String v = "";
 			
-			c = columns[i];
+			c = columns[i].column;
 			
 			try {
 				v = values[i];
@@ -905,7 +913,7 @@ public class SQLProcessing {
 		updateSql(query);
 	}
 	
-	private String getIdentiesWhereQuery(String[] columns, String[] values) {
+	private String getIdentiesWhereQuery(ColumnData[] columns, String[] values) {
 		
 		IdentityData[] identityData = findIdentityData(columns, values);
 
@@ -936,13 +944,13 @@ public class SQLProcessing {
 	 * @param columns
 	 * @return
 	 */
-	private IdentityData[] findIdentityData(String[] columns, String[] values) {
+	private IdentityData[] findIdentityData(ColumnData[] columns, String[] values) {
 		
 		IdentityData[] ident = new IdentityData[dd.identityColumns.length];
 		for (int i=0; i < dd.identityColumns.length; i++) {
 			String column = dd.identityColumns[i].desinationField;
 
-			int index = searchArray(columns, column);
+			int index = searchForColumn(columns, column);
 			//int index = Arrays.binarySearch(columns, column);
 			
 			ident[i] = new IdentityData();
@@ -957,12 +965,12 @@ public class SQLProcessing {
 		return ident;
 	}
 	
-	private int searchArray(String[] ar, String key) {
+	private int searchForColumn(ColumnData[] ar, String key) {
 		
 		int index = 0;
 		for (int i=0; i < ar.length; i++) {
 			
-			if (ar[i].equals(key)) {
+			if (ar[i].column.equals(key)) {
 				index = i;
 				break;
 			}
@@ -971,7 +979,7 @@ public class SQLProcessing {
 	}
 	
 
-	public int getRecordExist(String[] columns, String[] values) {
+	public int getRecordExist(ColumnData[] columns, String[] values) {
 		
 		int id = 0;
 		if (databaseType == 1) {
@@ -992,7 +1000,7 @@ public class SQLProcessing {
 	 * @param values
 	 * @return
 	 */
-	public int getRecordExist_MySql(String[] columns, String[] values) {
+	public int getRecordExist_MySql(ColumnData[] columns, String[] values) {
 		
 		// get idents
 		String whereQuery = getIdentiesWhereQuery(columns, values);
@@ -1007,7 +1015,7 @@ public class SQLProcessing {
 		return id;
 	}
 
-	public int getRecordExist_MsSql(String[] columns, String[] values) {
+	public int getRecordExist_MsSql(ColumnData[] columns, String[] values) {
 		
 		// get idents
 		String whereQuery = getIdentiesWhereQuery(columns, values);
@@ -1020,7 +1028,7 @@ public class SQLProcessing {
 		return id;
 	}
 		
-	private String getQuery_Update_MySql(String[] columns, String[] values, int id) {
+	private String getQuery_Update_MySql(ColumnData[] columns, String[] values, int id) {
 		
 		String q = "";
 		for (int i=0; i < columns.length; i++) {
@@ -1028,7 +1036,7 @@ public class SQLProcessing {
 			String c = "";
 			String v = "";
 			
-			c = columns[i];
+			c = columns[i].column;
 			
 			try {
 				v = values[i];
@@ -1056,7 +1064,7 @@ public class SQLProcessing {
 		return s;
 	}
 	
-	private String getQuery_Update_MsSql(String[] columns, String[] values, int id) {
+	private String getQuery_Update_MsSql(ColumnData[] columns, String[] values, int id) {
 		
 		String q = "";
 		for (int i=0; i < columns.length; i++) {
@@ -1064,7 +1072,7 @@ public class SQLProcessing {
 			String c = "";
 			String v = "";
 			
-			c = columns[i];
+			c = columns[i].column;
 			
 			try {
 				v = values[i];
@@ -1210,7 +1218,7 @@ public class SQLProcessing {
 	 * @param columns
 	 * @param values
 	 */
-	private void doDataLengthsfit(String[] columns, String[] values) {
+	private void doDataLengthsfit(ColumnData[] columns, String[] values) {
 	
 		// TODO - columns change to column data
 	

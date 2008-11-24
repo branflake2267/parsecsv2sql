@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import com.csvreader.CsvReader;
+import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.MatchFieldData;
 
@@ -23,7 +24,8 @@ public class CSVProcessing {
 	// sql methods
 	private OptimiseTable sql = new OptimiseTable();
 	
-	private String[] columns;
+	// the columns for the file
+	private ColumnData[] columns;
 	
 	/**
 	 * constructor
@@ -101,7 +103,7 @@ public class CSVProcessing {
 				
 		try {
 			reader.readHeaders();
-			columns = reader.getHeaders();
+			makeColumnlist(reader.getHeaders());
 			System.out.println("column count: " + reader.getHeaderCount());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -145,5 +147,17 @@ public class CSVProcessing {
 		
 		System.out.println(index + ". " + s);
 	}
+	
+	private void makeColumnlist(String[] columns) {
+		ColumnData[] cols = new ColumnData[columns.length];
+		for(int i=0; i < columns.length; i++) {
+			cols[i] = new ColumnData();
+			cols[i].column = columns[i];
+		}
+		this.columns = cols;
+	}
+	
+	
+	
 	
 }
