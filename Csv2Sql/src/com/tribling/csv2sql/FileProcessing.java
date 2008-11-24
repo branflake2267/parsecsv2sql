@@ -27,6 +27,7 @@ public class FileProcessing {
 	
 	/**
 	 * set the data, and it will run
+	 * 
 	 * @param sourceData
 	 * @param destinationData
 	 * @param matchFields
@@ -88,6 +89,8 @@ public class FileProcessing {
 	 */
 	private void loop(File[] files) {
 	
+		Arrays.sort(files);
+		
 		for (int i=0; i < files.length; i++) {
 			
 			System.out.println("File: " + files[i].getName());
@@ -100,7 +103,8 @@ public class FileProcessing {
 				}
 				
 				csv.parseFile(i, files[i]);
-
+				
+				System.out.println("");
 			}
 		}
 		

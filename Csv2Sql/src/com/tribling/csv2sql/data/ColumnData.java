@@ -53,7 +53,7 @@ public class ColumnData {
 			resize = testVarchar(value);
 		} 
 		
-		// TODO test other types
+		// TODO test other types - add them here later
 		
 		return resize;
 	}

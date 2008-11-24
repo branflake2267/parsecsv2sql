@@ -52,7 +52,7 @@ public class OptimiseTable extends SQLProcessing {
 	 * @param columnType
 	 * @param length
 	 */
-	public void resizeColumn(String column, String columnType, int length) {
+	public String resizeColumn(String column, String columnType, int length) {
 		this.fieldLength = length;
 		this.fieldType = getFieldType(columnType);
 		
@@ -64,6 +64,7 @@ public class OptimiseTable extends SQLProcessing {
 		}
 		
 		alterColumn(column, type);
+		return type;
 	}
 	
 	private void loopThroughColumns(ColumnData[] columns) {
@@ -90,7 +91,9 @@ public class OptimiseTable extends SQLProcessing {
 
 	private void alterColumn(String column, String columnType) {
 		
-		if (column.equals("ImportID")) {
+		if (column.equals("ImportID") | 
+				column.equals("DateCreated") | 
+				column.equals("DateUpdated")) {
 			return;
 		}
 		
@@ -105,8 +108,6 @@ public class OptimiseTable extends SQLProcessing {
 			alterQuery = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + " ALTER COLUMN " + modifyColumn;
 		}
 		
-		// TODO - only alter it if its different
-		// TODO - skip after the first alter in directory format, first file sets the sizes
 		updateSql(alterQuery);
 		
 	}

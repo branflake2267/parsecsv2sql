@@ -156,9 +156,7 @@ public class SQLProcessing {
 					"TABLE_NAME = '" + dd.table + "'";
 		}
 		
-		boolean rtn = getBooleanQuery(query);
-		
-		return rtn;
+		return getBooleanQuery(query);
 	}
 	
 	/**
@@ -295,7 +293,7 @@ public class SQLProcessing {
 		String cquery = "";
 		if (column != null) {
 			if (column.length() > 1) {
-				cquery = " LIKE 'column' ";
+				cquery = " LIKE '"+column+"' ";
 			}
 		}
 		
@@ -339,7 +337,7 @@ public class SQLProcessing {
 		String cquery = "";
 		if (column != null) {
 			if (column.length() > 1) {
-				cquery = " TABLE_COLUMN='column' ";
+				cquery = " TABLE_COLUMN='"+column+"' ";
 			}
 		}
 		
@@ -384,7 +382,7 @@ public class SQLProcessing {
 	 * @param columns
 	 * @return
 	 */
-	protected ColumnData[] createColumns(ColumnData[] columns) {
+	protected void createColumns(ColumnData[] columns) {
 		columns = fixColumns(columns);
 		
 		ColumnData[] cols = new ColumnData[columns.length];
@@ -394,7 +392,8 @@ public class SQLProcessing {
 			cols[i] = new ColumnData();
 			cols[i] = getColumn(columns[i].column);
 		}
-		return columns;
+		
+		this.columns = cols;
 	}
 	
 	/**
@@ -771,7 +770,7 @@ public class SQLProcessing {
 			}
 		}
 		
-		return null;
+		return rtn;
 	}
 	
 	/**
@@ -780,7 +779,7 @@ public class SQLProcessing {
 	 * @param columns
 	 * @param values
 	 */
-	public void addData(int indexFile, int index, ColumnData[] columns, String[] values) {
+	public void addData(int indexFile, int index, String[] values) {
 		this.index = index;
 		this.indexFile = indexFile;
 		
@@ -791,7 +790,11 @@ public class SQLProcessing {
 		}
 		
 		// check to see if the lengths of the columns/fields will fit
-		doDataLengthsfit(columns, values);
+		try {
+			doDataLengthsfit(values);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		String query = null;
 		if (databaseType == 1) {
@@ -824,16 +827,7 @@ public class SQLProcessing {
 		String vs = "";
 		for(int i=0; i < columns.length; i++) {
 			
-			String c = "";
-			String v = "";
-			
-			c =  columns[i].column;
-			try {
-				v = values[i];
-			} catch (Exception e1) {
-				v = "";
-			}	
-
+			String c =  columns[i].column;
 			if (c.length() > 0) {
 				cs += "[" + c + "]";
 				try {
@@ -1253,23 +1247,28 @@ public class SQLProcessing {
 	 * @param columns
 	 * @param values
 	 */
-	private void doDataLengthsfit(ColumnData[] columns, String[] values) {
+	private void doDataLengthsfit(String[] values) {
 
 		int resize = 0;
 		for (int i=0; i < columns.length; i++) {
 			resize = columns[i].testValue(values[i]);
-			resizeColumnLength(columns[i].column, columns[i].type, resize);                    
+			String type = resizeColumnLength(columns[i].column, columns[i].type, resize);
+			if (resize > 0) {
+				columns[i].setType(type);
+			}
 		}
 	}
 	
-	private void resizeColumnLength(String column, String columnType, int length) {
+	private String resizeColumnLength(String column, String columnType, int length) {
 		
 		if (length == 0) {
-			return;
+			return "";
 		}
 		
 		OptimiseTable optimise = new OptimiseTable();
-		optimise.resizeColumn(column, columnType, length);
+		optimise.setDestinationData(dd);
+		optimise.setMatchFields(matchFields);
+		return optimise.resizeColumn(column, columnType, length);
 	}
 	
 	

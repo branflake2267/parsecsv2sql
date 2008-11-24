@@ -11,8 +11,17 @@ public class MatchFieldData implements Comparable<MatchFieldData> {
 	public MatchFieldData() {
 	}
 
-	@Override
+	
 	public int compareTo(MatchFieldData b) {
+		
+		if (sourceField == null) {
+			return 0;
+		}
+		
+		if (b == null) {
+			return 0;
+		}
+		
 		return sourceField.compareToIgnoreCase(b.sourceField);
 	}
 
