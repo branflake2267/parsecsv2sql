@@ -35,7 +35,7 @@ public class OptimiseTable extends SQLProcessing {
 			return;
 		}
 		
-		String[] columns = getColumns();
+		ColumnData[] columns = getColumns();
 		
 		columns = fixColumns(columns);
 		

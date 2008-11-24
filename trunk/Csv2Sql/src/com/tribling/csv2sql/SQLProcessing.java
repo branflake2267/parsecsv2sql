@@ -263,29 +263,40 @@ public class SQLProcessing {
 	/**
 	 * get columns name, type, length info
 	 * 
-	 * TODO change this to save into data object ColumnData
-	 * 
 	 * @return
 	 */
-	protected String[] getColumns() {
-		String query = "";
+	protected ColumnData[] getColumns() {
+		ColumnData[] columns = null;
 		if (databaseType == 1) {
-			query = "SHOW COLUMNS FROM `" + dd.table + "` FROM `" + dd.database + "`;";
+			columns = getColumns_Mysql();
 		} else if (databaseType == 2) {
-			query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.Columns " +
-					"WHERE TABLE_NAME ='" + dd.table + "' AND " +
-					"TABLE_SCHEMA='" + dd.tableSchema + "' AND TABLE_CATALOG='" + dd.database + "'";
+			columns = getColumns_MsSql();
 		}
-
+		return columns;
+	}
+	
+	private ColumnData[] getColumns_Mysql() {
+		
+		String query = "SHOW COLUMNS FROM `" + dd.table + "` FROM `" + dd.database + "`;";;
+		
 		System.out.println("query: " + query);
 		
-		ArrayList<String> c = new ArrayList<String>();
+		ColumnData[] columns = null;
 		try {
 			Connection conn = getConnection();
 			Statement select = conn.createStatement();
 			ResultSet result = select.executeQuery(query);
+			
+			columns = new ColumnData[getResultSetSize(result)];
+			
+			int i=0;
 			while(result.next()) {
-				c.add(result.getString(1));
+				
+				columns[i] = new ColumnData();
+				columns[i].column = result.getString(1);
+				columns[i].setType(result.getString(2));
+				
+				i++;
 			}
 			result.close();
 		} catch (Exception e) {
@@ -293,12 +304,41 @@ public class SQLProcessing {
 			e.printStackTrace();
 		}
 		
-		// have to use array list due to not knowing result size on ms jdbc
-		String[] columns = new String[c.size()];
-		for(int i=0; i < c.size(); i++) {
-			columns[i] = (String) c.get(i);
-		}
+		return columns;
+	}
+	
+	private ColumnData[] getColumns_MsSql() {
 		
+		String query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.Columns "
+				+ "WHERE TABLE_NAME ='" + dd.table + "' AND "
+				+ "TABLE_SCHEMA='" + dd.tableSchema + "' AND TABLE_CATALOG='"
+				+ dd.database + "'";
+
+		System.out.println("query: " + query);
+
+		ArrayList<ColumnData> c = new ArrayList<ColumnData>();
+		try {
+			Connection conn = getConnection();
+			Statement select = conn.createStatement();
+			ResultSet result = select.executeQuery(query);
+			while (result.next()) {
+				ColumnData column = new ColumnData();
+				column.column = result.getString(1);
+				column.setType(result.getString(2));
+				
+				c.add(column);
+			}
+			result.close();
+		} catch (Exception e) {
+			System.err.println("Mysql Statement Error:" + query);
+			e.printStackTrace();
+		}
+
+		ColumnData[] columns = new ColumnData[c.size()];
+		for (int i=0; i < c.size(); i++) {
+			columns[i] = c.get(i);
+		}
+
 		return columns;
 	}
 	
@@ -341,21 +381,24 @@ public class SQLProcessing {
 		createColumn(column,type);
 	}
 	
-	protected String[] fixColumns(String[] columns) {
+	protected ColumnData[] fixColumns(ColumnData[] columns) {
 		
-		ArrayList<String> aColumns = new ArrayList<String>();
+		ArrayList<ColumnData> aColumns = new ArrayList<ColumnData>();
 		for(int i=0; i < columns.length; i++) {
-			if (columns[i] == "") {
-				columns[i] = "c" + i;
+			if (columns[i].column == "") {
+				columns[i].column = "c" + i;
 			}
-			aColumns.add(columns[i].trim());
+			columns[i].column = columns[i].column.trim();
+			aColumns.add(columns[i]);
 		}
 		
-		columns = new String[aColumns.size()];
-		
+		columns = new ColumnData[aColumns.size()];
 		for (int i=0; i < aColumns.size(); i++) {
+			
 			String c = aColumns.get(i);
+			
 			columns[i] = replaceToMatchingColumn(c);
+			
 			columns[i] = fixName(columns[i]);
 		}
 		
@@ -653,7 +696,7 @@ public class SQLProcessing {
 	 * @param result
 	 * @return
 	 */
-	protected static int getResultSetSize(ResultSet result) {
+	protected int getResultSetSize(ResultSet result) {
 		int size = -1;
 		try {
 			result.last();
@@ -1081,11 +1124,11 @@ public class SQLProcessing {
 		System.out.println("Going to delete empty columns: ");
 		
 		// loop through columns and see if they are empty
-		String[] columns = getColumns();
+		ColumnData[] columns = getColumns();
 		for(int i=0; i < columns.length; i++) {
 			System.out.print(".");
-			if (getColumnHaveStuff(columns[i]) == false) {
-				deleteColumn(columns[i]);
+			if (getColumnHaveStuff(columns[i].column) == false) {
+				deleteColumn(columns[i].column);
 			}
 		}
 	}
