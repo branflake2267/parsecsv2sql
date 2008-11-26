@@ -74,6 +74,8 @@ public class FileProcessing {
 			}
 		}
 		
+		Arrays.sort(files);
+		
 		loop(files);
 		
 		// close sql connections
