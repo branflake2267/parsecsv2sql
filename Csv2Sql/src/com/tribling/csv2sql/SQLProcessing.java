@@ -1263,7 +1263,13 @@ public class SQLProcessing {
 		MatchFieldData searchFor = new MatchFieldData();
 		searchFor.desinationField = column;
 		
-		int index = Arrays.binarySearch(matchFields, searchFor, searchByComparator);
+		int index = -1;
+		try {
+			index = Arrays.binarySearch(matchFields, searchFor, searchByComparator);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		boolean rtn = false;
 		if (index > 0 ) {
