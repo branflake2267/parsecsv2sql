@@ -40,9 +40,12 @@ public class OptimiseTable extends SQLProcessing {
 		ColumnData[] columns = getColumns();
 		
 		columns = fixColumns(columns);
+	
+		deleteEmptyColumns();
 		
 		// loop through each column
 		loopThroughColumns(columns);
+	
 	}
 	
 	/**
