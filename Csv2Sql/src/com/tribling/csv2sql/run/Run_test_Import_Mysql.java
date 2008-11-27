@@ -35,7 +35,7 @@ public class Run_test_Import_Mysql {
 		dd.optimise = true;
 		dd.createIndexs = true;
 		dd.deleteEmptyColumns = true;
-		dd.optimiseRecordsToExamine = 1000;
+		dd.optimiseRecordsToExamine = 1000; // 0 will do all
 		dd.optimiseTextOnly = true;
 		dd.databaseType = "MySql";
 		dd.host = "192.168.10.91";
