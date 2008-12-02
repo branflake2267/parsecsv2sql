@@ -100,9 +100,6 @@ public class SQLProcessing {
 			System.err.println("ERROR: No destination table: What table do you want to import this data to?");
 			System.exit(1);
 		}
-		
-		// open a sql connection to work with
-		openConnection();
 	}
 	
 	protected void setMatchFields(MatchFieldData[] matchFields) {
@@ -114,13 +111,16 @@ public class SQLProcessing {
 	 * 
 	 * @throws Exception 
 	 */
-	private void openConnection() {
+	public void openConnection() {
+		
+		// connection 1
 		if (databaseType == 1) {
 			conn1 = getConn_MySql();
 		} else if (databaseType == 2) {
 			conn1 = getConn_MsSql();
 		}
 		
+		// connection 2
 		if (databaseType == 1) {
 			conn2 = getConn_MySql();
 		} else if (databaseType == 2) {
@@ -128,14 +128,17 @@ public class SQLProcessing {
 		}
 	}
 	
+	// close connections
 	public void closeConnection() {
 		try {
 			conn1.close();
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		try {
 			conn2.close();
 		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -635,6 +638,7 @@ public class SQLProcessing {
 			while(result.next()) {
 				value = result.getString(1);
 			}
+			select.close();
 			result.close();
 		} catch (Exception e) {
 			System.err.println("Mysql Statement Error:" + query);
@@ -659,6 +663,7 @@ public class SQLProcessing {
 			while(result.next()) {
 				i = result.getInt(1);
 			}
+			select.close();
 			result.close();
 		} catch (Exception e) {
 			System.err.println("Mysql Statement Error:" + query);
@@ -677,6 +682,7 @@ public class SQLProcessing {
 			while(result.next()) {
 				i = result.getInt(1);
 			}
+			select.close();
 			result.close();
 		} catch (Exception e) {
 			System.err.println("Mysql Statement Error:" + query);
@@ -747,32 +753,11 @@ public class SQLProcessing {
 			result.last();
 			size = result.getRow();
 			result.beforeFirst();
+			result.close(); //TODO- is this independent. ???
 		} catch (SQLException e) {
 			return size;
 		}
 		return size;
-	}
-	
-	/**
-	 * get row data into array
-	 * 
-	 * @param columns
-	 * @param result
-	 * @return
-	 */
-	protected String[] getRowData(String[] columns, ResultSet result) {
-		
-		String[] rtn = new String[columns.length];
-		for (int i=0; i < columns.length; i++) {
-			try {
-				rtn[i] = result.getString(i+1);
-			} catch (SQLException e) {
-				System.err.println("Error in getRowData"); 
-				e.printStackTrace();
-			}
-		}
-		
-		return rtn;
 	}
 	
 	/**
@@ -1313,6 +1298,34 @@ public class SQLProcessing {
 		optimise.setDestinationData(dd);
 		optimise.setMatchFields(matchFields);
 		return optimise.resizeColumn(column, columnType, length);
+	}
+	
+	/**
+	 * get row data into array
+	 * 
+	 * @param columns
+	 * @param result
+	 * @return
+	 */
+	private String[] getRowData(String[] columns, ResultSet result) {
+		
+		String[] rtn = new String[columns.length];
+		for (int i=0; i < columns.length; i++) {
+			try {
+				rtn[i] = result.getString(i+1);
+			} catch (SQLException e) {
+				System.err.println("Error in getRowData"); 
+				e.printStackTrace();
+			}
+		}
+		
+		//TODO - is this independent?
+		try {
+			result.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return rtn;
 	}
 	
 	

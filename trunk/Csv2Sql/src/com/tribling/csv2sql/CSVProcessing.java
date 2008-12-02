@@ -11,11 +11,8 @@ import com.tribling.csv2sql.data.MatchFieldData;
 
 public class CSVProcessing {
 
-	// variables
 	private File file;
 	private char delimiter;
-
-	
 
 	// csv reader 2.0
 	private CsvReader reader = null;
@@ -36,6 +33,8 @@ public class CSVProcessing {
 			sql.setDestinationData(destinationData);
 		} catch (Exception e) {
 			e.printStackTrace();
+			System.out.println("ERROR: CSVProcessing: forogot destinationData is null");
+			System.exit(1);
 		}
 		sql.setMatchFields(matchFields);
 		
@@ -45,15 +44,14 @@ public class CSVProcessing {
 		sql.dropTableOff();
 	}
 	
-	public void closeConnection() {
-		sql.closeConnection();
-	}
-	
 	/** 
 	 * start extracting the data
 	 */
 	protected void parseFile(int indexFile, File file) {
 		this.file = file;
+		
+		// open a sql connection
+		sql.openConnection();
 		
 		// create table
 		sql.createTable();
@@ -81,6 +79,9 @@ public class CSVProcessing {
 		
 		// delete empty columns (if set on)
 		sql.deleteEmptyColumns();
+		
+		// done with connection
+		sql.closeConnection();
 	}
 	
 	private void readFile() {
