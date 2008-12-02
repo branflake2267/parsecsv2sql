@@ -37,6 +37,8 @@ public class OptimiseTable extends SQLProcessing {
 			return;
 		}
 		
+		openConnection();
+		
 		ColumnData[] columns = getColumns();
 		
 		columns = fixColumns(columns);
@@ -46,6 +48,7 @@ public class OptimiseTable extends SQLProcessing {
 		// loop through each column
 		loopThroughColumns(columns);
 	
+		closeConnection();
 	}
 	
 	/**
