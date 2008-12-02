@@ -753,7 +753,6 @@ public class SQLProcessing {
 			result.last();
 			size = result.getRow();
 			result.beforeFirst();
-			result.close(); //TODO- is this independent. ???
 		} catch (SQLException e) {
 			return size;
 		}
@@ -1308,7 +1307,6 @@ public class SQLProcessing {
 	 * @return
 	 */
 	private String[] getRowData(String[] columns, ResultSet result) {
-		
 		String[] rtn = new String[columns.length];
 		for (int i=0; i < columns.length; i++) {
 			try {
@@ -1317,13 +1315,6 @@ public class SQLProcessing {
 				System.err.println("Error in getRowData"); 
 				e.printStackTrace();
 			}
-		}
-		
-		//TODO - is this independent?
-		try {
-			result.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
 		}
 		return rtn;
 	}
