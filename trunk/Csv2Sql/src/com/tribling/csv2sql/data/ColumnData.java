@@ -5,11 +5,11 @@ import java.util.regex.Pattern;
 
 public class ColumnData {
 
-	public String column;
+	public String column = "";
 	
-	public String type;
+	public String type = "TEXT";
 	
-	public int length;
+	public int length = 0;
 	
 	
 	public ColumnData() {

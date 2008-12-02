@@ -248,6 +248,14 @@ public class SQLProcessing {
 	 */
 	private boolean getColumnExist(String column) {
 		
+		if (column == null) {
+			return false;
+		}
+		
+		if (column.length() == 0) {
+			return false;
+		}
+		
 		String query = "";
 		if (databaseType == 1) {
 			query = "SHOW COLUMNS FROM `" + dd.table + "` FROM `" + dd.database + "` LIKE '" + column + "';";
@@ -279,6 +287,14 @@ public class SQLProcessing {
 	}
 	
 	protected ColumnData getColumn(String column) {
+		if (column == null) {
+			return null;
+		}
+		
+		if (column.length() == 0) {
+			return null;
+		}
+		
 		ColumnData[] columns = null;
 		if (databaseType == 1) {
 			columns = getColumn_Mysql(column);
@@ -295,6 +311,14 @@ public class SQLProcessing {
 	
 	private ColumnData[] getColumn_Mysql(String column) {
 		
+		if (column == null) {
+			return new ColumnData[0];
+		}
+		
+		if (column.length() == 0) {
+			return new ColumnData[0];
+		}
+		
 		String cquery = "";
 		if (column != null) {
 			if (column.length() > 1) {
@@ -303,7 +327,7 @@ public class SQLProcessing {
 		}
 		
 		String query = "SHOW COLUMNS FROM `" + dd.table + "` " +
-				"FROM `" + dd.database + "` "+cquery+" ;";;
+				"FROM `" + dd.database + "` " + cquery + " ;";;
 		
 		System.out.println("query: " + query);
 		
@@ -432,7 +456,10 @@ public class SQLProcessing {
 		ArrayList<ColumnData> aColumns = new ArrayList<ColumnData>();
 		for(int i=0; i < columns.length; i++) {
 			
-			if (columns[i].column.length() == 0) {
+			if (columns[i] == null) {
+				columns[i] = new ColumnData();
+				columns[i].column = "c" + i;
+			} else if (columns[i].column.length() == 0 || columns[i].column.matches("[\040]*")) {
 				columns[i].column = "c" + i;
 			}
 			
@@ -459,6 +486,14 @@ public class SQLProcessing {
 	 * @param type
 	 */
 	private void createColumn(String column, String type) {
+		
+		if (column == null) {
+			return;
+		}
+		
+		if (column.length() == 0) {
+			return;
+		}
 		
 		// fix column name to ok for mysql
 		column = fixName(column);
@@ -1271,6 +1306,10 @@ public class SQLProcessing {
 	 */
 	private void doDataLengthsfit(String[] values) {
 
+		if (values == null) {
+			return;
+		}
+		
 		int resize = 0;
 		for (int i=0; i < columns.length; i++) {
 			
@@ -1280,8 +1319,8 @@ public class SQLProcessing {
 			} catch (Exception e) {
 			}
 			resize = columns[i].testValue(value);
-			String type = resizeColumnLength(columns[i].column, columns[i].type, resize);
 			if (resize > 0) {
+				String type = resizeColumnLength(columns[i].column, columns[i].type, resize);
 				columns[i].setType(type);
 			}
 		}
