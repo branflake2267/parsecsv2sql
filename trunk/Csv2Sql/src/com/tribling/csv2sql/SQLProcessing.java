@@ -309,15 +309,13 @@ public class SQLProcessing {
 		return getColumn_Mysql(null);
 	}
 	
+	/**
+	 * get column a column
+	 * 
+	 * @param column - if this is null, get all the columns
+	 * @return
+	 */
 	private ColumnData[] getColumn_Mysql(String column) {
-		
-		if (column == null) {
-			return new ColumnData[0];
-		}
-		
-		if (column.length() == 0) {
-			return new ColumnData[0];
-		}
 		
 		String cquery = "";
 		if (column != null) {
