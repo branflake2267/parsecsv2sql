@@ -1213,7 +1213,8 @@ public class SQLProcessing {
 		// loop through columns and see if they are empty
 		ColumnData[] columns = getColumns();
 		for(int i=0; i < columns.length; i++) {
-			System.out.print(".");
+			
+			System.out.println(i + ". checking column: " + columns[i].column + " for data.");
 			if (getColumnHaveStuff(columns[i].column) == false) {
 				deleteColumn(columns[i].column);
 			}
@@ -1281,13 +1282,10 @@ public class SQLProcessing {
 		searchFor.desinationField = column;
 		
 		int index = -1;
-		try {
+		if (matchFields != null) {
 			index = Arrays.binarySearch(matchFields, searchFor, searchByComparator);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-		
+
 		boolean rtn = false;
 		if (index > 0 ) {
 			rtn = true;
