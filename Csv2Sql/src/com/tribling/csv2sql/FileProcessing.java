@@ -9,7 +9,7 @@ import com.tribling.csv2sql.data.SourceData;
 
 public class FileProcessing {
 	
-	private CSVProcessing csv = new CSVProcessing();
+	private CSVProcessing csvProcess = new CSVProcessing();
 	
 	// sql items
 	private DestinationData desinationData;
@@ -41,7 +41,7 @@ public class FileProcessing {
 		}
 		this.matchFields = matchFields;
 		
-		csv.setData(delimiter, destinationData, matchFields);
+		csvProcess.setData(delimiter, destinationData, matchFields);
 		
 		try {
 			run(sourceData);
@@ -65,6 +65,7 @@ public class FileProcessing {
 		isDirectory = sourceData.file.isDirectory();
 		if (isDirectory == true) {
 			files = sourceData.file.listFiles();
+			Arrays.sort(files);
 		} else {
 			files = new File[1];
 			files[0] = sourceData.file;
@@ -74,14 +75,9 @@ public class FileProcessing {
 			}
 		}
 		
-		Arrays.sort(files);
-		
 		loop(files);
-		
-		// close sql connections
-		csv.closeConnection();
-		
-		System.out.println("All Done");
+	
+		System.out.println("All Done: with files.");
 	}
 	
 	/**
@@ -101,16 +97,12 @@ public class FileProcessing {
 				
 				// when extracting a bunch of the same files, skip optimisation after the first
 				if (isDirectory == true && i > 0 && howManyAreFiles(files) > 1) {
-					csv.dropTableOff();
+					csvProcess.dropTableOff();
 				}
 				
-				csv.parseFile(i, files[i]);
-				
-				System.out.println("");
+				csvProcess.parseFile(i, files[i]);
 			}
 		}
-		
-		System.out.println("done with files");
 
 	}
 

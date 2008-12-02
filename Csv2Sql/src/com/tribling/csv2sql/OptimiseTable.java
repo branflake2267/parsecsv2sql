@@ -121,8 +121,7 @@ public class OptimiseTable extends SQLProcessing {
 		if (dd.optimiseRecordsToExamine == 0) {
 			return "";
 		}
-		
-		
+
 		String s = "";
 		if (databaseType == 1) {
 			s = " LIMIT 0," + dd.optimiseRecordsToExamine + " ";
@@ -161,6 +160,7 @@ public class OptimiseTable extends SQLProcessing {
 				String s = result.getString(1);
 				examineField(s);
 			}
+			select.close();
 			result.close();
 		} catch (Exception e) {
 			System.err.println("SQL Statement Error:" + query);
