@@ -38,13 +38,14 @@ public class OptimiseTable extends SQLProcessing {
 		}
 		
 		openConnection();
+	
+		// do this first, b/c it will cause problems after getting columns
+		deleteEmptyColumns();
 		
 		ColumnData[] columns = getColumns();
 		
 		columns = fixColumns(columns);
 	
-		deleteEmptyColumns();
-		
 		// loop through each column
 		loopThroughColumns(columns);
 	
