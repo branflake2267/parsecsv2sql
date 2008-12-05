@@ -1010,10 +1010,11 @@ public class SQLProcessing {
 		
 		ArrayList<IdentityData> ident = new ArrayList<IdentityData>();
 		for (int i=0; i < dd.identityColumns.length; i++) {
+			
 			String column = dd.identityColumns[i].desinationField;
 
 			int index = searchForColumn(columns, column);
-			if (index > 0) {
+			if (index >= 0) {
 				IdentityData id = new IdentityData();
 				id.column = column;
 				
@@ -1038,12 +1039,12 @@ public class SQLProcessing {
 		return idents;
 	}
 	
-	private int searchForColumn(ColumnData[] ar, String key) {
+	private int searchForColumn(ColumnData[] columns, String key) {
 		
 		int index = -1;
-		for (int i=0; i < ar.length; i++) {
+		for (int i=0; i < columns.length; i++) {
 			
-			if (ar[i].column.equals(key)) {
+			if (columns[i].column.equals(key)) {
 				index = i;
 				break;
 			}
