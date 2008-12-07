@@ -6,6 +6,13 @@ import java.sql.Statement;
 
 import com.tribling.csv2sql.data.ColumnData;
 
+/**
+ * 
+ * TODO - when altering, check to see if that column is already exists as needed
+ * 
+ * @author BDonnelson
+ *
+ */
 public class Optimise extends SQLProcessing {
 	
 	private int fieldType = 0;
