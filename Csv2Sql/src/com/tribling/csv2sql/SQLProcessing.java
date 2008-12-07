@@ -170,7 +170,6 @@ public class SQLProcessing {
 		
 		boolean doesExist = isTableExist();
 		if(doesExist == true) {
-			
 			if (dd.dropTable == true && dropTableOff == false) {
 				dropTable();
 			} else if (dd.dropTable == false && doesExist == false) {
@@ -180,7 +179,6 @@ public class SQLProcessing {
 			} else if (doesExist == true) {
 				return;
 			}
-			
 		}
 		
 		String query = "";
@@ -192,10 +190,33 @@ public class SQLProcessing {
 			query = "CREATE TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + " " +
 					"( [ImportID] [INT] IDENTITY(1,1) NOT NULL);";
 		}
-		
 		updateSql(query);
+	}
+	
+	/**
+	 * create the things needed to make the auto import go smoothly
+	 * 
+	 * 1. create import id
+	 * 2. create date created field
+	 * 3. create date updated field
+	 * 4. create index of teh identities, to make the updates go faster
+	 */
+	public void createAutoImportItems() {
+		// in some cases the fields below might not exist so lets verify that.
 		
-		// track changes by date - Create DateCreated column
+		// importid 
+		/* TODO - how to do with auto increment, and who holds the primary key
+		String column = "ImportId";
+		String type = "";
+		if (databaseType == 1) {
+			type = "Int DEFAULT 0";
+		} else if (databaseType == 2) {
+			type = "DATETIME NULL";
+		}
+		createColumn(column, type);
+		*/
+		
+		// DateCreated - shows when this record was inserted
 		String column = "DateCreated";
 		String type = "";
 		if (databaseType == 1) {
@@ -205,7 +226,7 @@ public class SQLProcessing {
 		}
 		createColumn(column, type);
 		
-		// add DateUpdated column to track updates - Create DateUpdated column
+		// DateUpdated - used to show when update happened
 		if (dd.checkForExistingRecordsAndUpdate == true) {
 			column = "DateUpdated";
 			type = "";
@@ -359,21 +380,27 @@ public class SQLProcessing {
 		return getColumn_MsSql(null);
 	}
 	
+	/**
+	 * get column from mssql server - works
+	 * @param column
+	 * @return
+	 */
 	private ColumnData[] getColumn_MsSql(String column) {
 		
 		String cquery = "";
 		if (column != null) {
 			if (column.length() > 1) {
-				cquery = " TABLE_COLUMN='"+column+"' ";
+				cquery = " AND COLUMN_NAME='"+column+"' ";
 			}
 		}
 		
-		String query = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.Columns "
+		String query = "SELECT COLUMN_NAME, Data_Type " +
+				"FROM INFORMATION_SCHEMA.Columns "
 				+ "WHERE TABLE_NAME ='" + dd.table + "' AND "
 				+ "TABLE_SCHEMA='" + dd.tableSchema + "' AND TABLE_CATALOG='"
-				+ dd.database + "' "+cquery+" ";
+				+ dd.database + "' " + cquery + " ";
 
-		System.out.println("query: " + query);
+		//System.out.println("query: " + query);
 
 		ArrayList<ColumnData> c = new ArrayList<ColumnData>();
 		try {
@@ -933,7 +960,12 @@ public class SQLProcessing {
 			String column = dd.identityColumns[i].desinationField;
 			createColumn(column, "VARCHAR(50)");
 			
-			indexes += "`" + column + "`";
+			if (databaseType == 1) {
+				indexes += "`" + column + "`";
+			} else if (databaseType == 2) {
+				indexes += "[" + column + "]";
+			}
+			
 			if (i < dd.identityColumns.length - 1) {
 				indexes += ", ";
 			}
@@ -943,6 +975,9 @@ public class SQLProcessing {
 	
 	/**
 	 * create index for identities given
+	 * 
+	 * TODO - does index already exist (on mssql, it will throw exception if it does.)
+	 * TODO - Plus, when having index, can't alter fields with attached index (at least in MSSQL)
 	 * 
 	 * @param column
 	 */
@@ -954,9 +989,10 @@ public class SQLProcessing {
 			query = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` " +
 					"ADD INDEX `" + indexName + "`(" + s + ");";
 		} else if (databaseType == 2) {
-			// TODO - make this work!
-			query = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + " " +
-					"ADD INDEX [" + s + "]([" + indexName + "]) ;";
+			//query = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + " " +
+					//"ADD INDEX [" + s + "]([" + indexName + "]) ;";
+			
+			query = "CREATE INDEX [" + indexName + "] ON " + dd.database + "." + dd.tableSchema + "." + dd.table + " (" + s + ") ;";
 		}
 		
 		updateSql(query);
@@ -988,7 +1024,7 @@ public class SQLProcessing {
 			if (databaseType == 1) {
 				q += "(`"+c+"`='"+v+"')";
 			} else if (databaseType == 2) {
-				q += "(["+c+"]='"+v+"');";
+				q += "(["+c+"]='"+v+"')";
 			}
 			
 			if (i < identityData.length-1) {

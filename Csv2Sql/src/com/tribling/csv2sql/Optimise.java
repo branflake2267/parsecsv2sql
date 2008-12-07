@@ -108,6 +108,15 @@ public class Optimise extends SQLProcessing {
 		
 	}
 
+	/**
+	 * alter column 
+	 * 
+	 * MSSQL: TODO - when altering a column that has an index attatched to it errors
+	 *        - force it, or is anohter way maybe to alter it when has index on it
+	 * 
+	 * @param column
+	 * @param columnType
+	 */
 	private void alterColumn(String column, String columnType) {
 		
 		if (column.equals("ImportID") | 
