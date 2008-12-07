@@ -56,6 +56,9 @@ public class CSVProcessing {
 		// create table
 		sql.createTable();
 		
+		// create columns importid, datecreated, dateupdated
+		sql.createAutoImportItems();
+		
 		// open the file
 		readFile();
 		
