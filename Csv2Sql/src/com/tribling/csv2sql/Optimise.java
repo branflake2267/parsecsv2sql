@@ -6,7 +6,7 @@ import java.sql.Statement;
 
 import com.tribling.csv2sql.data.ColumnData;
 
-public class OptimiseTable extends SQLProcessing {
+public class Optimise extends SQLProcessing {
 	
 	private int fieldType = 0;
 	private int fieldLength = 0;
@@ -14,7 +14,7 @@ public class OptimiseTable extends SQLProcessing {
 	/**
 	 * constructor
 	 */
-	public OptimiseTable() {
+	public Optimise() {
 	}
 	
 	protected void runOptimise(ColumnData[] columns) {
@@ -76,22 +76,27 @@ public class OptimiseTable extends SQLProcessing {
 	
 	private void loopThroughColumns(ColumnData[] columns) {
 		
+		int i2 = columns.length - 1;
 		for(int i=0; i < columns.length; i++) {
 			
 			// reset
 			fieldType = 0;
 			fieldLength = 0;
+		
+			// console
+			System.out.println(i2 + ". Analyzing column: " + columns[i].column);
 			
-			if (columns[i].equals("Period")) {
-				System.out.println("pause");
-			}
+			// analyze column
+			analyzeColumn(columns[i].column);
 			
-			queryColumn(columns[i].column);
-			
+			// get type that was determined by analyzeColumn
 			String columnType = getColumnType();
 			
 			// alter column
+			// TODO - do we need to alter it, skip if already perfect
 			alterColumn(columns[i].column, columnType);
+			
+			i2--;
 		}
 		
 	}
@@ -105,7 +110,6 @@ public class OptimiseTable extends SQLProcessing {
 		}
 		
 		String modifyColumn = "";
-		
 		String alterQuery = "";
 		if (databaseType == 1) {
 			modifyColumn = "`" + column + "` " + columnType;
@@ -135,7 +139,12 @@ public class OptimiseTable extends SQLProcessing {
 		return s;
 	}
 	
-	private void queryColumn(String column) {
+	/**
+	 * analyze a column for its type and length
+	 * 
+	 * @param column
+	 */
+	private void analyzeColumn(String column) {
 		
 		// when a selection is noted, sample randomly
 		String random = "";
@@ -155,6 +164,8 @@ public class OptimiseTable extends SQLProcessing {
 			query = "SELECT " + getLimitQuery() + " " + column + " " +
 					"FROM " + dd.database + "." + dd.tableSchema + "." + dd.table + " "+random+";";
 		}
+		
+		System.out.println("Analyzing Column For Type: " + column + " query: " + query );
 		
 		try {
 			Connection conn = getConnection();

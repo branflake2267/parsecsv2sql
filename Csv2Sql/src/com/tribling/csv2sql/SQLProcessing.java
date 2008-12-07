@@ -1213,12 +1213,16 @@ public class SQLProcessing {
 		
 		// loop through columns and see if they are empty
 		ColumnData[] columns = getColumns();
+		int i2 = columns.length - 1;
 		for(int i=0; i < columns.length; i++) {
 			
-			System.out.println(i + ". checking column: " + columns[i].column + " for data.");
+			System.out.println(i2 + ". checking column is Empty?: " + columns[i].column + " for data.");
 			if (getColumnHaveStuff(columns[i].column) == false) {
 				deleteColumn(columns[i].column);
 			}
+			
+			// count down
+			i2--;
 		}
 	}
 	
@@ -1329,7 +1333,7 @@ public class SQLProcessing {
 			return "";
 		}
 		
-		OptimiseTable optimise = new OptimiseTable();
+		Optimise optimise = new Optimise();
 		optimise.setDestinationData(dd);
 		optimise.setMatchFields(matchFields);
 		return optimise.resizeColumn(column, columnType, length);
