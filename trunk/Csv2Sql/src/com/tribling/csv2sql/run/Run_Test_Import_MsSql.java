@@ -3,7 +3,7 @@ package com.tribling.csv2sql.run;
 import java.io.File;
 
 import com.tribling.csv2sql.FileProcessing;
-import com.tribling.csv2sql.OptimiseTable;
+import com.tribling.csv2sql.Optimise;
 import com.tribling.csv2sql.SQLProcessing;
 import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.MatchFieldData;
@@ -139,7 +139,7 @@ public class Run_Test_Import_MsSql {
 	 * optimise the table in the end
 	 */
 	private static void runOptimise() {
-		OptimiseTable o = new OptimiseTable();
+		Optimise o = new Optimise();
 		try {
 			o.setDestinationData(destinationData);
 		} catch (Exception e) {

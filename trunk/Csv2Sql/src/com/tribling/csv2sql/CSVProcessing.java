@@ -18,7 +18,7 @@ public class CSVProcessing {
 	private CsvReader reader = null;
 	
 	// sql methods
-	private OptimiseTable sql = new OptimiseTable();
+	private Optimise sql = new Optimise();
 	
 	/**
 	 * constructor
