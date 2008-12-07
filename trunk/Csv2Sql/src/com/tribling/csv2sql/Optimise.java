@@ -114,6 +114,9 @@ public class Optimise extends SQLProcessing {
 	 * MSSQL: TODO - when altering a column that has an index attatched to it errors
 	 *        - force it, or is anohter way maybe to alter it when has index on it
 	 * 
+	 * TODO - on altering a column and not sampling enough records, can cause an exception
+	 *        need to analyze all and try agian maybe
+	 * 
 	 * @param column
 	 * @param columnType
 	 */
