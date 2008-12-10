@@ -145,7 +145,7 @@ public class Optimise extends SQLProcessing {
 	private String getLimitQuery() {
 		
 		// when this is set to 0 sample all
-		if (dd.optimiseRecordsToExamine == 0) {
+		if (dd.optimiseRecordsToExamine <= 0) {
 			return "";
 		}
 
@@ -167,7 +167,7 @@ public class Optimise extends SQLProcessing {
 		
 		// when a selection is noted, sample randomly
 		String random = "";
-		if (dd.optimiseRecordsToExamine == 0) {
+		if (dd.optimiseRecordsToExamine > 0) {
 			if (databaseType == 1) {
 				random = "ORDER BY RAND()";
 			} else if(databaseType == 2) {
