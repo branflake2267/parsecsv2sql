@@ -679,6 +679,7 @@ public class SQLProcessing {
         } catch(Exception e) { 
         	System.err.println("Mysql Statement Error: " + query);
         	e.printStackTrace();
+        	System.out.println("");
         }
 	}
 	
