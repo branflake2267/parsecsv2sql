@@ -109,6 +109,9 @@ public class SQLProcessing {
 	/**
 	 * open the sql connection to work with
 	 * 
+	 * TODO - I am not so sure this is the best way to open two connections. 
+	 * TODO - resize column opens two connections which is overkill
+	 * 
 	 * @throws Exception 
 	 */
 	public void openConnection() {
@@ -605,6 +608,26 @@ public class SQLProcessing {
 	 * @return
 	 */
 	protected Connection getConnection() {
+		
+		/*
+		// TODO check to see if connection dies for some reason
+		// TODO add better error checking on longevity of connection
+		if (conn1 == null) {
+			if (databaseType == 1) {
+				conn1 = getConn_MySql();
+			} else if (databaseType == 2) {
+				conn1 = getConn_MsSql();
+			}
+		}
+		if (conn2 == null) {
+			if (databaseType == 1) {
+				conn2 = getConn_MySql();
+			} else if (databaseType == 2) {
+				conn2 = getConn_MsSql();
+			}
+		}
+		*/
+		
 		Connection c = null;
 		if (connLoadBalance == 0) {
 			connLoadBalance = 1;
@@ -676,7 +699,7 @@ public class SQLProcessing {
             Statement update = conn.createStatement();
             update.executeUpdate(query);
             update.close();
-        } catch(Exception e) { 
+        } catch(SQLException e) { 
         	System.err.println("Mysql Statement Error: " + query);
         	e.printStackTrace();
         	System.out.println("");
@@ -1373,7 +1396,10 @@ public class SQLProcessing {
 		Optimise optimise = new Optimise();
 		optimise.setDestinationData(dd);
 		optimise.setMatchFields(matchFields);
-		return optimise.resizeColumn(column, columnType, length);
+		optimise.openConnection();
+		String r =  optimise.resizeColumn(column, columnType, length);
+		optimise.closeConnection();
+		return r;
 	}
 	
 	/**
