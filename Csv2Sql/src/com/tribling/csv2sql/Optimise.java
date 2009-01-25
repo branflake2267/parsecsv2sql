@@ -89,6 +89,7 @@ public class Optimise extends SQLProcessing {
     }
 
     alterColumn(column, type);
+    
     return type;
   }
 
@@ -133,8 +134,14 @@ public class Optimise extends SQLProcessing {
    */
   private void alterColumn(String column, String columnType) {
 
-    if (column.equals("ImportID") | column.equals("DateCreated")
-        | column.equals("DateUpdated")) {
+    // skip system columns
+    if (column.equals("ImportID") | column.equals("DateCreated") | column.equals("DateUpdated")) {
+      return;
+    }
+    
+    // TODO - does column already have this type?
+    ColumnData compareColumn = getColumn(column);
+    if (columnType.toLowerCase().equals(compareColumn.type)) {
       return;
     }
 
@@ -153,7 +160,7 @@ public class Optimise extends SQLProcessing {
     updateSql(alterQuery);
 
   }
-
+  
   private String getLimitQuery() {
 
     // when this is set to 0 sample all
