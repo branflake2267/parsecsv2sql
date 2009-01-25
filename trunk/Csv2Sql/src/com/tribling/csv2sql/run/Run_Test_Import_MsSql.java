@@ -65,10 +65,10 @@ public class Run_Test_Import_MsSql {
 		idents[1] = new MatchFieldData();
 		
 		idents[0].sourceField = "Orig Id";
-		idents[0].desinationField = "EmployeeID";
+		idents[0].destinationField = "EmployeeID";
 		
 		idents[1].sourceField = "id";
-		idents[1].desinationField = "ID";
+		idents[1].destinationField = "ID";
 		
 		// setup idents to work with if I want to update
 		destinationData.identityColumns = idents;
@@ -81,55 +81,55 @@ public class Run_Test_Import_MsSql {
 		}
 		
 		matchFields[0].sourceField = "Orig Id";
-		matchFields[0].desinationField = "EmployeeID";
+		matchFields[0].destinationField = "EmployeeID";
 		
 		matchFields[1].sourceField = "q1";
-		matchFields[1].desinationField = "q1.1";
+		matchFields[1].destinationField = "q1.1";
 		
 		matchFields[2].sourceField = "Tech Id";
-		matchFields[2].desinationField = "TechID";
+		matchFields[2].destinationField = "TechID";
 		
 		matchFields[3].sourceField = "Trouble Tkt";
-		matchFields[3].desinationField = "TTN";
+		matchFields[3].destinationField = "TTN";
 		
 		matchFields[4].sourceField = "QType";
-		matchFields[4].desinationField = "SurveyType";
+		matchFields[4].destinationField = "SurveyType";
 		
 		matchFields[5].sourceField = "Empl ID";
-		matchFields[5].desinationField = "EmployeeID";
+		matchFields[5].destinationField = "EmployeeID";
 		
 		matchFields[6].sourceField = "Orig Empl Id";// TODO 
-		matchFields[6].desinationField = "EmployeeID";
+		matchFields[6].destinationField = "EmployeeID";
 		
 		matchFields[7].sourceField = "Employee Id";
-		matchFields[7].desinationField = "EmployeeID";
+		matchFields[7].destinationField = "EmployeeID";
 		
 		matchFields[8].sourceField = "EmpID";	
-		matchFields[8].desinationField = "EmployeeID";
+		matchFields[8].destinationField = "EmployeeID";
 		
 		matchFields[9].sourceField = "OrigEmpl";
-		matchFields[9].desinationField = "EmployeeID";
+		matchFields[9].destinationField = "EmployeeID";
 			
 		matchFields[10].sourceField = "Ts Cps Trbl";
-		matchFields[10].desinationField = "TTN";
+		matchFields[10].destinationField = "TTN";
 		
 		matchFields[11].sourceField = "TasCoTrblTckt";
-		matchFields[11].desinationField = "TTN";
+		matchFields[11].destinationField = "TTN";
 
 		matchFields[12].sourceField = "WizOrder";
-		matchFields[12].desinationField = "TTN";
+		matchFields[12].destinationField = "TTN";
 		
 		matchFields[13].sourceField = "Sub Id";
-		matchFields[13].desinationField = "EmployeeID";
+		matchFields[13].destinationField = "EmployeeID";
 		
 		matchFields[14].sourceField = "Service Ord";
-		matchFields[14].desinationField = "TTN";
+		matchFields[14].destinationField = "TTN";
 		
 		matchFields[15].sourceField = "Orig Emp ID";
-		matchFields[15].desinationField = "EmployeeID";
+		matchFields[15].destinationField = "EmployeeID";
 
 		matchFields[16].sourceField = "Mast Ord#";
-		matchFields[16].desinationField = "TTN2";
+		matchFields[16].destinationField = "TTN2";
 
 		FileProcessing process = new FileProcessing();
 		process.setData(sourceData, destinationData, matchFields);

@@ -25,6 +25,10 @@ public class DestinationData {
 	// one can go from varchar->date, varchar->int (instead of text>date=will not work)
 	public boolean optimiseTextOnly = true;
 	
+	// this will delete indexes, then optimise
+	// a column can't have a index on it if it needs altering
+	public boolean skipDeletingIndexingBeforeOptimise = false;
+	
 	// delete empty columns after parsing a table
 	public boolean deleteEmptyColumns = false;
 	
@@ -53,6 +57,7 @@ public class DestinationData {
 	
 	// if identity columns are given, and this is true, 
 	// create indexes of the identity columns
+	// Also will need Identity Columns listed
 	public boolean createIndexs = true;
 	
 	
