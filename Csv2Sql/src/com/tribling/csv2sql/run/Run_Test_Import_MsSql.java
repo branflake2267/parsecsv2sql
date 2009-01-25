@@ -43,10 +43,10 @@ public class Run_Test_Import_MsSql {
 		destinationData.optimise = false;
 		
 		// this will only do varchar optimisation, but if false, will do ints and dates too
-		destinationData.optimiseTextOnly = true;
+		destinationData.optimise_TextOnly = true;
 		destinationData.deleteEmptyColumns = true;
 		destinationData.checkForExistingRecordsAndUpdate = false; 
-		destinationData.optimiseRecordsToExamine = 2500;
+		destinationData.optimise_RecordsToExamine = 2500;
 		
 		destinationData.databaseType = "MsSql";
 		destinationData.host = "";

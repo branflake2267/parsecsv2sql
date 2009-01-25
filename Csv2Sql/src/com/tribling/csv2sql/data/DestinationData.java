@@ -18,12 +18,19 @@ public class DestinationData {
 	
 	// how many records to examine for optimisation of the column data
 	// records are examine randomly over this many records
-	public int optimiseRecordsToExamine = 1000;
+	public int optimise_RecordsToExamine = 1000;
+	
+	// when Examining the data, examine the recores in the column it randomly
+	public boolean optimise_skipRandomExamine = false;
+	
+	// when Examing the data, ignore null values, this will slow things down in huge record sets
+	public boolean optimise_ignoreNullFieldsWhenExamining = true;
 	
 	// optimise lengths into varchar and text only
 	// this will have to be done first every time, so that
 	// one can go from varchar->date, varchar->int (instead of text>date=will not work)
-	public boolean optimiseTextOnly = true;
+	public boolean optimise_TextOnly = true;
+	
 	
 	// this will delete indexes, then optimise
 	// a column can't have a index on it if it needs altering
