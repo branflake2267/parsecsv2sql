@@ -9,7 +9,8 @@ import com.tribling.csv2sql.data.ColumnData;
 
 /**
  * 
- * TODO - when altering, check to see if that column is already exists as needed
+ * TODO - add an option to skip non TEXT type columns, this way, not to optimize anything already possibily optimized, 
+ *        optimise can always make it bigger automatically
  * 
  * @author BDonnelson
  * 
