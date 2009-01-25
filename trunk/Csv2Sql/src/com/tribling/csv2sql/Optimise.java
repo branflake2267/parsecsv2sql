@@ -142,6 +142,7 @@ public class Optimise extends SQLProcessing {
     // TODO - does column already have this type?
     ColumnData compareColumn = getColumn(column);
     if (columnType.toLowerCase().equals(compareColumn.type)) {
+      System.out.println("Column already has this columnType: " + compareColumn.type);
       return;
     }
 
