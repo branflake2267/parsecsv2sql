@@ -294,22 +294,22 @@ public class Optimise extends SQLProcessing {
     String ignoreNullValues = "";
     if (dd.optimise_ignoreNullFieldsWhenExamining == true) {
       if (databaseType == 1) {
-        ignoreNullValues = "(" + column + " IS NOT NULL)";
+        ignoreNullValues = "WHERE (" + column + " IS NOT NULL)";
       } else if (databaseType == 2) {
-        ignoreNullValues = "(" + column + " IS NOT NULL)";
+        ignoreNullValues = "WHERE (" + column + " IS NOT NULL)";
       }
     }
 
     String query = "";
     if (databaseType == 1) {
       query = "SELECT " + column + " " + 
-      "FROM " + dd.database + "." + dd.table + " " +
-      		"WHERE " + ignoreNullValues + " " + random + " " + getLimitQuery() + ";"; 
+        "FROM " + dd.database + "." + dd.table + " " +
+      	" " + ignoreNullValues + " " + random + " " + getLimitQuery() + ";"; 
       
     } else if (databaseType == 2) {
       query = "SELECT " + getLimitQuery() + " " + column + " " + 
-      "FROM " + dd.database + "." + dd.tableSchema + 
-      "." + dd.table + " " + ignoreNullValues + " " + random + ";"; 
+        "FROM " + dd.database + "." + dd.tableSchema + 
+        "." + dd.table + " " + ignoreNullValues + " " + random + ";"; 
     }
 
     System.out.println("Analyzing Column For Type: " + column + " query: " + query);
