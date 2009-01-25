@@ -227,9 +227,9 @@ public class Optimise extends SQLProcessing {
     }
     
     if (alterTries == 0) {
-      alterTries_UpRecordSampleCount = dd.optimiseRecordsToExamine;
+      alterTries_UpRecordSampleCount = dd.optimise_RecordsToExamine;
     } else {
-      alterTries_UpRecordSampleCount = dd.optimiseRecordsToExamine * 2; 
+      alterTries_UpRecordSampleCount = dd.optimise_RecordsToExamine * 2; 
     }
     
     analyzeColumn(column);
@@ -241,13 +241,13 @@ public class Optimise extends SQLProcessing {
   private String getLimitQuery() {
 
     // when this is set to 0 sample all
-    if (dd.optimiseRecordsToExamine <= 0) {
+    if (dd.optimise_RecordsToExamine <= 0) {
       return "";
     }
 
     int limit = 0;
-    if (dd.optimiseRecordsToExamine > 0) {
-      limit = dd.optimiseRecordsToExamine;
+    if (dd.optimise_RecordsToExamine > 0) {
+      limit = dd.optimise_RecordsToExamine;
     } else if (alterTries_UpRecordSampleCount > 0) { // on a retry up the sampling count
       limit = alterTries_UpRecordSampleCount;
     }
@@ -255,9 +255,9 @@ public class Optimise extends SQLProcessing {
     String sql = "";
     if (limit > 0) {
       if (databaseType == 1) {
-        sql = " LIMIT 0," + dd.optimiseRecordsToExamine + " ";
+        sql = " LIMIT 0," + dd.optimise_RecordsToExamine + " ";
       } else if (databaseType == 2) {
-        sql = " TOP " + dd.optimiseRecordsToExamine + " ";
+        sql = " TOP " + dd.optimise_RecordsToExamine + " ";
       }
     }
 
@@ -283,11 +283,20 @@ public class Optimise extends SQLProcessing {
     // If a sampling number is set, sample radomly
     // this helps in large record sets
     String random = "";
-    if (dd.optimiseRecordsToExamine > 0) {
+    if (dd.optimise_RecordsToExamine > 0 && dd.optimise_skipRandomExamine == false) {
       if (databaseType == 1) {
         random = "ORDER BY RAND()";
       } else if (databaseType == 2) {
         random = "ORDER BY NEWID()";
+      }
+    }
+    
+    String ignoreNullValues = "";
+    if (dd.optimise_ignoreNullFieldsWhenExamining == true) {
+      if (databaseType == 1) {
+        ignoreNullValues = "(" + column + " IS NOT NULL)";
+      } else if (databaseType == 2) {
+        ignoreNullValues = "(" + column + " IS NOT NULL)";
       }
     }
 
@@ -295,12 +304,12 @@ public class Optimise extends SQLProcessing {
     if (databaseType == 1) {
       query = "SELECT " + column + " " + 
       "FROM " + dd.database + "." + dd.table + " " +
-      		"WHERE (" + column + " IS NOT NULL) " + random + " " + getLimitQuery() + ";"; 
+      		"WHERE " + ignoreNullValues + " " + random + " " + getLimitQuery() + ";"; 
       
     } else if (databaseType == 2) {
       query = "SELECT " + getLimitQuery() + " " + column + " " + 
       "FROM " + dd.database + "." + dd.tableSchema + 
-      "." + dd.table + " (" + column + " IS NOT NULL) " + random + ";"; 
+      "." + dd.table + " " + ignoreNullValues + " " + random + ";"; 
     }
 
     System.out.println("Analyzing Column For Type: " + column + " query: " + query);
@@ -342,7 +351,7 @@ public class Optimise extends SQLProcessing {
     // NOTE: optimise only the varchar/text fields
     // (this has to be done first anyway so we can alter varchar->date
     // varchar->int...)
-    if (dd.optimiseTextOnly == true) {
+    if (dd.optimise_TextOnly == true) {
       fieldType = 2;
       return;
     }
