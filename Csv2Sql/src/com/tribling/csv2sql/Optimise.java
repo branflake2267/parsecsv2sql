@@ -189,12 +189,13 @@ public class Optimise extends SQLProcessing {
 
     String query = "";
     if (databaseType == 1) {
-      query = "SELECT " + column + " " + "FROM " + dd.database + "." + dd.table
-          + " " + random + " " + getLimitQuery() + ";";
+      query = "SELECT " + column + " " + 
+      "FROM " + dd.database + "." + dd.table + " " +
+      		"WHERE (" + column + " != '' OR " + column + " NOT NULL) " + random + " " + getLimitQuery() + ";";
     } else if (databaseType == 2) {
-      query = "SELECT " + getLimitQuery() + " " + column + " " + "FROM "
-          + dd.database + "." + dd.tableSchema + "." + dd.table + " " + random
-          + ";";
+      query = "SELECT " + getLimitQuery() + " " + column + " " + 
+      "FROM " + dd.database + "." + dd.tableSchema + 
+      "." + dd.table + " (" + column + " != '' OR " + column + " NOT NULL) " + random + ";";
     }
 
     System.out.println("Analyzing Column For Type: " + column + " query: "
