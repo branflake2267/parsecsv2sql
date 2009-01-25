@@ -196,11 +196,11 @@ public class Optimise extends SQLProcessing {
     if (databaseType == 1) {
       query = "SELECT " + column + " " + 
       "FROM " + dd.database + "." + dd.table + " " +
-      		"WHERE (" + column + " != '') OR (" + column + " IS NOT NULL) " + random + " " + getLimitQuery() + ";";
+      		"WHERE (" + column + " IS NOT NULL) " + random + " " + getLimitQuery() + ";"; // (" + column + " != '') OR 
     } else if (databaseType == 2) {
       query = "SELECT " + getLimitQuery() + " " + column + " " + 
       "FROM " + dd.database + "." + dd.tableSchema + 
-      "." + dd.table + " (" + column + " != '') OR (" + column + " IS NOT NULL) " + random + ";";
+      "." + dd.table + " (" + column + " IS NOT NULL) " + random + ";"; // (" + column + " != '') OR
     }
 
     System.out.println("Analyzing Column For Type: " + column + " query: "
