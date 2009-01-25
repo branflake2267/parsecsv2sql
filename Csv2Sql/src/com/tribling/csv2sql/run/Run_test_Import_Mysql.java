@@ -49,12 +49,12 @@ public class Run_test_Import_Mysql {
 		MatchFieldData[] matchFields = new MatchFieldData[1];
 		matchFields[0] = new MatchFieldData();
 		matchFields[0].sourceField = "ID";
-		matchFields[0].desinationField = "UID";
+		matchFields[0].destinationField = "UID";
 
 		MatchFieldData[] idents = new MatchFieldData[1];
 		idents[0] = new MatchFieldData();
 		idents[0].sourceField = "ID";
-		idents[0].desinationField = "UID";
+		idents[0].destinationField = "UID";
 		dd.identityColumns = idents;
 
 		FileProcessing process = new FileProcessing();

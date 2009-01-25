@@ -16,7 +16,9 @@ import com.tribling.csv2sql.data.ColumnData;
  */
 public class Optimise extends SQLProcessing {
 
+  
   private int fieldType = 0;
+  
   private int fieldLength = 0;
 
   /**
@@ -52,7 +54,7 @@ public class Optimise extends SQLProcessing {
     openConnection();
 
     // have to delete all indexes except primary key so to fix the indexed columns
-    deleteAllIndexs();
+    deleteIndexesBeforeOptimisation();
     
     // do this first, b/c it will cause problems after getting columns
     deleteEmptyColumns();
@@ -70,6 +72,21 @@ public class Optimise extends SQLProcessing {
     closeConnection();
   }
 
+  /**
+   * delete all the indexes, then optimise all columns
+   * Note: not able to alter a indexed column
+   */
+  private void deleteIndexesBeforeOptimisation() {
+    
+    if (dd.skipDeletingIndexingBeforeOptimise == true) {
+      return;
+    }
+    
+    // delete all indexes, so columns can be optimised, then re-index
+    deleteAllIndexs();
+    
+  }
+  
   /**
    * resize a column
    * 
@@ -112,7 +129,6 @@ public class Optimise extends SQLProcessing {
       String columnType = getColumnType();
 
       // alter column
-      // TODO - do we need to alter it, skip if already perfect
       alterColumn(columns[i].column, columnType);
 
       i2--;
@@ -128,6 +144,7 @@ public class Optimise extends SQLProcessing {
    * 
    * TODO - on altering a column and not sampling enough records, can cause an
    * exception need to analyze all and try agian maybe
+   * TODO - resample larger set of records on failure
    * 
    * @param column
    * @param columnType
@@ -139,7 +156,7 @@ public class Optimise extends SQLProcessing {
       return;
     }
     
-    // TODO - does column already have this type?
+    // does column already have this type? skip if it does
     ColumnData compareColumn = getColumn(column);
     if (columnType.toLowerCase().contains(compareColumn.type.toLowerCase())) {
       System.out.println("Column already has this columnType: " + compareColumn.type);
@@ -152,13 +169,30 @@ public class Optimise extends SQLProcessing {
       modifyColumn = "`" + column + "` " + columnType;
       alterQuery = "ALTER TABLE `" + dd.database + "`.`" + dd.table
           + "` MODIFY COLUMN " + modifyColumn;
+      
     } else if (databaseType == 2) {
       modifyColumn = "[" + column + "] " + columnType;
       alterQuery = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "."
           + dd.table + " ALTER COLUMN " + modifyColumn;
     }
 
-    updateSql(alterQuery);
+    // TODO - resample larger amount of records on exception
+    // TODO - then can start with smaller sample size
+    try {
+      Connection conn = getConnection();
+      Statement update = conn.createStatement();
+      update.executeUpdate(alterQuery);
+      update.close();
+      
+    } catch (SQLException e) {
+      System.err.println("Alter failure: " + alterQuery);
+      e.printStackTrace();
+      System.out.println("");
+      
+      // TODO - try agian with a larger sampling
+      // TODO - figure out the larger value on the trace?
+      // TODo - maybe go to that exact record and figure out the length on the column
+    }
 
   }
   
@@ -302,6 +336,19 @@ public class Optimise extends SQLProcessing {
         + " Value::: " + s);
   }
 
+  // TODO - hmmmm can't what I was doing with the types
+  //final static int FIELDTYPE_TEXT = 2;
+  //final static int FIELDTYPE_DATE = 1;
+  //final static int FIELDTYPE_VARCHAR = 2;
+  
+  /**
+   * change the field type int a Int reference
+   * 
+   * TODO - change field types int static final vars
+   * 
+   * @param columnType
+   * @return
+   */
   private int getFieldType(String columnType) {
 
     String type = columnType.toLowerCase();
@@ -364,6 +411,7 @@ public class Optimise extends SQLProcessing {
       columnType = "INT DEFAULT NULL";
       break;
     case 4: // int
+      // TODO small, medium ints?
       if (len < 8) {
         columnType = "INT UNSIGNED ZEROFILL DEFAULT " + len;
       } else {
@@ -522,9 +570,14 @@ public class Optimise extends SQLProcessing {
     return b;
   }
 
+  /**
+   * starts with zeros
+   * @param s
+   * @return
+   */
   private boolean isIntZero(String s) {
     boolean b = false;
-    if (s.matches("[0-9]+") && s.matches("^0")) {
+    if (s.matches("[0-9]+") && s.matches("^0[0-9]+")) {
       b = true;
     }
     return b;
@@ -538,6 +591,15 @@ public class Optimise extends SQLProcessing {
     return b;
   }
 
+  /**
+   * add more date identifications
+   * 
+   * TODO -> jan 09 -> transform it too.
+   * TODO - transform date into epoch int
+   * 
+   * @param s
+   * @return
+   */
   private boolean isDate(String s) {
 
     s = s.toLowerCase();

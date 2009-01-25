@@ -242,7 +242,7 @@ public class SQLProcessing {
 
     // create indexes of identity columns listed
     if (dd.createIndexs == true && dd.identityColumns != null) {
-      createIndexes();
+      createIdentityIndexes();
     }
   }
 
@@ -584,7 +584,7 @@ public class SQLProcessing {
     int index = Arrays.binarySearch(matchFields, searchFor, searchByComparator);
 
     if (index >= 0) {
-      column = matchFields[index].desinationField;
+      column = matchFields[index].destinationField;
     }
 
     return column;
@@ -981,22 +981,35 @@ public class SQLProcessing {
    * create indexes of the identities given
    * 
    * mysql index can't be over a 1000 bytes
+   * Text index has to have a number set
+   * 
+   * TODO - setting default  to varchar(50)
+   * TODO - how to automate? figure out if int is better?
    */
-  private void createIndexes() {
+  private void createIdentityIndexes() {
 
     if (dd.identityColumns == null) {
-      System.out
-          .println("skipping creating indexes, b/c there are no identiy columns listed");
+      System.out.println("skipping creating indexes, b/c there are no identiy columns listed");
       return;
     }
 
     String indexes = "";
     for (int i = 0; i < dd.identityColumns.length; i++) {
-      String column = dd.identityColumns[i].desinationField;
-      createColumn(column, "VARCHAR(50)");
+      
+      String column = dd.identityColumns[i].destinationField;
+      
+      // force a columnType if need be
+      String columnType = null;
+      if (dd.identityColumns[i].destinationField_ColumnType == null) {
+        columnType = "VARCHAR(50) DEFAULT NULL";
+      } else {
+        columnType = dd.identityColumns[i].destinationField_ColumnType;
+      }
+      createColumn(column, columnType);
 
       if (databaseType == 1) {
         indexes += "`" + column + "`";
+        
       } else if (databaseType == 2) {
         indexes += "[" + column + "]";
       }
@@ -1010,10 +1023,6 @@ public class SQLProcessing {
 
   /**
    * create index for identities given
-   * 
-   * TODO - does index already exist (on mssql, it will throw exception if it
-   * does.) TODO - Plus, when having index, can't alter fields with attached
-   * index (at least in MSSQL)
    * 
    * @param column
    */
@@ -1029,6 +1038,7 @@ public class SQLProcessing {
     if (databaseType == 1) {
       query = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` "
           + "ADD INDEX `" + indexName + "`(" + c + ");";
+      
     } else if (databaseType == 2) {
       // query = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." +
       // dd.table + " " +
@@ -1153,7 +1163,7 @@ public class SQLProcessing {
     ArrayList<IdentityData> ident = new ArrayList<IdentityData>();
     for (int i = 0; i < dd.identityColumns.length; i++) {
 
-      String column = dd.identityColumns[i].desinationField;
+      String column = dd.identityColumns[i].destinationField;
 
       int index = searchForColumn(columns, column);
       if (index >= 0) {
@@ -1430,7 +1440,7 @@ public class SQLProcessing {
 
     Comparator<MatchFieldData> searchByComparator = new SortDestinationField();
     MatchFieldData searchFor = new MatchFieldData();
-    searchFor.desinationField = column;
+    searchFor.destinationField = column;
 
     int index = -1;
     if (matchFields != null) {

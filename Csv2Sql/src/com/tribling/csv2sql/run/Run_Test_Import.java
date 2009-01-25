@@ -40,16 +40,16 @@ public class Run_Test_Import {
 		MatchFieldData[] matchFields = new MatchFieldData[4];
 		matchFields[0] = new MatchFieldData();
 		matchFields[0].sourceField = "Orig Empl Id";
-		matchFields[0].desinationField = "EmployeeID";
+		matchFields[0].destinationField = "EmployeeID";
 		matchFields[1] = new MatchFieldData();
 		matchFields[1].sourceField = "R.1";
-		matchFields[1].desinationField = "NPS";
+		matchFields[1].destinationField = "NPS";
 		matchFields[2] = new MatchFieldData();
 		matchFields[2].sourceField = "Tech Id";
-		matchFields[2].desinationField = "TechID";
+		matchFields[2].destinationField = "TechID";
 		matchFields[3] = new MatchFieldData();
 		matchFields[3].sourceField = "Trouble Tkt";
-		matchFields[3].desinationField = "TTN";
+		matchFields[3].destinationField = "TTN";
 
 		FileProcessing process = new FileProcessing();
 		process.setData(sourceData, destinationData, matchFields);

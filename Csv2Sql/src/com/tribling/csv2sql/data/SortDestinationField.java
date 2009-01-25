@@ -7,7 +7,7 @@ public class SortDestinationField implements Comparator<MatchFieldData> {
 	@Override
 	public int compare(MatchFieldData a, MatchFieldData b) {
 		
-		int i = a.desinationField.compareToIgnoreCase(b.desinationField);
+		int i = a.destinationField.compareToIgnoreCase(b.destinationField);
 		
 		return i;
 	}

@@ -5,13 +5,18 @@ import java.util.regex.Pattern;
 
 public class ColumnData {
 
+  // column name - make it sql happy
 	public String column = "";
 	
+	// column field type
 	public String type = "TEXT";
 	
+	// column field length for the given type
 	public int length = 0;
 	
-	
+	/**
+	 * constructor - nothing to do
+	 */
 	public ColumnData() {
 	}
 
@@ -65,11 +70,13 @@ public class ColumnData {
 	 * @return
 	 */
 	public int testText(String value) {
+	  // TODO - add the other types of text
 		return 0;
 	}
 	
 	/**
 	 * test varchar length
+	 * 
 	 * @param value
 	 * @return
 	 */
@@ -81,6 +88,29 @@ public class ColumnData {
 		}
 		
 		return resize;
+	}
+	
+	/**
+	 * figure out the length of an int
+	 * 
+	 * this is goign to be general
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public int testInt(String value) {
+	  
+	  // tiny(127) len=0-2
+	  
+	  // small(32767) len=3-4
+	  
+	  // medium(8388607) len=4-6
+	  
+	  // int(2147483647) len=7-9
+	  
+	  // big int len=9+
+	  
+    return 0;
 	}
 	
 	
