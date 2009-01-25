@@ -22,6 +22,15 @@ public class Optimise extends SQLProcessing {
   
   private int fieldLength = 0;
 
+  // for progressive alter column tries
+  // try more than once, in case it throws a truncated exception
+  private int alterTries = 0;
+  private int alterTries_UpRecordSampleCount = 0;
+  
+  // track sampling of record analyziation
+  private int analyzeTrackingNextNotfication = 1000;
+  private int analyzeTracking = 0;
+  
   /**
    * constructor
    */
@@ -189,13 +198,45 @@ public class Optimise extends SQLProcessing {
       System.err.println("Alter failure: " + alterQuery);
       e.printStackTrace();
       System.out.println("");
-      
-      // TODO - try agian with a larger sampling
-      // TODO - figure out the larger value on the trace?
-      // TODo - maybe go to that exact record and figure out the length on the column
+
+      alterColumnTryAgain(e, column);
     }
 
+    // if we make it this far, make sure these get reset
+    alterTries = 0; // reset
+    alterTries_UpRecordSampleCount = 0; // reset
+    
   }
+  
+  /**
+   * try altering again, after larger sampling
+   * 
+   * NOTE could use the row that got truncated.
+   * 
+   * @param e
+   * @param column
+   */
+  private void alterColumnTryAgain(SQLException e, String column) {
+    
+    // TODO try up to 8 times??
+    if (alterTries == 7) {
+      alterTries = 0; // reset
+      alterTries_UpRecordSampleCount = 0; // reset
+      System.out.println("Won't try the alter agian, moving on");
+      return;
+    }
+    
+    if (alterTries == 0) {
+      alterTries_UpRecordSampleCount = dd.optimiseRecordsToExamine;
+    } else {
+      alterTries_UpRecordSampleCount = dd.optimiseRecordsToExamine * 2; 
+    }
+    
+    analyzeColumn(column);
+    
+    alterTries++;
+  }
+  
   
   private String getLimitQuery() {
 
@@ -204,28 +245,43 @@ public class Optimise extends SQLProcessing {
       return "";
     }
 
-    String s = "";
-    if (databaseType == 1) {
-      s = " LIMIT 0," + dd.optimiseRecordsToExamine + " ";
-    } else if (databaseType == 2) {
-      s = " TOP " + dd.optimiseRecordsToExamine + " ";
+    int limit = 0;
+    if (dd.optimiseRecordsToExamine > 0) {
+      limit = dd.optimiseRecordsToExamine;
+    } else if (alterTries_UpRecordSampleCount > 0) { // on a retry up the sampling count
+      limit = alterTries_UpRecordSampleCount;
     }
-    return s;
+
+    String sql = "";
+    if (limit > 0) {
+      if (databaseType == 1) {
+        sql = " LIMIT 0," + dd.optimiseRecordsToExamine + " ";
+      } else if (databaseType == 2) {
+        sql = " TOP " + dd.optimiseRecordsToExamine + " ";
+      }
+    }
+
+    return sql;
   }
 
   /**
-   * analyze a column for its type and length
+   * analyze a column for its column type and length 
+   *    like varchar(50)
    * 
    * @param column
    */
   private void analyzeColumn(String column) {
 
+    // notify every so many
+    analyzeTrackingNextNotfication = 0;
+    
     if (column.equals("ImportID")) {
       System.out.println("Skipping ImportID");
       return;
     }
     
-    // when a selection is noted, sample randomly
+    // If a sampling number is set, sample radomly
+    // this helps in large record sets
     String random = "";
     if (dd.optimiseRecordsToExamine > 0) {
       if (databaseType == 1) {
@@ -239,23 +295,31 @@ public class Optimise extends SQLProcessing {
     if (databaseType == 1) {
       query = "SELECT " + column + " " + 
       "FROM " + dd.database + "." + dd.table + " " +
-      		"WHERE (" + column + " IS NOT NULL) " + random + " " + getLimitQuery() + ";"; // (" + column + " != '') OR 
+      		"WHERE (" + column + " IS NOT NULL) " + random + " " + getLimitQuery() + ";"; 
+      
     } else if (databaseType == 2) {
       query = "SELECT " + getLimitQuery() + " " + column + " " + 
       "FROM " + dd.database + "." + dd.tableSchema + 
-      "." + dd.table + " (" + column + " IS NOT NULL) " + random + ";"; // (" + column + " != '') OR
+      "." + dd.table + " (" + column + " IS NOT NULL) " + random + ";"; 
     }
 
-    System.out.println("Analyzing Column For Type: " + column + " query: "
-        + query);
+    System.out.println("Analyzing Column For Type: " + column + " query: " + query);
 
-    try {
+    try { // TODO make this a forward connection
       Connection conn = getConnection();
-      Statement select = conn.createStatement();
+      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
+      select.setFetchSize(500); 
       ResultSet result = select.executeQuery(query);
+      int i = 0;
       while (result.next()) {
+        
+        // draw to screen where we are at every so often
+        trackAnalyzation(i);
+        
         String s = result.getString(1);
         examineField(s);
+        
+        i++;
       }
       select.close();
       result.close();
@@ -264,7 +328,7 @@ public class Optimise extends SQLProcessing {
       e.printStackTrace();
     }
   }
-
+  
   private void examineField(String s) {
 
     if (s == null) {
@@ -646,5 +710,18 @@ public class Optimise extends SQLProcessing {
 
     return b;
   }
+  
+  private void trackAnalyzation(int i) {
+    
+    if (i == analyzeTracking) {
+      System.out.println(i);
+      analyzeTracking = analyzeTracking + analyzeTrackingNextNotfication;
+    }
+    
+  }
 
+  
+  
+  
+  
 }

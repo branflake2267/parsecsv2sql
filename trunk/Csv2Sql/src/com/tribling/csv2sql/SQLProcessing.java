@@ -439,9 +439,6 @@ public class SQLProcessing {
   /**
    * create columns
    * 
-   * TODO - examine rows in csv, maybe need to do TEXT as default, but date
-   * doesn't cast(alter) from text in mssql
-   * 
    * @param columns
    * @return
    */
@@ -983,8 +980,7 @@ public class SQLProcessing {
    * mysql index can't be over a 1000 bytes
    * Text index has to have a number set
    * 
-   * TODO - setting default  to varchar(50)
-   * TODO - how to automate? figure out if int is better?
+   * NOTE: setting default  to varchar(50)
    */
   private void createIdentityIndexes() {
 
