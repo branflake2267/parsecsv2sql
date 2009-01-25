@@ -275,8 +275,8 @@ public class Optimise extends SQLProcessing {
     // notify every so many
     analyzeTrackingNextNotfication = 0;
     
-    if (column.equals("ImportID")) {
-      System.out.println("Skipping ImportID");
+    if (column.equals("ImportID") | column.equals("DateCreated") | column.equals("DateUpdated")) {
+      System.out.println("Skipping Internal: " + column);
       return;
     }
     
