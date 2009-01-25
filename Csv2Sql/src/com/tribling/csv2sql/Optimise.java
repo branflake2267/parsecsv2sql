@@ -28,7 +28,7 @@ public class Optimise extends SQLProcessing {
   private int alterTries_UpRecordSampleCount = 0;
   
   // track sampling of record analyziation
-  private int analyzeTrackingNextNotfication = 1000;
+  private int analyzeTrackingNextNotfication = 500;
   private int analyzeTracking = 0;
   
   /**
@@ -305,7 +305,8 @@ public class Optimise extends SQLProcessing {
 
     System.out.println("Analyzing Column For Type: " + column + " query: " + query);
 
-    try { // TODO make this a forward connection
+    try { 
+      // only read 500 records at a time, so not use a ton of memory for large samples
       Connection conn = getConnection();
       Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
       select.setFetchSize(500); 
@@ -711,6 +712,10 @@ public class Optimise extends SQLProcessing {
     return b;
   }
   
+  /**
+   * draw to screen every so often where we are at in the record set
+   * @param i
+   */
   private void trackAnalyzation(int i) {
     
     if (i == analyzeTracking) {
