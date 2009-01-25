@@ -177,6 +177,11 @@ public class Optimise extends SQLProcessing {
    */
   private void analyzeColumn(String column) {
 
+    if (column.equals("ImportID")) {
+      System.out.println("Skipping ImportID");
+      return;
+    }
+    
     // when a selection is noted, sample randomly
     String random = "";
     if (dd.optimiseRecordsToExamine > 0) {
@@ -191,11 +196,11 @@ public class Optimise extends SQLProcessing {
     if (databaseType == 1) {
       query = "SELECT " + column + " " + 
       "FROM " + dd.database + "." + dd.table + " " +
-      		"WHERE (" + column + " != '' OR " + column + " NOT NULL) " + random + " " + getLimitQuery() + ";";
+      		"WHERE (" + column + " != '') OR (" + column + " IS NOT NULL) " + random + " " + getLimitQuery() + ";";
     } else if (databaseType == 2) {
       query = "SELECT " + getLimitQuery() + " " + column + " " + 
       "FROM " + dd.database + "." + dd.tableSchema + 
-      "." + dd.table + " (" + column + " != '' OR " + column + " NOT NULL) " + random + ";";
+      "." + dd.table + " (" + column + " != '') OR (" + column + " IS NOT NULL) " + random + ";";
     }
 
     System.out.println("Analyzing Column For Type: " + column + " query: "
