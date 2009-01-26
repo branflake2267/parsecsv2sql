@@ -51,7 +51,7 @@ public class Optimise extends SQLProcessing {
   }
 
   /**
-   * optimise the table columns/fields to the lengths that are best
+   * I want to optimise this table
    */
   public void runOptimise() {
 
@@ -81,6 +81,64 @@ public class Optimise extends SQLProcessing {
     // close the connections at the end
     closeConnection();
   }
+  
+  /**
+   * I want to optimise and index these columns
+   * 
+   * @param c - name of the column in array
+   */
+  public void runIndexing(String[] c) {
+    
+    if (c == null) {
+      System.out.println("no columns to index");
+      return;
+    }
+    
+    // open connections to work with the data
+    openConnection();
+    
+    // TODO - optional does indexing need to be deleted first?
+    
+    // first optimise the columns that need indexing
+    ColumnData[] columns = getColumns(c);
+    loopThroughColumns(columns);
+    
+    // index the same columns
+    indexColumns(columns);
+    
+    // close the connections at the end
+    closeConnection();
+    
+    System.out.println("Done Indexing!");
+  }
+  
+  /**
+   * I want to optimise and reverse index these columns
+   * 
+   * @param column
+   */
+  public void runReverseIndex(String[] c) {
+    
+    // open connections to work with the data
+    openConnection();
+    
+    // TODO - optional does indexing need to be deleted first?
+       
+    // first optimise the columns that need indexing
+    ColumnData[] columns = getColumns(c);
+    loopThroughColumns(columns);
+    
+    // copy data to reverse columns
+    columns = createReverseColumns(columns);
+    
+    // index the same columns
+    indexColumns(columns);
+    
+    // close the connections at the end
+    closeConnection();
+    
+    System.out.println("Done Indexing!");
+  }
 
   /**
    * delete all the indexes, then optimise all columns
@@ -104,7 +162,7 @@ public class Optimise extends SQLProcessing {
    * @param columnType
    * @param length
    */
-  public String resizeColumn(String column, String columnType, int length) {
+  protected String resizeColumn(String column, String columnType, int length) {
     this.fieldLength = length;
     this.fieldType = getFieldType(columnType);
 
@@ -670,7 +728,7 @@ public class Optimise extends SQLProcessing {
    * add more date identifications
    * 
    * TODO -> jan 09 -> transform it too.
-   * TODO - transform date into epoch int
+   * TODO - transform the value date into sql date to insert when transforming column
    * 
    * @param s
    * @return
@@ -734,8 +792,29 @@ public class Optimise extends SQLProcessing {
     
   }
 
+  /**
+   * index several columns
+   * 
+   * @param columns
+   */
+  private void indexColumns(ColumnData[] columns) {
+    
+    for (int i=0; i < columns.length; i++) {
+      String indexName = "auto_" + columns[i].column;
+      String column = "`" + columns[i].column + "`";
+      
+      if (columns[i].type.contains("Text")) {
+        // TODO - what to do for a text type column?? 
+        // TODO - set index length
+      }
+      
+      createIndex(indexName, column);
+    }
+    
+  }
   
-  
+
+
   
   
 }
