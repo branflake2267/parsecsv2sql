@@ -244,6 +244,8 @@ public class Optimise extends SQLProcessing {
           + dd.table + " ALTER COLUMN " + modifyColumn;
     }
 
+    System.out.println("altering: " + alterQuery);
+    
     // TODO - resample larger amount of records on exception
     // TODO - then can start with smaller sample size
     try {
