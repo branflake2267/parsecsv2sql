@@ -27,8 +27,8 @@ import com.tribling.csv2sql.data.SortSourceField;
 public class SQLProcessing {
  
   int connLoadBalance = 0;
-  protected Connection conn1;
-  protected Connection conn2;
+  protected Connection conn1 = null;
+  protected Connection conn2 = null;
 
   // track where at in the importing
   private int index = 0;
@@ -39,14 +39,14 @@ public class SQLProcessing {
   private boolean dropTableOff = false;
 
   // replace these fields
-  private MatchFieldData[] matchFields;
+  private MatchFieldData[] matchFields = null;
 
   // what database brand?
-  protected int databaseType;
+  protected int databaseType = 0;
 
   // keep track of the columns name, type and length
   // to make sure the data will fit into the columns that already exist
-  private ColumnData[] columns;
+  private ColumnData[] columns = null;
 
   /**
    * constructor
@@ -296,6 +296,21 @@ public class SQLProcessing {
     return rtn;
   }
 
+  /**
+   * get columndata for columns using list of string array of column names
+   * 
+   * @param columns
+   * @return
+   */
+  protected ColumnData[] getColumns(String[] columns) {
+    ColumnData[] rtncolumns = new ColumnData[columns.length];
+    for (int i=0; i < columns.length; i++) {
+      rtncolumns[i] = new ColumnData();
+      rtncolumns[i] = getColumn(columns[i]);
+    }
+    return rtncolumns;
+  }
+  
   /**
    * get columns name, type, length info
    * 
@@ -1014,26 +1029,30 @@ public class SQLProcessing {
         indexes += ", ";
       }
     }
-    createIndex(indexes);
+    
+    // created the index
+    String indexName = "index_auto";
+    createIndex(indexName, indexes);
   }
 
   /**
    * create index for identities given
    * 
-   * @param column
+   * NOTE: skip the primary ImportID 
+   * 
+   * @param columns - can be multiple columns
    */
-  private void createIndex(String c) {
+  protected void createIndex(String indexName, String columns) {
 
-    boolean exist = doesIndexExist(c);
+    boolean exist = doesIndexExist(columns);
     if (exist == true) {
       return;
     }
 
-    String indexName = "index_auto";
     String query = "";
     if (databaseType == 1) {
       query = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` "
-          + "ADD INDEX `" + indexName + "`(" + c + ");";
+          + "ADD INDEX `" + indexName + "`(" + columns + ");";
       
     } else if (databaseType == 2) {
       // query = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." +
@@ -1041,7 +1060,7 @@ public class SQLProcessing {
       // "ADD INDEX [" + s + "]([" + indexName + "]) ;";
 
       query = "CREATE INDEX [" + indexName + "] ON " + dd.database + "."
-          + dd.tableSchema + "." + dd.table + " (" + c + ") ;";
+          + dd.tableSchema + "." + dd.table + " (" + columns + ") ;";
     }
 
     updateSql(query);
@@ -1515,5 +1534,52 @@ public class SQLProcessing {
     return rtn;
   }
 
+  /**
+   * Create several reverse columns
+   * 
+   * @param columns
+   */
+  protected ColumnData[] createReverseColumns(ColumnData[] columns) {
+    
+    ColumnData[] rtn = new ColumnData[columns.length];
+    for (int i=0; i < columns.length; i++) {
+      rtn[i] = new ColumnData();
+      rtn[i] = createReversedColumn(columns[i]);
+    }
+    
+    return rtn;
+  }
+  
+  /**
+   * create a column in reverse of its source
+   * 
+   * @param srcColumn - column to reverse
+   */
+  private ColumnData createReversedColumn(ColumnData c) {
+    
+    String srcColumn = c.column;
+    String dstColumn = c.column + "__Reverse";
+    String type = c.type;
+    createColumn(dstColumn, type);
+    
+    // copy the data
+    String sql = "";
+    if (databaseType == 1) {
+      sql = "UPDATE " + dd.table + " " +
+        "SET " + dstColumn + "=REVERSE(" + srcColumn + ") " +
+        "WHERE (" + dstColumn + "='');"; // TODO - (dstColumn IS NOT NULL);
+    } else if (databaseType == 2) {
+      // TODO finish later
+      sql = "";
+    }
+    
+    updateSql(sql);
+    
+    // send back reverse column name for indexing
+    ColumnData rtn = c;
+    rtn.column = dstColumn;
+    return rtn;
+  }
+  
 }// end class
 
