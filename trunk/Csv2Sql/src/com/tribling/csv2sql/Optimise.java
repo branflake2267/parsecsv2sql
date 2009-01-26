@@ -276,8 +276,7 @@ public class Optimise extends SQLProcessing {
    */
   private void alterColumnTryAgain(SQLException e, String column) {
     
-    // TODO try up to 8 times??
-    if (alterTries == 7) {
+    if (alterTries == 10) { // up to sample 11x is 1,024,000 records
       alterTries = 0; // reset
       alterTries_UpRecordSampleCount = 0; // reset
       System.out.println("Won't try the alter agian, moving on");
