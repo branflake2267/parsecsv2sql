@@ -712,7 +712,7 @@ public class SQLProcessing {
       return;
     }
 
-    System.out.println("f:" + indexFile + ": row:" + index + ". " + query);
+    System.out.println("f:" + indexFile + ": row:" + index); // + ". " + query
 
     try {
       Connection conn = getConnection();
