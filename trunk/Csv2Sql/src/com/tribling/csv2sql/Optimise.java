@@ -126,7 +126,7 @@ public class Optimise extends SQLProcessing {
        
     // first optimise the columns that need indexing
     ColumnData[] columns = getColumns(c);
-    loopThroughColumns(columns);
+    //loopThroughColumns(columns);
     
     // copy data to reverse columns
     columns = createReverseColumns(columns);
@@ -802,7 +802,7 @@ public class Optimise extends SQLProcessing {
     
     for (int i=0; i < columns.length; i++) {
       String indexName = "auto_" + columns[i].column;
-      String column = "`" + columns[i].column + "`";
+      String column = columns[i].column;
       
       if (columns[i].type.contains("Text")) {
         // TODO - what to do for a text type column?? 

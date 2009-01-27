@@ -1044,7 +1044,7 @@ public class SQLProcessing {
    */
   protected void createIndex(String indexName, String columns) {
 
-    boolean exist = doesIndexExist(columns);
+    boolean exist = doesIndexExist(indexName);
     if (exist == true) {
       return;
     }
@@ -1081,7 +1081,7 @@ public class SQLProcessing {
     } else if (databaseType == 2) {
       sql = "";
     }
-
+    System.out.println("sql: " + sql);
     return getBooleanQueryFromString(sql);
   }
 
