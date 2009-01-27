@@ -224,6 +224,9 @@ public class Optimise extends SQLProcessing {
       return;
     }
     
+    // if there is an index on this column get rid of the index, so it can be resized
+    deleteIndexsForColumn(column);
+    
     // does column already have this type? skip if it does
     ColumnData compareColumn = getColumn(column);
     if (columnType.toLowerCase().contains(compareColumn.type.toLowerCase())) {
