@@ -1084,6 +1084,37 @@ public class SQLProcessing {
     System.out.println("sql: " + sql);
     return getBooleanQueryFromString(sql);
   }
+  
+  /**
+   * delete indexes for this column, (so that one can resize column)
+   * 
+   * @param c
+   */
+  protected void deleteIndexsForColumn(String c) {
+    
+    String sql = "";
+    if (databaseType == 1) {
+      sql = "SHOW INDEX FROM `" + dd.table + "` FROM `" + dd.database + "` "
+      + "WHERE (Key_name != 'Primary') AND (Key_name = '" + c + "')";
+      
+    } else if (databaseType == 2) {
+      sql = "";
+    }
+
+    try {
+      Connection conn = getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        deleteIndex(result.getString(3));
+      }
+      select.close();
+      result.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    }
+  }
 
   /**
    * delete all indexes except primary
