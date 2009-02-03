@@ -1063,7 +1063,11 @@ public class SQLProcessing {
           + dd.tableSchema + "." + dd.table + " (" + columns + ") ;";
     }
 
+    System.out.println("indexing reverse: " + query);
+    
     updateSql(query);
+    
+    System.out.println("finished with reverse index");
   }
 
   /**
@@ -1604,7 +1608,11 @@ public class SQLProcessing {
       sql = "";
     }
     
+    System.out.println("copying reverse: " + sql);
+    
     updateSql(sql);
+    
+    System.out.println("finished with reverse copy");
     
     // send back reverse column name for indexing
     ColumnData rtn = c;
