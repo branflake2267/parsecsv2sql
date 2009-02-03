@@ -296,12 +296,9 @@ public class Optimise extends SQLProcessing {
       System.out.println("Won't try the alter agian, moving on");
       return;
     }
-    
-    if (alterTries == 0) {
-      alterTries_UpRecordSampleCount = dd.optimise_RecordsToExamine;
-    } else {
-      alterTries_UpRecordSampleCount = dd.optimise_RecordsToExamine * 2; 
-    }
+   
+    // double amount of sampling from last time
+    alterTries_UpRecordSampleCount = dd.optimise_RecordsToExamine * 2; 
     
     analyzeColumn(column);
     
