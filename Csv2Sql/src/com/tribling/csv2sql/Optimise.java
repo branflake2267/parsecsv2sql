@@ -293,14 +293,18 @@ public class Optimise extends SQLProcessing {
     if (alterTries == 10) { // up to sample 11x is 1,024,000 records
       alterTries = 0; // reset
       alterTries_UpRecordSampleCount = 0; // reset
+      dd.optimise_RecordsToExamine = 1000; // TODO - reset back to what was given?
       System.out.println("Won't try the alter agian, moving on");
       return;
     }
    
     // double amount of sampling from last time
-    alterTries_UpRecordSampleCount = dd.optimise_RecordsToExamine * 2; 
+    dd.optimise_RecordsToExamine = dd.optimise_RecordsToExamine * 2; 
     
     analyzeColumn(column);
+    
+    String columnType = getColumnType();
+    alterColumn(column, columnType);
     
     alterTries++;
   }
