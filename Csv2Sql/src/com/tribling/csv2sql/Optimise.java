@@ -343,15 +343,12 @@ public class Optimise extends SQLProcessing {
    */
   private void analyzeColumn(String column) {
 
-    // notify every so many
-    analyzeTrackingNextNotfication = 0;
-    
     if (column.equals("ImportID") | column.equals("DateCreated") | column.equals("DateUpdated")) {
       System.out.println("Skipping Internal: " + column);
       return;
     }
     
-    // If a sampling number is set, sample radomly
+    // If a sampling number is set, sample randomly
     // this helps in large record sets
     String random = "";
     if (dd.optimise_RecordsToExamine > 0 && dd.optimise_skipRandomExamine == false) {
@@ -374,8 +371,7 @@ public class Optimise extends SQLProcessing {
     String query = "";
     if (databaseType == 1) {
       query = "SELECT " + column + " " + 
-        "FROM " + dd.database + "." + dd.table + " " +
-      	" " + ignoreNullValues + " " + random + " " + getLimitQuery() + ";"; 
+        "FROM " + dd.database + "." + dd.table + " " + ignoreNullValues + " " + random + " " + getLimitQuery() + ";"; 
       
     } else if (databaseType == 2) {
       query = "SELECT " + getLimitQuery() + " " + column + " " + 
