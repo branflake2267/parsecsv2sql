@@ -119,6 +119,11 @@ public class Optimise extends SQLProcessing {
    */
   public void runReverseIndex(String[] c) {
     
+    if (c.length == 0) {
+      System.out.println("nothing to reverse index");
+      return;
+    }
+    
     // open connections to work with the data
     openConnection();
     
@@ -130,6 +135,10 @@ public class Optimise extends SQLProcessing {
     
     // copy data to reverse columns
     columns = createReverseColumns(columns);
+    
+    if (columns.length == 0) {
+      return;
+    }
     
     // index the same columns
     indexColumns(columns);
