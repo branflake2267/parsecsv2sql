@@ -355,6 +355,15 @@ public class Optimise extends SQLProcessing {
       return;
     }
     
+    // this will get the field length for sure
+    fieldLength = getMaxFieldLength(column);
+    
+    // we don't need to analyze anything if its going to be varchar/text
+    if (dd.optimise_TextOnly == true) {
+      fieldType = 2;
+      return;
+    }
+    
     // If a sampling number is set, sample randomly
     // this helps in large record sets
     String random = "";
@@ -410,9 +419,7 @@ public class Optimise extends SQLProcessing {
       e.printStackTrace();
     }
     
-    // this will get the field length for sure
-    fieldLength = getMaxFieldLength(column);
-    
+
   }
   
   private int getMaxFieldLength(String column) {
