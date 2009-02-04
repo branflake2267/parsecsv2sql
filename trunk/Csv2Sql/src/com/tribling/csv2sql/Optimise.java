@@ -238,10 +238,10 @@ public class Optimise extends SQLProcessing {
       return;
     }
     
-    // if there is an index on this column get rid of the index, so it can be resized
+    // possible skip: if there is an index on this column get rid of the index, so it can be resized
     deleteIndexsForColumn(column);
     
-    // does column already have this type? skip if it does
+    // possible skip: does column already have this type? skip if it does
     ColumnData compareColumn = getColumn(column);
     if (columnType.toLowerCase().contains(compareColumn.type.toLowerCase())) {
       System.out.println("Column already has this columnType: " + compareColumn.type);
