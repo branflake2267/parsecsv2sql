@@ -705,7 +705,7 @@ public class SQLProcessing {
    * 
    * @param query
    */
-  public void updateSql(String query) {
+   protected void updateSql(String query) {
 
     if (query == null) {
       System.out.println("no query given");
@@ -732,7 +732,7 @@ public class SQLProcessing {
    * @param query
    * @return
    */
-  private boolean getBooleanQueryFromString(String query) {
+  protected boolean getBooleanQueryFromString(String query) {
 
     String value = null;
     try {
@@ -757,7 +757,7 @@ public class SQLProcessing {
     return rtn;
   }
 
-  private int getQueryInt(String query) {
+  protected int getQueryInt(String query) {
 
     int i = 0;
     try {
@@ -777,7 +777,7 @@ public class SQLProcessing {
     return i;
   }
 
-  private int getQueryIdent(String query) {
+  protected int getQueryIdent(String query) {
     int i = 0;
     try {
       Connection conn = getConnection();

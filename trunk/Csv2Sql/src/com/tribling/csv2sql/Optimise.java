@@ -17,19 +17,29 @@ import com.tribling.csv2sql.data.ColumnData;
  */
 public class Optimise extends SQLProcessing {
 
-  
+  // column field type, determined during examine
   private int fieldType = 0;
   
+  // column field length, determined using getMaxFieldLength
   private int fieldLength = 0;
 
-  // for progressive alter column tries
-  // try more than once, in case it throws a truncated exception
+
+  @Deprecated
   private int alterTries = 0;
+  
+  @Deprecated
   private int alterTries_UpRecordSampleCount = 0;
   
-  // track sampling of record analyziation
+  // track sampling of record analyziation steps
   private int analyzeTrackingNextNotfication = 500;
+  
+  // track sampling of record index
   private int analyzeTracking = 0;
+  
+  // TODO - move types to this
+  final private static int FIELDTYPE_TEXT = 2;
+  final private static int FIELDTYPE_DATE = 1;
+  final private static int FIELDTYPE_VARCHAR = 2;
   
   /**
    * constructor
@@ -216,12 +226,7 @@ public class Optimise extends SQLProcessing {
   /**
    * alter column
    * 
-   * MSSQL: TODO - when altering a column that has an index attatched to it
-   * errors - force it, or is anohter way maybe to alter it when has index on it
-   * 
-   * TODO - on altering a column and not sampling enough records, can cause an
-   * exception need to analyze all and try agian maybe
-   * TODO - resample larger set of records on failure
+   * NOTE - now using getMaxFieldLength to find columns max length
    * 
    * @param column
    * @param columnType
@@ -247,19 +252,15 @@ public class Optimise extends SQLProcessing {
     String alterQuery = "";
     if (databaseType == 1) {
       modifyColumn = "`" + column + "` " + columnType;
-      alterQuery = "ALTER TABLE `" + dd.database + "`.`" + dd.table
-          + "` MODIFY COLUMN " + modifyColumn;
+      alterQuery = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` MODIFY COLUMN " + modifyColumn;
       
     } else if (databaseType == 2) {
       modifyColumn = "[" + column + "] " + columnType;
-      alterQuery = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "."
-          + dd.table + " ALTER COLUMN " + modifyColumn;
+      alterQuery = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + " ALTER COLUMN " + modifyColumn;
     }
 
     System.out.println("altering: " + alterQuery);
     
-    // TODO - resample larger amount of records on exception
-    // TODO - then can start with smaller sample size
     try {
       Connection conn = getConnection();
       Statement update = conn.createStatement();
@@ -271,6 +272,8 @@ public class Optimise extends SQLProcessing {
       e.printStackTrace();
       System.out.println("");
 
+      // not sure if i will need this any more.
+      // TODO - maybe look specifically for truncated error
       alterColumnTryAgain(e, column);
     }
 
@@ -283,11 +286,15 @@ public class Optimise extends SQLProcessing {
   /**
    * try altering again, after larger sampling
    * 
-   * NOTE could use the row that got truncated.
+   * TODO - this could happen from truncate
+   * TODO - can cast into
+   * 
+   * NOTE - this is not needed anymore b/c using getMaxFieldLength to fix the error of truncation
    * 
    * @param e
    * @param column
    */
+  @Deprecated
   private void alterColumnTryAgain(SQLException e, String column) {
     
     if (alterTries == 10) { // up to sample 11x is 1,024,000 records
@@ -309,7 +316,6 @@ public class Optimise extends SQLProcessing {
     alterTries++;
   }
   
-  
   private String getLimitQuery() {
 
     // when this is set to 0 sample all
@@ -320,9 +326,7 @@ public class Optimise extends SQLProcessing {
     int limit = 0;
     if (dd.optimise_RecordsToExamine > 0) {
       limit = dd.optimise_RecordsToExamine;
-    } else if (alterTries_UpRecordSampleCount > 0) { // on a retry up the sampling count
-      limit = alterTries_UpRecordSampleCount;
-    }
+    } 
 
     String sql = "";
     if (limit > 0) {
@@ -339,6 +343,8 @@ public class Optimise extends SQLProcessing {
   /**
    * analyze a column for its column type and length 
    *    like varchar(50)
+   *    
+   * NOTE: on large tables random makes it create a tmp table sort which could take a while
    * 
    * @param column
    */
@@ -390,12 +396,10 @@ public class Optimise extends SQLProcessing {
       ResultSet result = select.executeQuery(query);
       int i = 0;
       while (result.next()) {
-        
+       
         // draw to screen where we are at every so often
         trackAnalyzation(i);
-        
-        String s = result.getString(1);
-        examineField(s);
+        examineField(result.getString(1));
         
         i++;
       }
@@ -405,8 +409,35 @@ public class Optimise extends SQLProcessing {
       System.err.println("SQL Statement Error:" + query);
       e.printStackTrace();
     }
+    
+    // this will get the field length for sure
+    fieldLength = getMaxFieldLength(column);
+    
   }
   
+  private int getMaxFieldLength(String column) {
+    
+    String sql = "";
+    if (databaseType == 1) {
+      sql = "SELECT MAX(LENGTH(" + column + ") FROM " + dd.database + "." + dd.table;
+    } else if (databaseType == 2) {
+      // TODO
+      sql = "";
+    }
+    
+    int columnLen = getQueryInt(sql);
+    
+    return columnLen;
+  }
+  
+  /**
+   * figure out what type of column 
+   * 
+   * TODO - when down to varchar, stop examining rows
+   * TODO - examine from beginning to end, use ratio instead
+   *    if found 30%(guess) and there all numbers? maybe set that as a num instead of looking through all
+   * @param s
+   */
   private void examineField(String s) {
 
     if (s == null) {
@@ -415,14 +446,6 @@ public class Optimise extends SQLProcessing {
 
     // whats the size of the field length
     setFieldLength(s);
-
-    // NOTE: optimise only the varchar/text fields
-    // (this has to be done first anyway so we can alter varchar->date
-    // varchar->int...)
-    if (dd.optimise_TextOnly == true) {
-      fieldType = 2;
-      return;
-    }
 
     boolean isInt = false;
     boolean isZero = false;
@@ -457,33 +480,24 @@ public class Optimise extends SQLProcessing {
     } else if (isText == true && fieldType != 1) {
       fieldType = 2; // varchar
 
-    } else if (isInt == true && isZero == true && fieldType != 1
-        && fieldType != 2 && fieldType != 5) { // not date, text, decimal
+    } else if (isInt == true && isZero == true && fieldType != 1 && fieldType != 2 && fieldType != 5) { // not date, text, decimal
       fieldType = 3; // int with zeros infront 0000123
 
-    } else if (isInt == true && fieldType != 2 && fieldType != 3
-        && fieldType != 5) { // not date,text,decimal
+    } else if (isInt == true && fieldType != 2 && fieldType != 3 && fieldType != 5) { // not date,text,decimal
       fieldType = 4; // is Int
 
     } else if (isDecimal == true && fieldType != 1 && fieldType != 2) {
       fieldType = 5; // is decimal
 
-    } else if (isEmpty == true && fieldType != 1 && fieldType != 2
-        && fieldType != 3 && fieldType != 4 && fieldType != 5) { // has nothing
+    } else if (isEmpty == true && fieldType != 1 && fieldType != 2 && fieldType != 3 && fieldType != 4 && fieldType != 5) { // has nothing
       fieldType = 6;
     } else {
       fieldType = 7;
     }
 
-    System.out.println("fieldType: " + fieldType + " Length: " + fieldLength
-        + " Value::: " + s);
+    System.out.println("fieldType: " + fieldType + " Length: " + fieldLength + " Value::: " + s);
   }
 
-  // TODO - hmmmm can't what I was doing with the types
-  //final static int FIELDTYPE_TEXT = 2;
-  //final static int FIELDTYPE_DATE = 1;
-  //final static int FIELDTYPE_VARCHAR = 2;
-  
   /**
    * change the field type int a Int reference
    * 
@@ -519,6 +533,10 @@ public class Optimise extends SQLProcessing {
    */
   private String getColumnType() {
 
+    if (dd.optimise_TextOnly == true) {
+      fieldType = 2;
+    }
+    
     String columnType = null;
 
     if (databaseType == 1) {
@@ -541,48 +559,45 @@ public class Optimise extends SQLProcessing {
     String columnType = "";
     switch (fieldType) {
     case 1: // datetime
-      columnType = "DATETIME DEFAULT NULL";
+      // TODO must transform column text into date
+      // columnType = "DATETIME DEFAULT NULL";
+      columnType = getText_Mysql();
       break;
     case 2: // varchar
-      if (len > 255) {
-        columnType = "TEXT DEFAULT NULL";
-      } else {
-        columnType = "VARCHAR(" + len + ") DEFAULT NULL";
-      }
+      columnType = getText_Mysql();
       break;
     case 3: // int unsigned - with zero fill
-      columnType = "INT DEFAULT NULL";
-      break;
-    case 4: // int
-      // TODO small, medium ints?
-      if (len < 8) {
+      if (len < 10) {
         columnType = "INT UNSIGNED ZEROFILL DEFAULT " + len;
       } else {
         columnType = "BIGINT UNSIGNED ZEROFILL DEFAULT " + len;
       }
       break;
+    case 4: // int
+      if (len < 10) {
+        columnType = "INT DEFAULT 0";
+      } else {
+        columnType = "BIGINT DEFAULT 0";
+      }
+      break;
     case 5: // decimal
-      // TODO columnType = "DECIMAL(18, 2) DEFAULT NULL";
-      columnType = "VARCHAR(50) DEFAULT NULL";
+      // TODO figure - columnType = "DECIMAL(18, 2) DEFAULT NULL";
+      columnType = getText_Mysql();
       break;
     case 6: // empty
-      columnType = "VARCHAR(" + len + ") DEFAULT NULL";
+      columnType = getText_Mysql();
       break;
     case 7: // other
-      columnType = "VARCHAR(" + len + ") DEFAULT NULL";
+      columnType = getText_Mysql();
       break;
-    default:
-      if (len > 255) {
-        columnType = "TEXT DEFAULT NULL";
-      } else {
-        columnType = "VARCHAR(" + len + ") DEFAULT NULL";
-      }
+    default: // all others
+      columnType = getText_Mysql();
       break;
     }
 
     return columnType;
   }
-
+  
   private String getColumnType_MsSql() {
 
     int len = getLenthForType();
@@ -619,12 +634,10 @@ public class Optimise extends SQLProcessing {
       columnType = "[VARCHAR](50) NULL";
       break;
     case 6: // empty
-      columnType = "[VARCHAR](" + len + ") NULL"; // TODO - delete this column
-                                                  // later
+      columnType = "[VARCHAR](" + len + ") NULL"; 
       break;
     case 7: // other
-      columnType = "[VARCHAR](" + len + ") NULL"; // TODO - delete this column
-                                                  // later
+      columnType = "[VARCHAR](" + len + ") NULL";                                    
       break;
     default:
       if (len > 255) {
@@ -635,6 +648,17 @@ public class Optimise extends SQLProcessing {
       break;
     }
 
+    return columnType;
+  }
+  
+  private String getText_Mysql() {
+    int len = getLenthForType();
+    String columnType = "";
+    if (len > 255) {
+      columnType = "TEXT DEFAULT NULL";
+    } else {
+      columnType = "VARCHAR(" + len + ") DEFAULT NULL";
+    }
     return columnType;
   }
 
@@ -735,10 +759,19 @@ public class Optimise extends SQLProcessing {
   }
 
   /**
-   * add more date identifications
+   * TODO add more date identifications
    * 
    * TODO -> jan 09 -> transform it too.
    * TODO - transform the value date into sql date to insert when transforming column
+   * 
+   * formats
+   * 12/01/2009
+   * 2009/12/01
+   * 01/12/2009
+   * jan 01 2009
+   * January 01, 2009
+   * 2009-12-01 00:00:00
+   * 2009-12-01 00:00:00AM
    * 
    * @param s
    * @return
