@@ -432,6 +432,8 @@ public class Optimise extends SQLProcessing {
       sql = "";
     }
     
+    System.out.println("getMaxFieldLength sql: " + sql);
+    
     int columnLen = getQueryInt(sql);
     
     return columnLen;
