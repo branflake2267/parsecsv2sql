@@ -705,7 +705,7 @@ public class SQLProcessing {
    * 
    * @param query
    */
-   protected void updateSql(String query) {
+   public void updateSql(String query) {
 
     if (query == null) {
       System.out.println("no query given");
