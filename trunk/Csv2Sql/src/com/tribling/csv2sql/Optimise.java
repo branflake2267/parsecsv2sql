@@ -182,9 +182,12 @@ public class Optimise extends SQLProcessing {
    * @param length
    */
   protected String resizeColumn(String column, String columnType, int length) {
+    
     this.fieldLength = length;
     this.fieldType = getFieldType(columnType);
 
+    System.out.println("resizeColumn: " + fieldType);
+    
     String type = "";
     if (databaseType == 1) {
       type = getColumnType_MySql();
