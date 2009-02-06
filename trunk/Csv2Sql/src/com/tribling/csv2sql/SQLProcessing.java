@@ -372,8 +372,15 @@ public class SQLProcessing {
       }
       doOnlyTextColumns += " Type like 'Text%' ";
     }
+    
+    String where = "";
+    if (cquery.length() > 0 | doOnlyTextColumns.length() > 0) {
+      where = " WHERE " + cquery + doOnlyTextColumns;
+    }
 
-    String query = "SHOW COLUMNS FROM `" + dd.table + "` " + "FROM `" + dd.database + "` " + cquery + doOnlyTextColumns + " ;";
+    String query = "";
+    query = "SHOW COLUMNS FROM `" + dd.table + "` " + 
+    "FROM `" + dd.database + "` " + where + " ;";
     
 
     System.out.println("query: " + query);
