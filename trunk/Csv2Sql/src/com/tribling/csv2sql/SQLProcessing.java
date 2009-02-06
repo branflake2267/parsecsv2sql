@@ -361,13 +361,20 @@ public class SQLProcessing {
     String cquery = "";
     if (column != null) {
       if (column.length() > 1) {
-        cquery = " LIKE '" + column + "' ";
+        cquery = " FIELD LIKE '" + column + "' ";
       }
     }
+    
+    String doOnlyTextColumns  = "";
+    if (dd.optimise_TextOnlyColumnTypes == true) {
+      if (cquery.length() > 0) {
+        doOnlyTextColumns += " AND ";
+      }
+      doOnlyTextColumns += " Type like 'Text%' ";
+    }
 
-    String query = "SHOW COLUMNS FROM `" + dd.table + "` " + "FROM `"
-        + dd.database + "` " + cquery + " ;";
-    ;
+    String query = "SHOW COLUMNS FROM `" + dd.table + "` " + "FROM `" + dd.database + "` " + cquery + doOnlyTextColumns + " ;";
+    
 
     System.out.println("query: " + query);
 
@@ -416,11 +423,22 @@ public class SQLProcessing {
         cquery = " AND COLUMN_NAME='" + column + "' ";
       }
     }
+    
+    String doOnlyTextColumns  = "";
+    if (dd.optimise_TextOnlyColumnTypes == true) {
+      if (cquery.length() > 0) {
+        // TODO
+        //doOnlyTextColumns += " AND ";
+      }
+      // TODO 
+      //doOnlyTextColumns += " Type like 'Text%' ";
+    }
 
-    String query = "SELECT COLUMN_NAME, Data_Type "
-        + "FROM INFORMATION_SCHEMA.Columns " + "WHERE TABLE_NAME ='" + dd.table
-        + "' AND " + "TABLE_SCHEMA='" + dd.tableSchema
-        + "' AND TABLE_CATALOG='" + dd.database + "' " + cquery + " ";
+    String query = "SELECT COLUMN_NAME, Data_Type " + 
+        "FROM INFORMATION_SCHEMA.Columns " + 
+        "WHERE TABLE_NAME ='" + dd.table + "' AND " + 
+        "TABLE_SCHEMA='" + dd.tableSchema + "' AND " +
+        "TABLE_CATALOG='" + dd.database + "' " + cquery + doOnlyTextColumns + ";";
 
     // System.out.println("query: " + query);
 
