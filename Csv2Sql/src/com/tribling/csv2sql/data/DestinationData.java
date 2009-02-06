@@ -31,6 +31,9 @@ public class DestinationData {
   // one can go from varchar->date, varchar->int (instead of text>date=will not work)
   public boolean optimise_TextOnly = true;
 
+  // use this if you need to repeat optimisation and want to skip all but TEXT columns
+  public boolean optimise_TextOnlyColumnTypes = false;
+  
 
   // this will delete indexes, then optimise
   // a column can't have a index on it if it needs altering
