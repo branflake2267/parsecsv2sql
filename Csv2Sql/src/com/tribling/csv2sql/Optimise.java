@@ -431,7 +431,7 @@ public class Optimise extends SQLProcessing {
     
     String sql = "";
     if (databaseType == 1) {
-      sql = "SELECT MAX(LENGTH(" + column + ")) FROM " + dd.database + "." + dd.table;
+      sql = "SELECT MAX(LENGTH(`" + column + "`)) FROM " + dd.database + "." + dd.table;
     } else if (databaseType == 2) {
       // TODO
       sql = "";
