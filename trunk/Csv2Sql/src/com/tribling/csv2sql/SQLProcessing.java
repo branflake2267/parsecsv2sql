@@ -737,8 +737,12 @@ public class SQLProcessing {
       return;
     }
 
-    System.out.println("f:" + indexFile + ": row:" + index); // + ". " + query
-
+    if (index == 0) {
+    	System.out.println("f:" + indexFile + ": row:" + index + ". " + query); 
+    } else {
+    	System.out.println("f:" + indexFile + ": row:" + index); 
+    }
+    
     try {
       Connection conn = getConnection();
       Statement update = conn.createStatement();
