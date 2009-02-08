@@ -65,6 +65,8 @@ public class Optimise extends SQLProcessing {
    */
   public void runOptimise() {
 
+	System.out.println("Running Optimise");
+	  
     if (dd.optimise == false) {
       System.out.println("skipping optimising: destinationData.optimise = false");
       return;
