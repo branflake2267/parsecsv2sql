@@ -42,8 +42,8 @@ public class Optimise extends SQLProcessing {
   final private static int FIELDTYPE_VARCHAR = 2;
   
   // indexing types
-  final public static int INDEXTYPE_DEFAULT = 1;
-  final public static int INDEXTYPE_FULLTEXT = 2;
+  final public static int INDEXKIND_DEFAULT = 1;
+  final public static int INDEXKIND_FULLTEXT = 2;
    
   /**
    * constructor
@@ -105,16 +105,16 @@ public class Optimise extends SQLProcessing {
    * @param c - name of the column in array
    */
   public void runIndexing(String[] c) {
-    int indexType = INDEXTYPE_DEFAULT;
-    runIndexing(c, indexType);
+    int indexKind = INDEXKIND_DEFAULT;
+    runIndexing(c, indexKind);
   }
   
   public void runIndexing_FullText(String[] c) {
-    int indexType = INDEXTYPE_FULLTEXT;
-    runIndexing(c, indexType);
+    int indexKind = INDEXKIND_FULLTEXT;
+    runIndexing(c, indexKind);
   }
   
-  private void runIndexing(String[] c, int indexType) {
+  private void runIndexing(String[] c, int indexKind) {
     
     if (c == null) {
       System.out.println("no columns to index");
@@ -130,7 +130,7 @@ public class Optimise extends SQLProcessing {
     loopThroughColumns(columns);
     
     // index the same columns
-    indexColumns(columns, indexType);
+    indexColumns(columns, indexKind);
     
     // close the connections at the end
     closeConnection();
@@ -167,7 +167,7 @@ public class Optimise extends SQLProcessing {
     }
     
     // index the same columns
-    indexColumns(columns, INDEXTYPE_DEFAULT);
+    indexColumns(columns, INDEXKIND_DEFAULT);
     
     // close the connections at the end
     closeConnection();
@@ -871,11 +871,11 @@ public class Optimise extends SQLProcessing {
    * 
    * @param columns
    */
-  private void indexColumns(ColumnData[] columns, int indexType) {
+  private void indexColumns(ColumnData[] columns, int indexKind) {
     
     String type = "";
-    if (indexType == INDEXTYPE_FULLTEXT) {
-      type = "_FT_";
+    if (indexKind == INDEXKIND_FULLTEXT) {
+      type = "FT_";
     }
     
     for (int i=0; i < columns.length; i++) {
@@ -887,7 +887,7 @@ public class Optimise extends SQLProcessing {
         // TODO - set index length
       }
       
-      createIndex(indexName, column, indexType);
+      createIndex(indexName, column, indexKind);
     }
     
   }

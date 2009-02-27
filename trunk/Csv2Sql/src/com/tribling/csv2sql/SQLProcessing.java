@@ -1060,7 +1060,7 @@ public class SQLProcessing {
     
     // created the index
     String indexName = "index_auto";
-    createIndex(indexName, indexes, Optimise.INDEXTYPE_DEFAULT);
+    createIndex(indexName, indexes, Optimise.INDEXKIND_DEFAULT);
   }
 
   /**
@@ -1070,22 +1070,27 @@ public class SQLProcessing {
    * 
    * @param columns - can be multiple columns
    */
-  protected void createIndex(String indexName, String columns, int indexType) {
+  protected void createIndex(String indexName, String columns, int indexKind) {
 
+    // TODO not sure of actual length limitation for indexName
+    if (indexName.length() > 30) {
+      indexName = indexName.substring(0,30);
+    }
+    
     if (doesIndexExist(indexName) == true) {
       return;
     }
     
     // TODO - do for MS too
-    String type = "";
-    if (indexType == Optimise.INDEXTYPE_FULLTEXT) {
-      type = "FULLTEXT";
+    String kind = "";
+    if (indexKind == Optimise.INDEXKIND_FULLTEXT) {
+      kind = "FULLTEXT";
     }
 
     String query = "";
     if (databaseType == 1) {
       query = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` "
-          + "ADD INDEX " + type + " `" + indexName + "`(" + columns + ");";
+          + "ADD " + kind + " INDEX `" + indexName + "`(`" + columns + "`);";
       
     } else if (databaseType == 2) {
       // query = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." +
