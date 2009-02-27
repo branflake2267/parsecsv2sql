@@ -242,7 +242,7 @@ public class SQLProcessing {
 
     // create indexes of identity columns listed
     if (dd.createIndexs == true && dd.identityColumns != null) {
-      createIdentityIndexes();
+      createIndex_forIdentities();
     }
   }
 
@@ -737,6 +737,7 @@ public class SQLProcessing {
       return;
     }
 
+    // for debugging
     if (index == 0) {
     	System.out.println("f:" + indexFile + ": row:" + index + ". " + query); 
     } else {
@@ -1009,9 +1010,7 @@ public class SQLProcessing {
   }
 
   private String fixcomma(String s) {
-
     s = s.trim();
-
     if (s.matches(".*[,]")) {
       s = s.substring(0, s.length() - 1);
     }
@@ -1026,7 +1025,7 @@ public class SQLProcessing {
    * 
    * NOTE: setting default  to varchar(50)
    */
-  private void createIdentityIndexes() {
+  private void createIndex_forIdentities() {
 
     if (dd.identityColumns == null) {
       System.out.println("skipping creating indexes, b/c there are no identiy columns listed");
@@ -1061,7 +1060,7 @@ public class SQLProcessing {
     
     // created the index
     String indexName = "index_auto";
-    createIndex(indexName, indexes);
+    createIndex(indexName, indexes, Optimise.INDEXTYPE_DEFAULT);
   }
 
   /**
@@ -1071,17 +1070,22 @@ public class SQLProcessing {
    * 
    * @param columns - can be multiple columns
    */
-  protected void createIndex(String indexName, String columns) {
+  protected void createIndex(String indexName, String columns, int indexType) {
 
-    boolean exist = doesIndexExist(indexName);
-    if (exist == true) {
+    if (doesIndexExist(indexName) == true) {
       return;
+    }
+    
+    // TODO - do for MS too
+    String type = "";
+    if (indexType == Optimise.INDEXTYPE_FULLTEXT) {
+      type = "FULLTEXT";
     }
 
     String query = "";
     if (databaseType == 1) {
       query = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` "
-          + "ADD INDEX `" + indexName + "`(" + columns + ");";
+          + "ADD INDEX " + type + " `" + indexName + "`(" + columns + ");";
       
     } else if (databaseType == 2) {
       // query = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." +
@@ -1092,11 +1096,8 @@ public class SQLProcessing {
           + dd.tableSchema + "." + dd.table + " (" + columns + ") ;";
     }
 
-    System.out.println("indexing reverse: " + query);
-    
     updateSql(query);
     
-    System.out.println("finished with reverse index");
   }
 
   /**

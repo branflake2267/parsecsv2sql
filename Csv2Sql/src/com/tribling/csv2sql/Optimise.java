@@ -41,6 +41,10 @@ public class Optimise extends SQLProcessing {
   final private static int FIELDTYPE_DATE = 1;
   final private static int FIELDTYPE_VARCHAR = 2;
   
+  // indexing types
+  final public static int INDEXTYPE_DEFAULT = 1;
+  final public static int INDEXTYPE_FULLTEXT = 2;
+   
   /**
    * constructor
    */
@@ -76,6 +80,7 @@ public class Optimise extends SQLProcessing {
     openConnection();
 
     // have to delete all indexes except primary key so to fix the indexed columns
+    // TODO - change this to remember indexing then restore indexing!!!!!!!
     deleteIndexesBeforeOptimisation();
     
     // do this first, b/c it will cause problems after getting columns
@@ -100,13 +105,22 @@ public class Optimise extends SQLProcessing {
    * @param c - name of the column in array
    */
   public void runIndexing(String[] c) {
+    int indexType = INDEXTYPE_DEFAULT;
+    runIndexing(c, indexType);
+  }
+  
+  public void runIndexing_FullText(String[] c) {
+    int indexType = INDEXTYPE_FULLTEXT;
+    runIndexing(c, indexType);
+  }
+  
+  private void runIndexing(String[] c, int indexType) {
     
     if (c == null) {
       System.out.println("no columns to index");
       return;
     }
     
-    // open connections to work with the data
     openConnection();
     
     // TODO - optional does indexing need to be deleted first?
@@ -116,7 +130,7 @@ public class Optimise extends SQLProcessing {
     loopThroughColumns(columns);
     
     // index the same columns
-    indexColumns(columns);
+    indexColumns(columns, indexType);
     
     // close the connections at the end
     closeConnection();
@@ -129,7 +143,7 @@ public class Optimise extends SQLProcessing {
    * 
    * @param column
    */
-  public void runReverseIndex(String[] c) {
+  public void runIndexing_Reverse(String[] c) {
     
     if (c.length == 0) {
       System.out.println("nothing to reverse index");
@@ -153,7 +167,7 @@ public class Optimise extends SQLProcessing {
     }
     
     // index the same columns
-    indexColumns(columns);
+    indexColumns(columns, INDEXTYPE_DEFAULT);
     
     // close the connections at the end
     closeConnection();
@@ -164,6 +178,9 @@ public class Optimise extends SQLProcessing {
   /**
    * delete all the indexes, then optimise all columns
    * Note: not able to alter a indexed column
+   * 
+   * TODO - change this on a need as basis, may have done already??
+   * TODO - should remember indexing, then restore it
    */
   private void deleteIndexesBeforeOptimisation() {
     
@@ -854,10 +871,15 @@ public class Optimise extends SQLProcessing {
    * 
    * @param columns
    */
-  private void indexColumns(ColumnData[] columns) {
+  private void indexColumns(ColumnData[] columns, int indexType) {
+    
+    String type = "";
+    if (indexType == INDEXTYPE_FULLTEXT) {
+      type = "_FT_";
+    }
     
     for (int i=0; i < columns.length; i++) {
-      String indexName = "auto_" + columns[i].column;
+      String indexName = "auto_" + type + columns[i].column ;
       String column = columns[i].column;
       
       if (columns[i].type.contains("Text")) {
@@ -865,7 +887,7 @@ public class Optimise extends SQLProcessing {
         // TODO - set index length
       }
       
-      createIndex(indexName, column);
+      createIndex(indexName, column, indexType);
     }
     
   }
