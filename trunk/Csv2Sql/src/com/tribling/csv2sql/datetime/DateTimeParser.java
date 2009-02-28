@@ -62,15 +62,18 @@ public class DateTimeParser {
   }
 
   public String getDateMysql(String datetime) {
-
     this.datetime = datetime;
-
     String s = getDate(TYPE_MYSQL_DATETIME);
-   
     return s;
   }
   
   private String getDate(int type) {
+    
+    if (datetime == null) {
+      return "";
+    }
+    
+    datetime = datetime.trim();
     
     // reset it just in case
     date = null;
@@ -96,7 +99,10 @@ public class DateTimeParser {
     } else if (checkforFormat_monthyear2() == true) { 
       s = df.format(date);
       
-    }  else {
+    } else if (checkforFormat_custom() == true) { 
+      s = df.format(date);
+      
+    } else {
     
       // return orginal if not matched
       s = datetime;
@@ -271,7 +277,59 @@ public class DateTimeParser {
 
     return found;
   }
+  
+  /**
+   * custom format -bsgbB620090200054003 or 20090200054003
+   * @return
+   */
+  public boolean checkforFormat_custom() {
 
+    String re = ".*?([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})$";
+    Pattern p = Pattern.compile(re);
+    Matcher m = p.matcher(datetime);
+    boolean found = m.find();
+
+    int year = 0;
+    int month = 0;
+    int day = 0;
+    int hour = 0;
+    int min = 0;
+    int sec = 0;
+    if (found == true) {
+      String yy = m.group(1);
+      String mm = m.group(2);
+      String dd = m.group(3);
+      String hh = m.group(4);
+      String mi = m.group(5);
+      String ss = m.group(6);
+      
+      if (yy == null | mm == null | dd == null | hh == null | mi == null | ss == null) {
+        return false;
+      }
+      
+      year = getYear(yy);
+      month = getMonth(mm) - 1;
+      day = getDay(dd);
+      hour = getTimeValue(hh);
+      min = getTimeValue(mi);
+      sec = getTimeValue(ss);
+    } else {
+      return false;
+    }
+
+    Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.DAY_OF_MONTH, day);
+    cal.set(Calendar.MONTH, month);
+    cal.set(Calendar.YEAR, year);
+    cal.set(Calendar.HOUR, hour);
+    cal.set(Calendar.MINUTE, min);
+    cal.set(Calendar.SECOND, sec);
+
+    date = cal.getTime();
+
+    return found;
+  }
+  
   private int getMonth(String s) {
     int month = -1;
     if (s.matches("[0-9]+")) {
@@ -321,12 +379,15 @@ public class DateTimeParser {
     return day;
   }
 
+  private int getTimeValue(String s) {
+    int t = Integer.parseInt(s);
+    return t;
+  }
 
 
 
 
-
-  /**
+  /**=p
    * TODO - more to do
    * 
    * @param s
