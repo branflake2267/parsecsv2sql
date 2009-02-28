@@ -54,7 +54,7 @@ public class SQLProcessing {
   public SQLProcessing() {
   }
 
-  public void dropTableOff() {
+  protected void dropTableOff() {
     this.dropTableOff = true;
   }
 
@@ -207,7 +207,7 @@ public class SQLProcessing {
    * 1. create import id 2. create date created field 3. create date updated
    * field 4. create index of teh identities, to make the updates go faster
    */
-  public void createAutoImportItems() {
+  protected void createAutoImportItems() {
     // in some cases the fields below might not exist so lets verify that.
 
     // importid
@@ -1086,23 +1086,20 @@ public class SQLProcessing {
     if (indexKind == Optimise.INDEXKIND_FULLTEXT) {
       kind = "FULLTEXT";
     }
+    
+    // TODO if the column is a text column, set the index length and its not full text
 
     String query = "";
     if (databaseType == 1) {
       query = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` "
-          + "ADD " + kind + " INDEX `" + indexName + "`(`" + columns + "`);";
+          + "ADD " + kind + " INDEX `" + indexName + "`(" + columns + ");";
       
     } else if (databaseType == 2) {
-      // query = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." +
-      // dd.table + " " +
-      // "ADD INDEX [" + s + "]([" + indexName + "]) ;";
-
       query = "CREATE INDEX [" + indexName + "] ON " + dd.database + "."
           + dd.tableSchema + "." + dd.table + " (" + columns + ") ;";
     }
 
     updateSql(query);
-    
   }
 
   /**
@@ -1275,6 +1272,26 @@ public class SQLProcessing {
 
     return idents;
   }
+  
+  protected String getIdentitiesColumns_inCsv() {
+    
+    if (dd.identityColumns == null) {
+      return "";
+    }
+    
+    String columns = "";
+    
+    for (int i = 0; i < dd.identityColumns.length; i++) {
+
+      columns += dd.identityColumns[i].destinationField;
+
+      if (i < dd.identityColumns.length - 1) {
+        columns += ",";
+      }
+    }
+    
+    return columns;
+  }
 
   private int searchForColumn(ColumnData[] columns, String key) {
 
@@ -1289,7 +1306,7 @@ public class SQLProcessing {
     return index;
   }
 
-  public int getRecordExist(ColumnData[] columns, String[] values) {
+  private int getRecordExist(ColumnData[] columns, String[] values) {
 
     int id = 0;
     if (databaseType == 1) {
@@ -1310,7 +1327,7 @@ public class SQLProcessing {
    * @param values
    * @return
    */
-  public int getRecordExist_MySql(ColumnData[] columns, String[] values) {
+  private int getRecordExist_MySql(ColumnData[] columns, String[] values) {
 
     // get idents
     String whereQuery = getIdentiesWhereQuery(columns, values);
@@ -1327,7 +1344,7 @@ public class SQLProcessing {
     return id;
   }
 
-  public int getRecordExist_MsSql(ColumnData[] columns, String[] values) {
+  private int getRecordExist_MsSql(ColumnData[] columns, String[] values) {
 
     // get idents
     String whereQuery = getIdentiesWhereQuery(columns, values);
@@ -1653,6 +1670,75 @@ public class SQLProcessing {
     ColumnData rtn = c;
     rtn.column = dstColumn;
     return rtn;
+  }
+  
+  /**
+   * does table has duplicates compared to the identity data
+   *  
+   * @return how many duplicates
+   */
+  protected int getTableHasDuplicates() {
+    
+    // get total record count for table
+    int tc = getTableRecordCount();
+    
+    // check distinct count for identities
+    int tdc = getTableDistinctIdentCount();
+    
+    int r = tc - tdc;
+    
+    return r;
+  }
+
+  private int getTableRecordCount() {
+    String sql = "";
+    if (databaseType == 1) {
+      sql = "SELECT COUNT(*) AS t FROM " + dd.database + "." + dd.table + ";"; 
+    } else if (databaseType == 2) {
+      // TODO
+      sql = "";
+    }
+    return getQueryInt(sql);
+  }
+  
+  private int getTableDistinctIdentCount() {
+    
+    if (dd.identityColumns == null) {
+      return 0;
+    }
+    
+    // get ident columns
+    String idents_Columns = getIdentitiesColumns_inCsv();
+    
+    String sql = "";
+    if (databaseType == 1) {
+      sql = "SELECT DISTINCT " + idents_Columns + " FROM " + dd.database + "." + dd.table + ";"; 
+    } else if (databaseType == 2) {
+      // TODO
+      sql = "";
+    }
+
+    int c = 0;
+    try {
+      Connection conn = getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      
+      if (databaseType == 1) {
+        c = getResultSetSize(result);
+      } else if (databaseType == 2) {
+        while (result.next()) {
+          c++;
+        }
+      }
+      select.close();
+      result.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    }
+    
+    return c;
   }
   
 }// end class

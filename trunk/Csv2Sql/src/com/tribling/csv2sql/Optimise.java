@@ -1,5 +1,6 @@
 package com.tribling.csv2sql;
 
+import java.net.IDN;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -760,7 +761,6 @@ public class Optimise extends SQLProcessing {
   }
 
   private boolean isInt(String s) {
-
     boolean b = false;
     if (s.matches("[0-9]+")) {
       b = true;
@@ -803,6 +803,7 @@ public class Optimise extends SQLProcessing {
    * January 01, 2009
    * 2009-12-01 00:00:00
    * 2009-12-01 00:00:00AM
+   * 20091201000000
    * 
    * @param s
    * @return
@@ -880,20 +881,149 @@ public class Optimise extends SQLProcessing {
     
     for (int i=0; i < columns.length; i++) {
       String indexName = "auto_" + type + columns[i].column ;
-      String column = columns[i].column;
-      
-      if (columns[i].type.contains("Text")) {
-        // TODO - what to do for a text type column?? 
-        // TODO - set index length
-      }
+      String column = "`" + columns[i].column + "`";
       
       createIndex(indexName, column, indexKind);
     }
     
   }
   
+  /**
+   * this may not be the way that will work on other identity values that are ints
+   */
+  public void deleteDuplicates() {
+    
+    // set dd
+    openConnection();
+    
+    int c = getTableHasDuplicates();
+    
+    if (c == 0) {
+     System.out.println("No duplicates exist for the identities.");
+     return;
+    }
+    
+    String idents_Columns = getIdentitiesColumns_inCsv();
+    
+    // load the records that indicate they there duplicates
+    String sql = "";
+    if (databaseType == 1) {
+      sql = "SELECT ImportId FROM " + dd.database + "." + dd.table + " GROUP BY "+ idents_Columns + " HAVING count(*) > 1;"; 
+    } else if (databaseType == 2) {
+      // TODO
+      sql = "";
+    }
+    
+    try {
+      Connection conn = getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        getDuplicateValues(result.getInt(1));
+      }
+      select.close();
+      result.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    }
+    
+    closeConnection();
+  }
+  
+  private void getDuplicateValues(int importId) {
+    
+    String idents_Columns = getIdentitiesColumns_inCsv();
+    String where = "WHERE ImportId='" + importId + "'";
+    
+    String sql = "";
+    if (databaseType == 1) {
+      sql = "SELECT "+ idents_Columns + " FROM " + dd.database + "." + dd.table + " " + where; 
+    } else if (databaseType == 2) {
+      // TODO
+      sql = "";
+    }
+    
+    try {
+      Connection conn = getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        String[] values = new String[dd.identityColumns.length];
+        for (int i=0; i < dd.identityColumns.length; i++) {
+          // TODO what to do if ident is int?
+          values[i] = result.getString(i+1);
+        }
+        deleteDuplicate(values);
+      }
+      select.close();
+      result.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    }
+  }
 
-
+  private void deleteDuplicate(String[] identValues) {
+    
+    String where = "";
+    for (int i=0; i < dd.identityColumns.length; i++) {
+      where += "" + dd.identityColumns[i].destinationField + "='" + identValues[i] + "'";
+      if (i < dd.identityColumns.length-1) {
+        where += " AND ";
+      }
+    }
+    
+    String sql = "";
+    if (databaseType == 1) {
+      sql = "SELECT ImportId FROM " + dd.database + "." + dd.table + " WHERE " + where; 
+    } else if (databaseType == 2) {
+      // TODO
+      sql = "";
+    }
+    
+    System.out.println("sql" + sql);
+    
+    try {
+      Connection conn = getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      int i = 0;
+      while (result.next()) {
+        int importId = result.getInt(1);
+        if (i > 0) {
+          deleteRecord(importId);
+        }
+        i++;
+      }
+      select.close();
+      result.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    }
+    
+  }
+  
+  private void deleteRecord(int importId) {
+    
+    String where = "ImportId='" + importId + "'";
+    
+    String sql = "";
+    if (databaseType == 1) {
+      sql = "delete FROM " + dd.database + "." + dd.table + " WHERE " + where; 
+    } else if (databaseType == 2) {
+      // TODO
+      sql = "";
+    }
+    
+    System.out.println("sql: " + sql);
+    
+    // TODO 
+    updateSql(sql);
+  }
+  
+  
   
   
 }
