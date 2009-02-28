@@ -37,16 +37,11 @@ public class Optimise extends SQLProcessing {
   
   // track sampling of record index
   private int analyzeTracking = 0;
+    
+  // when formating a date column, transform it to a new column instead of updating it self.
+  // TODO may move this to a different format later?
+  private String transformToColumn = null;
   
-  // TODO - move types to this
-  final private static int FIELDTYPE_TEXT = 2;
-  final private static int FIELDTYPE_DATE = 1;
-  final private static int FIELDTYPE_VARCHAR = 2;
-  
-  // indexing types
-  final public static int INDEXKIND_DEFAULT = 1;
-  final public static int INDEXKIND_FULLTEXT = 2;
-   
   /**
    * constructor
    */
@@ -1030,9 +1025,15 @@ public class Optimise extends SQLProcessing {
   private void updateColumn_Date(int importId, String column, String datetime) {
     
     DateTimeParser parse = new DateTimeParser();
-    String tranformed = parse.getDate_EngString(datetime);
+    //String tranformed = parse.getDate_EngString(datetime);
+    String tranformed = parse.getDateMysql(datetime);
     
     System.out.println("before: " + datetime + " after: " + tranformed);
+    
+    if (transformToColumn != null) {
+      column = transformToColumn;
+      checkDateTransformationColumn(column);
+    }
     
     String sql = "";
     if (databaseType == 1) {
@@ -1045,5 +1046,22 @@ public class Optimise extends SQLProcessing {
     updateSql(sql);
   }
   
+  /**
+   * update date transformation into new column
+   * 
+   * @param column
+   */
+  public void setColumnToTransformTo(String column) {
+    transformToColumn = column;
+  }
+  
+  /**
+   * check date tranformation column exists if not, create it.
+   * @param column
+   */
+  private void checkDateTransformationColumn(String column) {
+    String type = "DATETIME DEFAULT NULL";
+    createColumn(column, type);
+  }
   
 }

@@ -48,6 +48,19 @@ public class SQLProcessing {
   // to make sure the data will fit into the columns that already exist
   private ColumnData[] columns = null;
 
+  // column types - TODO keep expanding
+  final public static int FIELDTYPE_TEXT = 1;
+  final public static int FIELDTYPE_VARCHAR = 2;
+  final public static int FIELDTYPE_SMALLINT = 3;
+  final public static int FIELDTYPE_INT = 4;
+  final public static int FIELDTYPE_BITINT = 5;
+  final public static int FIELDTYPE_DECIMAL = 6;
+  final public static int FIELDTYPE_DATETIME = 7;
+  
+  // indexing types
+  final public static int INDEXKIND_DEFAULT = 1;
+  final public static int INDEXKIND_FULLTEXT = 2;
+  
   /**
    * constructor
    */
@@ -558,9 +571,9 @@ public class SQLProcessing {
    * create a column
    * 
    * @param column
-   * @param type
+   * @param type [TEXT, VARCHAR(255)]
    */
-  private void createColumn(String column, String type) {
+  protected void createColumn(String column, String type) {
 
     if (column == null) {
       return;
@@ -583,9 +596,7 @@ public class SQLProcessing {
       if (databaseType == 1) { // mysql
         type = "TEXT";
       } else if (databaseType == 2) {
-        // For some reason I don't undertand why I cant alter from text->varchar
-        // dump, mysql does it fine
-        type = "VARHCAR(255)"; // mssql
+        type = "VARHCAR(255)"; // mssql TODO figure out how to alter in mssql, cast?
       }
     }
 
@@ -599,6 +610,37 @@ public class SQLProcessing {
     }
 
     updateSql(query);
+  }
+  
+  /**
+   * create a columns
+   * TODO need more flexibility with lengths
+   * 
+   * @param column
+   * @param type
+   */
+  private void createColumn(String column, int type) {
+
+    String t = "";
+    if (type == FIELDTYPE_TEXT) {
+      t = "TEXT DEFAULT NULL";
+    } else if (type == FIELDTYPE_VARCHAR) {
+      t = "VARCHAR(255) DEFAULT NULL";
+    } else if (type == FIELDTYPE_SMALLINT) {
+      
+    } else if (type == FIELDTYPE_INT) {
+      
+    } else if (type == FIELDTYPE_BITINT) {
+      
+    } else if (type == FIELDTYPE_DECIMAL) {
+      
+    } else if (type == FIELDTYPE_DATETIME) {
+      
+    } else {
+      t = "TEXT DEFAULT NULL";
+    }
+    
+    createColumn(column, t);
   }
 
   /**
