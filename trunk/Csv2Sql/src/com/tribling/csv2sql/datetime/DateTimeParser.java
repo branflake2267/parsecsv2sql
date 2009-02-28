@@ -80,7 +80,7 @@ public class DateTimeParser {
       df = new SimpleDateFormat("MM/dd/yyyy");
       
     } else if (type == TYPE_MYSQL_DATETIME) {
-      df = new SimpleDateFormat("yyyy-MM-dd HH:MM:SS");
+      df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     }
     
     String s = "";
