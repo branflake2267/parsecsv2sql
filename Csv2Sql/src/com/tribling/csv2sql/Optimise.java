@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import com.tribling.csv2sql.data.ColumnData;
+import com.tribling.csv2sql.datetime.DateTimeParser;
 
 /**
  * 
@@ -295,48 +296,11 @@ public class Optimise extends SQLProcessing {
       e.printStackTrace();
       System.out.println("");
 
-      // not sure if i will need this any more.
-      // TODO - maybe look specifically for truncated error
-      alterColumnTryAgain(e, column);
+
     }
 
-    // if we make it this far, make sure these get reset
-    alterTries = 0; // reset
-    alterTries_UpRecordSampleCount = 0; // reset
+
     
-  }
-  
-  /**
-   * try altering again, after larger sampling
-   * 
-   * TODO - this could happen from truncate
-   * TODO - can cast into
-   * 
-   * NOTE - this is not needed anymore b/c using getMaxFieldLength to fix the error of truncation
-   * 
-   * @param e
-   * @param column
-   */
-  @Deprecated
-  private void alterColumnTryAgain(SQLException e, String column) {
-    
-    if (alterTries == 10) { // up to sample 11x is 1,024,000 records
-      alterTries = 0; // reset
-      alterTries_UpRecordSampleCount = 0; // reset
-      dd.optimise_RecordsToExamine = 1000; // TODO - reset back to what was given?
-      System.out.println("Won't try the alter agian, moving on");
-      return;
-    }
-   
-    // double amount of sampling from last time
-    dd.optimise_RecordsToExamine = dd.optimise_RecordsToExamine * 2; 
-    
-    analyzeColumn(column);
-    
-    String columnType = getColumnType();
-    alterColumn(column, columnType);
-    
-    alterTries++;
   }
   
   private String getLimitQuery() {
@@ -822,8 +786,6 @@ public class Optimise extends SQLProcessing {
       b = true;
     } else if (s.contains("feb")) {
       b = true;
-    } else if (s.contains("feb")) {
-      b = true;
     } else if (s.contains("mar")) {
       b = true;
     } else if (s.contains("apr")) {
@@ -859,12 +821,10 @@ public class Optimise extends SQLProcessing {
    * @param i
    */
   private void trackAnalyzation(int i) {
-    
     if (i == analyzeTracking) {
       System.out.println(i);
       analyzeTracking = analyzeTracking + analyzeTrackingNextNotfication;
     }
-    
   }
 
   /**
@@ -1023,7 +983,67 @@ public class Optimise extends SQLProcessing {
     updateSql(sql);
   }
   
+  /**
+   * under development - format date time column
+   * 
+   * @param column
+   */
+  public void formatColumn_Date(String column) {
+   
+    // TODO 
+    openConnection();
+    
+    String sql = "";
+    if (databaseType == 1) {
+      sql = "SELECT ImportId, " + column + " FROM " + dd.database + "." + dd.table; 
+    } else if (databaseType == 2) {
+      // TODO
+      sql = "";
+    }
+    
+    try {
+      Connection conn = getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        int importId = result.getInt(1);
+        String dt = result.getString(2);
+        updateColumn_Date(importId, column, dt);
+      }
+      select.close();
+      result.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    }
+    
+    
+    // TODO 
+    closeConnection();
+  }
   
+  /**
+   * transform string date into datetimestamp in this column
+   * @param importId
+   * @param column
+   */
+  private void updateColumn_Date(int importId, String column, String datetime) {
+    
+    DateTimeParser parse = new DateTimeParser();
+    String tranformed = parse.getDate_EngString(datetime);
+    
+    System.out.println("before: " + datetime + " after: " + tranformed);
+    
+    String sql = "";
+    if (databaseType == 1) {
+      sql = "UPDATE " + dd.database + "." + dd.table + " SET `" + column + "`='" + tranformed + "' WHERE ImportId='" + importId + "';"; 
+    } else if (databaseType == 2) {
+      // TODO
+      sql = "";
+    }
+    
+    updateSql(sql);
+  }
   
   
 }
