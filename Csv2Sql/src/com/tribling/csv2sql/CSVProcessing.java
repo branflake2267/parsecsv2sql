@@ -11,7 +11,10 @@ import com.tribling.csv2sql.data.MatchFieldData;
 
 public class CSVProcessing {
 
+  // work on this file
 	private File file;
+	
+	// this file has this delimter
 	private char delimiter;
 
 	// csv reader 2.0
