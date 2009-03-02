@@ -1,6 +1,8 @@
 package com.tribling.csv2sql;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.tribling.csv2sql.data.FlatFileSettingsData;
 
@@ -138,7 +140,7 @@ public class FlatFileProcessing {
     for (int i=0; i < settings.size(); i++) {
       
       if (doesffsd_match(settings.get(i), row, column) == true) {
-        
+        changeIt(settings.get(i), value);
       }
       
     }
@@ -166,9 +168,87 @@ public class FlatFileProcessing {
     return b;
   }
   
+  private String changeIt(FlatFileSettingsData ffsd, String value) {
+    
+    String v = null;
+    switch (ffsd.action) {
+    case CHANGEVALUE:
+      v = ffsd.value;
+      break;
+    case CHANGEVALUEWHENEMPTY:
+      changeEmpty(ffsd, value);
+      break;
+    case CHANGEVALUEWITHREGEXMATCH:
+      changeRegexMatch(ffsd, value);
+      break;
+    case CHANGEVALUEWITHREGEXREPLACE:
+      changeRegexReplace(ffsd, value);
+      break;
+    case CHANGEVALUEAUTO:
+      break;
+      
+    default:
+      v = value;
+      break;
+    }
+    
+    return v;
+  }
   
+  private String changeEmpty(FlatFileSettingsData ffsd, String value) {
+    
+    if (value == null) {
+      value = "";
+    }
+    
+    if (value.length() == 0) {
+      value = ffsd.value;
+    }
+    
+    return value;
+  }
   
+  private String changeRegexMatch(FlatFileSettingsData ffsd, String value) {
+    
+    if (value == null) {
+      value = "";
+    }
+    
+    if (ffsd.regex == null) {
+      return value;
+    }
+    
+    if (value.matches(ffsd.regex) == true) {
+      value = ffsd.value;
+    }
+    
+    return value;
+  }
   
+  /**
+   * replace with regex 
+   * 
+   * TODO - this can be enhanced
+   * 
+   * @param ffsd
+   * @param value
+   * @return
+   */
+  private String changeRegexReplace(FlatFileSettingsData ffsd, String value) {
+    
+    String re = ffsd.regex;
+    Pattern p = Pattern.compile(re);
+    Matcher m = p.matcher(value);
+    boolean found = m.find();
+
+    String v = "";
+    if (found == true) {
+      v = m.group(1);
+      // TODO - get more groups and stick in string?
+    }
+    
+    return v;
+  }
   
 }
 
