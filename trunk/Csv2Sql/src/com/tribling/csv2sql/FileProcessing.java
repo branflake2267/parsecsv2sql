@@ -12,8 +12,9 @@ public class FileProcessing {
 	private CSVProcessing csvProcess = new CSVProcessing();
 	
 	// sql items
-	private DestinationData desinationData;
-	private MatchFieldData[] matchFields;
+	private DestinationData desinationData = null;
+	
+	private MatchFieldData[] matchFields = null;
 
 	private char delimiter;
 	
