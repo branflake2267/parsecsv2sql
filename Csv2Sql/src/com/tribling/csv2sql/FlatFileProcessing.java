@@ -9,7 +9,7 @@ import com.tribling.csv2sql.data.FlatFileSettingsData;
 /**
  * process the flat file before going into sql
  * 
- * TODO Options, only work on a row, only work on a column, only work on a row and column...
+ * Options, only work on a row, only work on a column, only work on a row and column...
  *
  * 
  * @author branflake2267
@@ -168,6 +168,13 @@ public class FlatFileProcessing {
     return b;
   }
   
+  /**
+   * change the value b/c it met the row/column criteria, now goto this step
+   * 
+   * @param ffsd
+   * @param value
+   * @return
+   */
   private String changeIt(FlatFileSettingsData ffsd, String value) {
     
     String v = null;
@@ -195,6 +202,13 @@ public class FlatFileProcessing {
     return v;
   }
   
+  /**
+   * change value when empty
+   * 
+   * @param ffsd
+   * @param value
+   * @return
+   */
   private String changeEmpty(FlatFileSettingsData ffsd, String value) {
     
     if (value == null) {
@@ -208,6 +222,13 @@ public class FlatFileProcessing {
     return value;
   }
   
+  /**
+   * change value with regex matching
+   * 
+   * @param ffsd
+   * @param value
+   * @return
+   */
   private String changeRegexMatch(FlatFileSettingsData ffsd, String value) {
     
     if (value == null) {
@@ -226,7 +247,7 @@ public class FlatFileProcessing {
   }
   
   /**
-   * replace with regex 
+   * replace with regex upon regex match of that value
    * 
    * TODO - this can be enhanced
    * 
@@ -245,6 +266,8 @@ public class FlatFileProcessing {
     if (found == true) {
       v = m.group(1);
       // TODO - get more groups and stick in string?
+    } else {
+      v = value;
     }
     
     return v;

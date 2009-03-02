@@ -220,7 +220,7 @@ public class SQLProcessing {
    * 1. create import id 2. create date created field 3. create date updated
    * field 4. create index of teh identities, to make the updates go faster
    */
-  protected void createAutoImportItems() {
+  protected void createImportTrackingItems() {
     // in some cases the fields below might not exist so lets verify that.
 
     // importid
