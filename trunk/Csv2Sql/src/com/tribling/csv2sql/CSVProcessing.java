@@ -9,7 +9,7 @@ import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.MatchFieldData;
 
-public class CSVProcessing {
+public class CSVProcessing extends FlatFileProcessing {
 
   // work on this file
 	private File file;
@@ -29,6 +29,13 @@ public class CSVProcessing {
 	public CSVProcessing() {
 	}
 	
+	/**
+	 * set the settings
+	 * 
+	 * @param delimiter
+	 * @param destinationData
+	 * @param matchFields
+	 */
 	protected void setData(char delimiter, DestinationData destinationData, MatchFieldData[] matchFields) {
 		this.delimiter = delimiter;
 		
@@ -43,14 +50,20 @@ public class CSVProcessing {
 		
 	}
 	
+	/**
+	 * when reading a directory of files, don't drop table when moving to the second file notification
+	 */
 	public void dropTableOff() {
 		sql.dropTableOff();
 	}
 	
-	/** 
-	 * start extracting the data
+	/**
+	 * parse the file, insert/update sql, then optimise it if needed.
+	 *  
+	 * @param fileIndex - when reading a director of files(.list) this is the index number of which file its on.
+	 * @param file - the file to parse
 	 */
-	protected void parseFile(int indexFile, File file) {
+	protected void parseFile(int fileIndex, File file) {
 		this.file = file;
 		
 		// open a sql connection
@@ -59,27 +72,18 @@ public class CSVProcessing {
 		// create table
 		sql.createTable();
 		
-		// create columns importid, datecreated, dateupdated
-		sql.createAutoImportItems();
+		// create columns importid, datecreated, dateupdated used for tracking
+		sql.createImportTrackingItems();
 		
 		// open the file
 		readFile();
 		
-		// create columns
-		try {
-			getColumns();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		// create columns from file
+		getColumns();
 
 		// loop through data rows
-		try {
-			loopRowsData(indexFile);
-		} catch (IOException e) {
-			System.err.println("CSV Reader, Could not read data");
-			e.printStackTrace();
-		}
-		
+		iterateRowsData(fileIndex);
+
 		// optimise table (if set on)
 		sql.runOptimise();
 		
@@ -90,6 +94,9 @@ public class CSVProcessing {
 		sql.closeConnection();
 	}
 	
+	/**
+	 * read the file given
+	 */
 	private void readFile() {
 		try {
 			reader = new CsvReader(file.toString(), delimiter);
@@ -104,7 +111,7 @@ public class CSVProcessing {
 	 * 
 	 * @throws Exception
 	 */
-	private void getColumns() throws Exception {
+	private void getColumns() {
 		ColumnData[] columns = null;	
 		try {
 			reader.readHeaders();
@@ -124,45 +131,85 @@ public class CSVProcessing {
 		
 	}
 	
-	private void loopRowsData(int indexFile) throws IOException {
+	/**
+	 * iterate through data in file
+	 * 
+	 * @param indexFile
+	 */
+	private void iterateRowsData(int indexFile) {
 		
-		String[] values;
+		String[] values = null;
 		int index = 0;
-		while (reader.readRecord())
-		{
-			values = reader.getValues();
-			
-			// add data to table
-			sql.addData(indexFile, index, values);
-			
-			// debug
-			//listValues(index, values);
-			
-			index++;
-		}
+		try {
+      while (reader.readRecord()) {
+        
+      	values = reader.getValues();
+      	
+      	// add data to table
+      	sql.addData(indexFile, index, values);
+      	
+      	// debug
+      	//listValues(index, values);
+      	
+      	index++;
+      }
+    } catch (IOException e) {
+      System.out.println("Error: Can't loop through data!");
+      e.printStackTrace();
+    }
 		
 	}
 	
-	private void listValues(int index, String[] values) {
-		
-		String s = "";
-		for (int i=0; i < values.length; i++) {
-			s += ", " + values[i];
-		}
-		
-		System.out.println(index + ". " + s);
-	}
-	
+	/**
+	 * make a column 1(header) list of the fields, which will always be needed when inserting/updating the data into sql
+	 * 
+	 * @param columns
+	 * @return
+	 */
 	private ColumnData[] makeColumnlist(String[] columns) {
-		ColumnData[] cols = new ColumnData[columns.length];
+	  
+	  // TODO - flat file processing for column 0 here
+		
+	  ColumnData[] cols = new ColumnData[columns.length];
 		for(int i=0; i < columns.length; i++) {
 			cols[i] = new ColumnData();
 			cols[i].column = columns[i];
 		}
+		
 		return cols;
 	}
 	
+	private void listValues(int index, String[] values) {
+
+	  String s = "";
+	  for (int i=0; i < values.length; i++) {
+	    s += ", " + values[i];
+	  }
+
+	  System.out.println(index + ". " + s);
+	}
 	
+	/**
+	 * process the header row 0 against the flat file settings
+	 * 
+	 * @param columns
+	 * @return
+	 */
+	private ColumnData[] processHeaderRow(String[] columns) {
+	  
+	  return null;
+	}
 	
+	/**
+	 * process each row > 0 against the flat file settings
+	 * 
+	 * @param row
+	 * @param values
+	 * @return
+	 */
+	private String[] processRow(int row, String[] values) {
+	  
+	  return null;
+	}
 	
 }
