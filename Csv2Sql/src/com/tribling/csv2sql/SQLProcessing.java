@@ -357,6 +357,15 @@ public class SQLProcessing {
     } else if (databaseType == 2) {
       columns = getColumn_MsSql(column);
     }
+    
+    if (columns == null) {
+    	return null;
+    }
+    
+    if (columns.length == 0) {
+    	return null;
+    }
+    
     ColumnData col = columns[0];
     return col;
   }
