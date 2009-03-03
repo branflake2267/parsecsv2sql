@@ -331,7 +331,14 @@ public class DateTimeParser {
   }
   
   private int getMonth(String s) {
+    
+    if (s == null){
+      s = "";
+    }
+    s = s.toLowerCase();
+    
     int month = -1;
+    
     if (s.matches("[0-9]+")) {
       month = Integer.parseInt(s);
     } else if (s.contains("jan")) {
@@ -359,6 +366,11 @@ public class DateTimeParser {
     } else if (s.contains("dec")) {
       month = 12;
     }
+    
+    if (month < 0) {
+      System.out.println("Error parsing month:" + month);
+    }
+    
     return month;
   }
 
@@ -371,6 +383,10 @@ public class DateTimeParser {
       year = Integer.parseInt(s);
     } 
 
+    if (year < 0) {
+      System.out.println("Error parsing year:" + year);
+    }
+    
     return year;
   }
 
