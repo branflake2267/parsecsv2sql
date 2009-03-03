@@ -220,22 +220,24 @@ public class Optimise extends SQLProcessing {
     int i2 = columns.length - 1;
     for (int i = 0; i < columns.length; i++) {
 
-      // reset
-      fieldType = 0;
-      fieldLength = 0;
-
-      // console
-      System.out.println(i2 + ". Analyzing column: " + columns[i].column);
-
-      // analyze column
-      analyzeColumn(columns[i].column);
-
-      // get type that was determined by analyzeColumn
-      String columnType = getColumnType();
-
-      // alter column
-      alterColumn(columns[i].column, columnType);
-
+      if (columns[i] != null) {
+        // reset
+        fieldType = 0;
+        fieldLength = 0;
+  
+        // console
+        System.out.println(i2 + ". Analyzing column: " + columns[i].column);
+  
+        // analyze column
+        analyzeColumn(columns[i].column);
+  
+        // get type that was determined by analyzeColumn
+        String columnType = getColumnType();
+  
+        // alter column
+        alterColumn(columns[i].column, columnType);
+      }
+      
       i2--;
     }
 
@@ -293,8 +295,6 @@ public class Optimise extends SQLProcessing {
 
     }
 
-
-    
   }
   
   private String getLimitQuery() {
@@ -834,10 +834,11 @@ public class Optimise extends SQLProcessing {
     }
     
     for (int i=0; i < columns.length; i++) {
-      String indexName = "auto_" + type + columns[i].column ;
-      String column = "`" + columns[i].column + "`";
-      
-      createIndex(indexName, column, indexKind);
+      if (columns[i] != null) {
+        String indexName = "auto_" + type + columns[i].column ;
+        String column = "`" + columns[i].column + "`";
+        createIndex(indexName, column, indexKind);
+      }
     }
     
   }
