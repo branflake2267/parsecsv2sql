@@ -530,7 +530,7 @@ public class SQLProcessing {
    * 
    * @param column
    */
-  private void createColumn(String column) {
+  public void createColumn(String column) {
     String type = "";
     if (databaseType == 1) {
       type = "TEXT DEFAULT NULL";
@@ -585,7 +585,7 @@ public class SQLProcessing {
    * @param column
    * @param type [TEXT, VARCHAR(255)]
    */
-  protected void createColumn(String column, String type) {
+  public void createColumn(String column, String type) {
 
     if (column == null) {
       return;

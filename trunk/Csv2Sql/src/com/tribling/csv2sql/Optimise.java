@@ -1,6 +1,5 @@
 package com.tribling.csv2sql;
 
-import java.net.IDN;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
