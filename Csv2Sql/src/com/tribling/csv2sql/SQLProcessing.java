@@ -4,10 +4,13 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
@@ -220,7 +223,7 @@ public class SQLProcessing {
    * 1. create import id 2. create date created field 3. create date updated
    * field 4. create index of teh identities, to make the updates go faster
    */
-  protected void createImportTrackingItems() {
+  protected void createImportTrackingColumns() {
     // in some cases the fields below might not exist so lets verify that.
 
     // importid
@@ -770,6 +773,8 @@ public class SQLProcessing {
   /**
    * update query
    * 
+   * TODO - how to handle a truncation error, and for which column it happened on
+   * 
    * @param query
    */
    public void updateSql(String query) {
@@ -792,10 +797,98 @@ public class SQLProcessing {
       update.executeUpdate(query);
       update.close();
     } catch (SQLException e) {
+      dealWithSqlError(e, query);
+    }
+  }
+   
+  private void dealWithSqlError(SQLException e, String query) {
+    
+    if (dealwithTruncationError(e, query) == true) {
+      
+    } else {
       System.err.println("Mysql Statement Error: " + query);
       e.printStackTrace();
       System.out.println("");
     }
+
+  }
+  
+  private boolean dealwithTruncationError(SQLException e, String query) {
+    
+    // mysql truncation error -> Data truncation: Data too long for column 'Period' at row 1
+    
+    String msg = e.getMessage();
+    
+    if (msg.contains("too long") == false) {
+      return false;
+    } 
+    
+    // get column
+    String column = getTruncationColumn(msg);
+    if (column == null) {
+      return false;
+    }
+    
+    // get value length needed
+    int length = getTruncationValueLength(column, query);
+    if (length == 0) {
+      return false;
+    }
+    
+    // get column type
+    ColumnData cd = getColumn(column);
+    String columnType = cd.type;
+    
+    resizeColumnLength(column, columnType, length);
+    
+    // TODO - deal with recursion error here
+    updateSql(query);
+    
+    return true;
+  }
+  
+  private String getTruncationColumn(String s) {
+    
+    String re = "\'(.*?)\'";
+    Pattern p = Pattern.compile(re);
+    Matcher m = p.matcher(s);
+    boolean found = m.find();
+    
+    String f = null;
+    if (found == true) {
+      f = m.group(1);
+    } 
+    
+    return f;
+  }
+  
+  /**
+   * find values length, this works only in mysql UPDATE SET or INSERT SET 
+   * 
+   *  TODO mysql (VALUES)
+   *  TODO mssql trucation msg
+   * 
+   * @param column
+   * @param query
+   * @return
+   */
+  private int getTruncationValueLength(String column, String query) {
+    
+    // UPDATE db.table SET `column`='01/01/2008' WHERE ImportId='1';
+    
+    String re = "SET.*?`" + column + "`?.*?=.*?\'(.*?)\'";
+    Pattern p = Pattern.compile(re);
+    Matcher m = p.matcher(query);
+    boolean found = m.find();
+    
+    String f = "";
+    if (found == true) {
+      f = m.group(1);
+    } 
+    
+    int i = f.length();
+    
+    return i;
   }
 
   /**

@@ -979,13 +979,32 @@ public class Optimise extends SQLProcessing {
   }
   
   /**
-   * under development - format date time column
+   * format a column values to the common english date format
    * 
    * @param column
    */
-  public void formatColumn_Date(String column) {
+  public void formatColumn_Date_EngString(String column) {
+    int formatType = 1;
+    formatColumn_Date(column, formatType);
+  }
+  
+  /**
+   * format the string to sql datetime format
+   * 
+   * @param column
+   */
+  public void formatColumn_Date_DateTime(String column) {
+    int formatType = 2;
+    formatColumn_Date(column, formatType);
+  }
+  
+  /**
+   * format date time column
+   * 
+   * @param column
+   */
+  private void formatColumn_Date(String column, int formatType) {
    
-    // TODO 
     openConnection();
     
     String sql = "";
@@ -1003,7 +1022,7 @@ public class Optimise extends SQLProcessing {
       while (result.next()) {
         int importId = result.getInt(1);
         String dt = result.getString(2);
-        updateColumn_Date(importId, column, dt);
+        updateColumn_Date(importId, column, formatType, dt);
       }
       select.close();
       result.close();
@@ -1012,8 +1031,6 @@ public class Optimise extends SQLProcessing {
       e.printStackTrace();
     }
     
-    
-    // TODO 
     closeConnection();
   }
   
@@ -1022,11 +1039,16 @@ public class Optimise extends SQLProcessing {
    * @param importId
    * @param column
    */
-  private void updateColumn_Date(int importId, String column, String datetime) {
+  private void updateColumn_Date(int importId, String column, int formatType, String datetime) {
     
     DateTimeParser parse = new DateTimeParser();
-    //String tranformed = parse.getDate_EngString(datetime);
-    String tranformed = parse.getDateMysql(datetime);
+    
+    String tranformed = "";
+    if (formatType == 1) {
+      tranformed = parse.getDate_EngString(datetime);
+    } else {
+      tranformed = parse.getDateMysql(datetime);
+    }
     
     System.out.println("before: " + datetime + " after: " + tranformed);
     
@@ -1042,6 +1064,8 @@ public class Optimise extends SQLProcessing {
       // TODO
       sql = "";
     }
+    
+    System.out.println("sql: " + sql);
     
     updateSql(sql);
   }

@@ -17,26 +17,8 @@ import com.tribling.csv2sql.data.FlatFileSettingsData;
  */
 public class FlatFileProcessing {
 
-  // set all the settings into this object array
+  //set all the settings into this object array
   private ArrayList<FlatFileSettingsData> settings = new ArrayList<FlatFileSettingsData>();
-  
-  public final static int CHANGEVALUE = 1;
-  
-  public final static int CHANGEVALUEWHENEMPTY = 2;
-  
-  public final static int CHANGEVALUEWITHREGEXMATCH = 3;
-  
-  public final static int CHANGEVALUEWITHREGEXREPLACE = 4;
-  
-  public final static int CHANGEVALUEAUTO = 5;
-  
-  // english date format 01/31/2009
-  public final static int CHANGEVALUEINTODATESTRING = 6;
-  
-  // sql datetime format
-  // TODO logic for the sql db needed in dateparser class
-  public final static int CHANGEVALUEINTODATETIME = 7;
-  
   
   /**
    * constructor
@@ -44,70 +26,10 @@ public class FlatFileProcessing {
   public FlatFileProcessing() {
   }
   
-  public void setchangeValue(int row, int column, String value) {
-    FlatFileSettingsData ffsd = new FlatFileSettingsData();
-    ffsd.action = CHANGEVALUE;
-    ffsd.row = row;
-    ffsd.column = column;
-    ffsd.value = value;
-    settings.add(ffsd);
+  protected void setData(FlatFileSettingsData ffsd) {
+    this.settings = ffsd.getSettings();
   }
   
-  public void setchangeValueWhenEmptyMatch(int row, int column, String value) {
-    FlatFileSettingsData ffsd = new FlatFileSettingsData();
-    ffsd.action = CHANGEVALUEWHENEMPTY;
-    ffsd.row = row;
-    ffsd.column = column;
-    ffsd.value = value;
-    settings.add(ffsd);
-  }
-  
-  public void setchangeValueWithRegexMatch(int row, int column, String regex, String value) {
-    FlatFileSettingsData ffsd = new FlatFileSettingsData();
-    ffsd.action = CHANGEVALUEWITHREGEXMATCH;
-    ffsd.row = row;
-    ffsd.column = column;
-    ffsd.value = value;
-    ffsd.regex = regex;
-    settings.add(ffsd);
-  }
-  
-  public void setchangeValueWithRegexReplace(int row, int column, String regex) {
-    FlatFileSettingsData ffsd = new FlatFileSettingsData();
-    ffsd.action = CHANGEVALUEWITHREGEXREPLACE;
-    ffsd.row = row;
-    ffsd.column = column;
-    ffsd.regex = regex;
-    settings.add(ffsd);
-  }
-  
-  public void setchangeValueIntoDateStringFormat(int row, int column) {
-    FlatFileSettingsData ffsd = new FlatFileSettingsData();
-    ffsd.action = CHANGEVALUEINTODATESTRING;
-    ffsd.row = row;
-    ffsd.column = column;
-    settings.add(ffsd);
-  }
-  
-  public void setchangeValueIntoSqlDateTimeFormat(int row, int column) {
-    FlatFileSettingsData ffsd = new FlatFileSettingsData();
-    ffsd.action = CHANGEVALUEINTODATETIME;
-    ffsd.row = row;
-    ffsd.column = column;
-    settings.add(ffsd);
-  }
-  
-  /**
-   * auto format a to best values, like date and phone numbers to consistent format 
-   * 
-   * TODO date format like ? datetime or common eng
-   * @param row
-   * @param column
-   */
-  public void setautoFormatValue(int row, int column) {
-    
-  }
-   
   /**
    * get the files delimiter by sampling the the files
    */
@@ -115,7 +37,8 @@ public class FlatFileProcessing {
     // return char
   }
   
-  public void setsampleColumnType(int row, int column) {
+
+  private void setsampleColumnType(int row, int column) {
     
   }
   
@@ -131,21 +54,19 @@ public class FlatFileProcessing {
     return b;
   }
   
-  protected String evaluateColumn(int row, int column, String value) {
+  protected String evaluate(int row, int column, String value) {
     
     if (settings.size() == 0) {
       return value;
     }
   
     for (int i=0; i < settings.size(); i++) {
-      
       if (doesffsd_match(settings.get(i), row, column) == true) {
-        changeIt(settings.get(i), value);
+        value = changeIt(settings.get(i), value);
       }
-      
     }
     
-    return null;
+    return value;
   }
   
   /**
@@ -158,11 +79,11 @@ public class FlatFileProcessing {
    */
   private boolean doesffsd_match(FlatFileSettingsData ffsd, int row, int column) {
     boolean b = false;
-    if (row > 0 && column > 0 && ffsd.row == row && ffsd.column == column) { // matches both row and column
+    if (ffsd.row == row && ffsd.column == column) { // matches both row and column
       b = true;
-    } else if (row > 0 && column == 0 && ffsd.row == row) { // matches the row
+    } else if (ffsd.row == row && ffsd.column == -1) { // matches the row
       b = true;
-    } else if (row == 0 && column > 0 && ffsd.column == column) { // matches the column 
+    } else if (ffsd.column == column && ffsd.row == -1) { // matches the column 
       b = true;
     }
     return b;
@@ -179,19 +100,19 @@ public class FlatFileProcessing {
     
     String v = null;
     switch (ffsd.action) {
-    case CHANGEVALUE:
+    case FlatFileSettingsData.CHANGEVALUE:
       v = ffsd.value;
       break;
-    case CHANGEVALUEWHENEMPTY:
+    case FlatFileSettingsData.CHANGEVALUEWHENEMPTY:
       changeEmpty(ffsd, value);
       break;
-    case CHANGEVALUEWITHREGEXMATCH:
+    case FlatFileSettingsData.CHANGEVALUEWITHREGEXMATCH:
       changeRegexMatch(ffsd, value);
       break;
-    case CHANGEVALUEWITHREGEXREPLACE:
+    case FlatFileSettingsData.CHANGEVALUEWITHREGEXREPLACE:
       changeRegexReplace(ffsd, value);
       break;
-    case CHANGEVALUEAUTO:
+    case FlatFileSettingsData.CHANGEVALUEAUTO:
       break;
       
     default:
