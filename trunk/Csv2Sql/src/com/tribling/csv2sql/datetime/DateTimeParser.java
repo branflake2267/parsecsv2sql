@@ -25,6 +25,8 @@ public class DateTimeParser {
    * 2009-12-01 00:00:00
    * 2009-12-01 00:00:00AM
    * 20091201000000
+   * 
+   * 02/23/2009 11:14:31
    */
 
   // date string given
@@ -67,6 +69,12 @@ public class DateTimeParser {
     return s;
   }
   
+  /**
+   * transform date into new format
+   * 
+   * @param type
+   * @return
+   */
   private String getDate(int type) {
     
     if (datetime == null) {
@@ -90,6 +98,9 @@ public class DateTimeParser {
     if (checkforFormat_monthyear() == true) {  
       s = df.format(date);
 
+    } else if (checkforFormat_common1() == true ) {
+      s = df.format(date);
+      
     } else if (checkforFormat_common() == true ) {
       s = df.format(date);
       
@@ -195,6 +206,56 @@ public class DateTimeParser {
     return found;
   }
 
+  public boolean checkforFormat_common1() {
+
+    // mm/dd/yyyy hh:min:ss
+    String re = "([0-9]+)[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})";
+    Pattern p = Pattern.compile(re);
+    Matcher m = p.matcher(datetime);
+    boolean found = m.find();
+
+    int month = 0;
+    int day = 0;
+    int year = 0;
+    int hour = 0;
+    int minutes = 0;
+    int seconds = 0;
+    if (found == true) {
+      String mm = m.group(1);
+      String dd = m.group(2);
+      String yy = m.group(3);
+      String hh = m.group(4);
+      String min = m.group(5);
+      String ss = m.group(6);
+      
+      if (mm == null | dd == null | yy == null | hh == null | min == null | ss == null) {
+        return false;
+      }
+      
+      month = getMonth(mm) - 1;
+      day = getDay(dd);
+      year = getYear(yy);
+      hour = Integer.parseInt(hh);
+      minutes = Integer.parseInt(min);
+      seconds = Integer.parseInt(ss);
+       
+    } else {
+      return false;
+    }
+    
+    Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.DAY_OF_MONTH, day);
+    cal.set(Calendar.MONTH, month);
+    cal.set(Calendar.YEAR, year);
+    cal.set(Calendar.HOUR, hour);
+    cal.set(Calendar.MINUTE, minutes);
+    cal.set(Calendar.SECOND, seconds);
+
+    date = cal.getTime();
+
+    return found;
+  }
+  
   /**
    * check for common string format mm/dd/yy or mm/dd/yyyy
    * 
