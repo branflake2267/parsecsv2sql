@@ -1010,7 +1010,7 @@ public class Optimise extends SQLProcessing {
     String sql = "";
     if (databaseType == 1) {
       // TODO - change this back~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      sql = "SELECT ImportId, " + column + " FROM " + dd.database + "." + dd.table + " where Period = '02/01/2009'"; 
+      sql = "SELECT ImportId, " + column + " FROM " + dd.database + "." + dd.table; 
     } else if (databaseType == 2) {
       // TODO
       sql = "";

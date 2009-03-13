@@ -797,7 +797,7 @@ public class SQLProcessing {
     if (index == 0) {
     	System.out.println("f:" + indexFile + ": row:" + index + ". " + query); 
     } else {
-    	System.out.println("f:" + indexFile + ": row:" + index); 
+    	System.out.println("f:" + indexFile + ": row:" + index + ". " + query.substring(0,7)); 
     }
     
     try {
