@@ -95,9 +95,12 @@ public class DateTimeParser {
     }
     
     String s = "";
-    if (checkforFormat_monthyear() == true) {  
+    if (checkforFormat_monthyear() == true) {  // keep letter type first like matching jan or Janurary
       s = df.format(date);
 
+    } else if (checkforFormat_monthyear2() == true) { 
+      s = df.format(date);
+      
     } else if (checkforFormat_common1() == true ) {
       s = df.format(date);
       
@@ -107,10 +110,7 @@ public class DateTimeParser {
     } else if (checkforFormat_common2() == true ) {
       s = df.format(date);
       
-    } else if (checkforFormat_monthyear2() == true) { 
-      s = df.format(date);
-      
-    } else if (checkforFormat_custom() == true) { 
+    }  else if (checkforFormat_custom() == true) { 
       s = df.format(date);
       
     } else {
@@ -131,7 +131,7 @@ public class DateTimeParser {
 
     //jan-09 or january-09 or jan 09 or jan 2009  jan09 or Jan2009  
     // TODO  jan 01 2009 or jan 01 09?? in another matching type
-    String re = "([a-zA-Z]+)[\\-\040]?([0-9]+)";
+    String re = "^([a-zA-Z]+)[\\-\040]+?([0-9]+)$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
     boolean found = m.find();
@@ -168,7 +168,7 @@ public class DateTimeParser {
   public boolean checkforFormat_monthyear2() {
 
     // jan 01 2009 or jan 01 09
-    String re = "([a-zA-Z]+)[\\-\040/]([0-9]+)[\\-\040/]([0-9]+)";
+    String re = "^([a-zA-Z]+)[\\-\040/]+([0-9]+)[\\-\040/]+([0-9]+)$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
     boolean found = m.find();
@@ -209,7 +209,7 @@ public class DateTimeParser {
   public boolean checkforFormat_common1() {
 
     // mm/dd/yyyy hh:min:ss
-    String re = "([0-9]+)[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})";
+    String re = "^([0-9]+)[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
     boolean found = m.find();
@@ -264,7 +264,7 @@ public class DateTimeParser {
   public boolean checkforFormat_common() {
 
     // mm/dd/yyyy
-    String re = "([0-9]+)[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)";
+    String re = "^([0-9]+)[/\\-\040\\.]+([0-9]+)[/\\-\040\\.]+([0-9]+)$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
     boolean found = m.find();
@@ -305,7 +305,7 @@ public class DateTimeParser {
   public boolean checkforFormat_common2() {
 
     // mm/yyyy
-    String re = "([0-9]+)[/\\-\040\\.]([0-9]+)";
+    String re = "^([0-9]+)[/\\-\040\\.]+([0-9]+)$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
     boolean found = m.find();
@@ -345,7 +345,7 @@ public class DateTimeParser {
    */
   public boolean checkforFormat_custom() {
 
-    String re = ".*?([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})$";
+    String re = "^.*?([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
     boolean found = m.find();
