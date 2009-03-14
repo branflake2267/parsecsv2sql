@@ -54,6 +54,5 @@ public class Run_Test_Import {
 		FileProcessing process = new FileProcessing();
 		process.setData(sourceData, destinationData, matchFields);
 		
-		
 	}
 }

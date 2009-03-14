@@ -21,7 +21,7 @@ public class Run_test_Import_Mysql {
 	public static void run() {
 		
 		char commaDelimiter = ',';
-		char tabDelimiter = '	';
+		char tabDelimiter = "\t".charAt(0);
 		
 		String file = "/home/branflake2267/downloads/parse/test";
 		SourceData sourceData = new SourceData();
