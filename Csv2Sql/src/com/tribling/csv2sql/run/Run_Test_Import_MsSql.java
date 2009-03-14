@@ -98,7 +98,7 @@ public class Run_Test_Import_MsSql {
 		matchFields[5].sourceField = "Empl ID";
 		matchFields[5].destinationField = "EmployeeID";
 		
-		matchFields[6].sourceField = "Orig Empl Id";// TODO 
+		matchFields[6].sourceField = "Orig Empl Id";
 		matchFields[6].destinationField = "EmployeeID";
 		
 		matchFields[7].sourceField = "Employee Id";
