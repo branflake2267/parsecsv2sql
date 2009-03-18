@@ -1009,7 +1009,6 @@ public class Optimise extends SQLProcessing {
     
     String sql = "";
     if (databaseType == 1) {
-      // TODO - change this back~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       sql = "SELECT ImportId, " + column + " FROM " + dd.database + "." + dd.table; 
     } else if (databaseType == 2) {
       // TODO
@@ -1037,6 +1036,7 @@ public class Optimise extends SQLProcessing {
   
   /**
    * transform string date into datetimestamp in this column
+   * 
    * @param importId
    * @param column
    */
@@ -1081,7 +1081,7 @@ public class Optimise extends SQLProcessing {
   }
   
   /**
-   * check date tranformation column exists if not, create it.
+   * check date transformation column exists if not, create it.
    * @param column
    */
   private void checkDateTransformationColumn(String column) {

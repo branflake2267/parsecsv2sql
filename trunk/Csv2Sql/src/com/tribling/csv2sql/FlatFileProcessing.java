@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.tribling.csv2sql.data.FlatFileSettingsData;
+import com.tribling.csv2sql.datetime.DateTimeParser;
 
 /**
  * process the flat file before going into sql
@@ -60,32 +61,55 @@ public class FlatFileProcessing {
       return value;
     }
   
+    // loop through settings
     for (int i=0; i < settings.size(); i++) {
-      if (doesffsd_match(settings.get(i), row, column) == true) {
+      
+      // does a setting match row,column
+      if (doesffsd_match(settings.get(i), row, column, value) == true) {
+      
+        // change csv value if matched
         value = changeIt(settings.get(i), value);
+      
       }
+      
     }
     
     return value;
   }
   
   /**
-   * does the row and column match somethign that was set?
+   * does the row and column match something that was set?
    * 
    * @param ffsd
    * @param row
    * @param column
    * @return
    */
-  private boolean doesffsd_match(FlatFileSettingsData ffsd, int row, int column) {
+  private boolean doesffsd_match(FlatFileSettingsData ffsd, int row, int column, String value) {
+    
+    // only for header row - auto change row/column for future row matching for column that header was matched in
+    if (ffsd.headerField != null && row == 0) {
+      
+      // TODO - not sure if this reference will work to set the vars
+      if (ffsd.headerField.equals(value)) { // NOTE: matching "" could be bad?
+        ffsd.row = -1;
+        ffsd.column = column; // this is the column that the header field is in
+        return false;
+      }
+      
+    }
+    
     boolean b = false;
     if (ffsd.row == row && ffsd.column == column) { // matches both row and column
       b = true;
+      
     } else if (ffsd.row == row && ffsd.column == -1) { // matches the row
       b = true;
+      
     } else if (ffsd.column == column && ffsd.row == -1) { // matches the column 
       b = true;
     }
+    
     return b;
   }
   
@@ -104,17 +128,24 @@ public class FlatFileProcessing {
       v = ffsd.value;
       break;
     case FlatFileSettingsData.CHANGEVALUEWHENEMPTY:
-      changeEmpty(ffsd, value);
+      v = changeEmpty(ffsd, value);
       break;
     case FlatFileSettingsData.CHANGEVALUEWITHREGEXMATCH:
-      changeRegexMatch(ffsd, value);
+      v = changeRegexMatch(ffsd, value);
       break;
     case FlatFileSettingsData.CHANGEVALUEWITHREGEXREPLACE:
-      changeRegexReplace(ffsd, value);
+      v = changeRegexReplace(ffsd, value);
       break;
     case FlatFileSettingsData.CHANGEVALUEAUTO:
+      // TODO - do later in the future
+      v = "";
       break;
-      
+    case FlatFileSettingsData.CHANGEVALUEINTODATESTRING:
+      v = changeValueToDateFormat(ffsd, 1, value);
+      break;
+    case FlatFileSettingsData.CHANGEVALUEINTODATETIME:
+      v = changeValueToDateFormat(ffsd, 2, value);
+      break;
     default:
       v = value;
       break;
@@ -193,6 +224,21 @@ public class FlatFileProcessing {
     
     return v;
   }
+  
+  private String changeValueToDateFormat(FlatFileSettingsData ffsd, int formatType, String value) {
+    
+    DateTimeParser parse = new DateTimeParser();
+    
+    if (formatType == 1) {
+      value = parse.getDate_EngString(value);
+    } else if (formatType == 2){
+      value = parse.getDateMysql(value);
+    }
+    
+    return value;
+  }
+  
+
   
 }
 

@@ -95,22 +95,25 @@ public class DateTimeParser {
     }
     
     String s = "";
-    if (checkforFormat_monthyear() == true) {  // keep letter type first like matching jan or Janurary
+    if (checkforFormat_monthYearTogether() == true) {  // keep letter type first - like matching jan or Janurary
       s = df.format(date);
 
-    } else if (checkforFormat_monthyear2() == true) { 
+    } else if (checkforFormat_monthYear() == true) {  // keep letter type first - like matching jan or Janurary
+      s = df.format(date);
+
+    } else if (checkforFormat_monthDayYear() == true) { // keep letter type first - like matching jan or Janurary
       s = df.format(date);
       
-    } else if (checkforFormat_common1() == true ) {
+    } else if (checkforFormat_datetime() == true ) {
       s = df.format(date);
       
-    } else if (checkforFormat_common() == true ) {
+    } else if (checkforFormat_engDateString() == true ) {
       s = df.format(date);
       
-    } else if (checkforFormat_common2() == true ) {
+    } else if (checkforFormat_engDateStringNoDay() == true ) {
       s = df.format(date);
       
-    }  else if (checkforFormat_custom() == true) { 
+    }  else if (checkforFormat_Intformat() == true) { 
       s = df.format(date);
       
     } else {
@@ -123,15 +126,13 @@ public class DateTimeParser {
   }
 
   /**
-   * check format jan-09 or january-09
-   * 
-   * @return found
+   * match jan09 orJan2009 
+   * @return
    */
-  public boolean checkforFormat_monthyear() {
+  public boolean checkforFormat_monthYearTogether() {
 
-    //jan-09 or january-09 or jan 09 or jan 2009  jan09 or Jan2009  
-    // TODO  jan 01 2009 or jan 01 09?? in another matching type
-    String re = "^([a-zA-Z]+)[\\-\040]+?([0-9]+)$";
+    // jan09 or jan2009
+    String re = "^([a-zA-Z]+)([0-9]+)$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
     boolean found = m.find();
@@ -165,10 +166,52 @@ public class DateTimeParser {
     return found;
   }
   
-  public boolean checkforFormat_monthyear2() {
+  /**
+   * check format jan-09 or january-09
+   * 
+   * @return found
+   */
+  public boolean checkforFormat_monthYear() {
 
-    // jan 01 2009 or jan 01 09
-    String re = "^([a-zA-Z]+)[\\-\040/]+([0-9]+)[\\-\040/]+([0-9]+)$";
+    // jan-09 or january-09 or jan 09 or jan 2009  or jan, 2009
+    String re = "^([a-zA-Z]+)[.,\\-\040]+?([0-9]+)$";
+    Pattern p = Pattern.compile(re);
+    Matcher m = p.matcher(datetime);
+    boolean found = m.find();
+
+    int month = 0;
+    int year = 0;
+    if (found == true) {
+      String mm = m.group(1);
+      String yy = m.group(2);
+      
+      if (mm == null | yy == null) {
+        return false;
+      }
+      
+      month = getMonth(mm) - 1;
+      year = getYear(yy);
+    } else {
+      return false;
+    }
+
+    Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.DAY_OF_MONTH, 1);
+    cal.set(Calendar.MONTH, month);
+    cal.set(Calendar.YEAR, year);
+    cal.set(Calendar.HOUR, 0);
+    cal.set(Calendar.MINUTE, 0);
+    cal.set(Calendar.SECOND, 0);
+
+    date = cal.getTime();
+
+    return found;
+  }
+  
+  public boolean checkforFormat_monthDayYear() {
+
+    // jan 01 2009 or jan 01 09 or jan, 01 09 or jan, 01 2009
+    String re = "^([a-zA-Z]+)[.,\\-\040/]+([0-9]+)[,\\-\040/]+([0-9]+)$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
     boolean found = m.find();
@@ -206,7 +249,7 @@ public class DateTimeParser {
     return found;
   }
 
-  public boolean checkforFormat_common1() {
+  public boolean checkforFormat_datetime() {
 
     // mm/dd/yyyy hh:min:ss
     String re = "^([0-9]+)[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})$";
@@ -261,7 +304,7 @@ public class DateTimeParser {
    * 
    * @return found
    */
-  public boolean checkforFormat_common() {
+  public boolean checkforFormat_engDateString() {
 
     // mm/dd/yyyy
     String re = "^([0-9]+)[/\\-\040\\.]+([0-9]+)[/\\-\040\\.]+([0-9]+)$";
@@ -302,7 +345,7 @@ public class DateTimeParser {
     return found;
   }
 
-  public boolean checkforFormat_common2() {
+  public boolean checkforFormat_engDateStringNoDay() {
 
     // mm/yyyy
     String re = "^([0-9]+)[/\\-\040\\.]+([0-9]+)$";
@@ -343,7 +386,7 @@ public class DateTimeParser {
    * custom format -bsgbB620090200054003 or 20090200054003
    * @return
    */
-  public boolean checkforFormat_custom() {
+  public boolean checkforFormat_Intformat() {
 
     String re = "^.*?([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})$";
     Pattern p = Pattern.compile(re);
@@ -439,16 +482,37 @@ public class DateTimeParser {
 
     int year = -1;
     if (s.matches("[0-9]{2}")) {
-      year = 2000 + Integer.parseInt(s);
+      year = getYearTwoDigit(s);
     } else if (s.matches("[0-9]{4}")) {
       year = Integer.parseInt(s);
-    } 
+    }  else { 
+      // TODO - is there something I should do when no matches are found, and should be?
+    }
 
     if (year < 0) {
       System.out.println("Error parsing year:" + year);
     }
     
     return year;
+  }
+  
+  private int getYearTwoDigit(String s) {
+    int y = Integer.parseInt(s);
+    int currentYear = getCurrentYear();
+     
+    int yy = 0;
+    if (y >= 0 && y <= currentYear) {
+      yy = 2000 + Integer.parseInt(s);
+    } else {
+      yy = 1900 + Integer.parseInt(s);
+    }
+    
+    return yy;
+  }
+  
+  private int getCurrentYear() {
+    Calendar cal = Calendar.getInstance();
+    return cal.get(Calendar.YEAR);
   }
 
   private int getDay(String s) {
@@ -514,23 +578,6 @@ public class DateTimeParser {
     }
 
     return b;
-  }
-
-  /**
-   * another option to parse the date
-   * @return
-   */
-  private boolean checkforFormat_montYear2() {
-    DateFormat df = new SimpleDateFormat("MMM-YYYY");
-
-    try {
-      Date today = df.parse("jan-2009");            
-      System.out.println("Today = " + df.format(today));
-    } catch (ParseException e) {
-      e.printStackTrace();
-    }
-
-    return false;
   }
 
   private String test() {
