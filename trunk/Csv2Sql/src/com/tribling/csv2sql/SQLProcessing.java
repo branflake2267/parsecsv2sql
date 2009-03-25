@@ -800,7 +800,7 @@ public class SQLProcessing {
     	System.out.println("f:" + indexFile + ": row:" + index + ". " + query.substring(0,50)); 
     }
     
-    System.out.println("f:" + indexFile + ": row:" + index + ". " + query); 
+    //System.out.println("f:" + indexFile + ": row:" + index + ". " + query); 
     
     try {
       Connection conn = getConnection();
