@@ -794,11 +794,13 @@ public class SQLProcessing {
     }
 
     // for debugging
-    if (index == 0) {
+    if (index >= 0 && index <= 10) {
     	System.out.println("f:" + indexFile + ": row:" + index + ". " + query); 
     } else {
-    	System.out.println("f:" + indexFile + ": row:" + index + ". " + query.substring(0,7)); 
+    	System.out.println("f:" + indexFile + ": row:" + index + ". " + query.substring(0,50)); 
     }
+    
+    System.out.println("f:" + indexFile + ": row:" + index + ". " + query); 
     
     try {
       Connection conn = getConnection();
