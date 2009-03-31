@@ -55,7 +55,7 @@ public class Optimise extends SQLProcessing {
     }
 
     // loop through each column
-    loopThroughColumns(columns);
+    optimizeColumns(columns);
 
     System.out.println("Done Optimising");
   }
@@ -89,7 +89,7 @@ public class Optimise extends SQLProcessing {
     columns = fixColumns(columns);
 
     // loop through each column
-    loopThroughColumns(columns);
+    optimizeColumns(columns);
 
     // close the connections at the end
     closeConnection();
@@ -121,9 +121,13 @@ public class Optimise extends SQLProcessing {
     
     // TODO - optional does indexing need to be deleted first?
     
-    // first optimise the columns that need indexing
     ColumnData[] columns = getColumns(c);
-    loopThroughColumns(columns);
+    
+    // first optimise the columns that need indexing
+    // TODO - change column to text if not text
+    if (indexKind != INDEXKIND_FULLTEXT) {
+      optimizeColumns(columns);
+    } 
     
     // index the same columns
     indexColumns(columns, indexKind);
@@ -215,7 +219,7 @@ public class Optimise extends SQLProcessing {
     return type;
   }
 
-  private void loopThroughColumns(ColumnData[] columns) {
+  private void optimizeColumns(ColumnData[] columns) {
 
     int i2 = columns.length - 1;
     for (int i = 0; i < columns.length; i++) {
