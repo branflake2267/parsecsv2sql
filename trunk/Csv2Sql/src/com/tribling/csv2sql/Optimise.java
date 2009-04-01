@@ -258,7 +258,7 @@ public class Optimise extends SQLProcessing {
   private void alterColumn(String column, String columnType) {
 
     // skip system columns
-    if (column.equals("ImportID") | column.equals("DateCreated") | column.equals("DateUpdated")) {
+    if (column.equals(uniqueIdField) | column.equals("DateCreated") | column.equals("DateUpdated")) {
       return;
     }
     
@@ -335,7 +335,7 @@ public class Optimise extends SQLProcessing {
    */
   private void analyzeColumn(String column) {
 
-    if (column.equals("ImportID") | column.equals("DateCreated") | column.equals("DateUpdated")) {
+    if (column.equals(uniqueIdField) | column.equals("DateCreated") | column.equals("DateUpdated")) {
       System.out.println("Skipping Internal: " + column);
       return;
     }
@@ -867,11 +867,14 @@ public class Optimise extends SQLProcessing {
     // load the records that indicate they there duplicates
     String sql = "";
     if (databaseType == 1) {
-      sql = "SELECT ImportId FROM " + dd.database + "." + dd.table + " GROUP BY "+ idents_Columns + " HAVING count(*) > 1;"; 
+      sql = "SELECT " + uniqueIdField + " FROM " + dd.database + "." + dd.table + 
+          " GROUP BY "+ idents_Columns + " HAVING count(*) > 1;"; 
     } else if (databaseType == 2) {
       // TODO
       sql = "";
     }
+    
+    System.out.println(sql);
     
     try {
       Connection conn = getConnection();
@@ -890,10 +893,10 @@ public class Optimise extends SQLProcessing {
     closeConnection();
   }
   
-  private void getDuplicateValues(int importId) {
+  private void getDuplicateValues(int uniqueId) {
     
     String idents_Columns = getIdentitiesColumns_inCsv();
-    String where = "WHERE ImportId='" + importId + "'";
+    String where = "WHERE " + uniqueIdField + "='" + uniqueId + "'";
     
     String sql = "";
     if (databaseType == 1) {
@@ -902,6 +905,8 @@ public class Optimise extends SQLProcessing {
       // TODO
       sql = "";
     }
+    
+    System.out.println(sql);
     
     try {
       Connection conn = getConnection();
@@ -935,7 +940,7 @@ public class Optimise extends SQLProcessing {
     
     String sql = "";
     if (databaseType == 1) {
-      sql = "SELECT ImportId FROM " + dd.database + "." + dd.table + " WHERE " + where; 
+      sql = "SELECT " + uniqueIdField + " FROM " + dd.database + "." + dd.table + " WHERE " + where; 
     } else if (databaseType == 2) {
       // TODO
       sql = "";
@@ -949,9 +954,9 @@ public class Optimise extends SQLProcessing {
       ResultSet result = select.executeQuery(sql);
       int i = 0;
       while (result.next()) {
-        int importId = result.getInt(1);
+        int uniqueId = result.getInt(1);
         if (i > 0) {
-          deleteRecord(importId);
+          deleteRecord(uniqueId);
         }
         i++;
       }
@@ -964,9 +969,9 @@ public class Optimise extends SQLProcessing {
     
   }
   
-  private void deleteRecord(int importId) {
+  private void deleteRecord(int uniqueId) {
     
-    String where = "ImportId='" + importId + "'";
+    String where = "" + uniqueIdField + "='" + uniqueId + "'";
     
     String sql = "";
     if (databaseType == 1) {
@@ -1013,7 +1018,7 @@ public class Optimise extends SQLProcessing {
     
     String sql = "";
     if (databaseType == 1) {
-      sql = "SELECT ImportId, " + column + " FROM " + dd.database + "." + dd.table; 
+      sql = "SELECT " + uniqueIdField + ", " + column + " FROM " + dd.database + "." + dd.table; 
     } else if (databaseType == 2) {
       // TODO
       sql = "";
@@ -1024,9 +1029,9 @@ public class Optimise extends SQLProcessing {
       Statement select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
-        int importId = result.getInt(1);
+        int uniqueId = result.getInt(1);
         String dt = result.getString(2);
-        updateColumn_Date(importId, column, formatType, dt);
+        updateColumn_Date(uniqueId, column, formatType, dt);
       }
       select.close();
       result.close();
@@ -1041,10 +1046,10 @@ public class Optimise extends SQLProcessing {
   /**
    * transform string date into datetimestamp in this column
    * 
-   * @param importId
+   * @param uniqueId
    * @param column
    */
-  private void updateColumn_Date(int importId, String column, int formatType, String datetime) {
+  private void updateColumn_Date(int uniqueId, String column, int formatType, String datetime) {
     
     DateTimeParser parse = new DateTimeParser();
     
@@ -1064,7 +1069,7 @@ public class Optimise extends SQLProcessing {
     
     String sql = "";
     if (databaseType == 1) {
-      sql = "UPDATE " + dd.database + "." + dd.table + " SET `" + column + "`='" + tranformed + "' WHERE ImportId='" + importId + "';"; 
+      sql = "UPDATE " + dd.database + "." + dd.table + " SET `" + column + "`='" + tranformed + "' WHERE " + uniqueIdField + "='" + uniqueId + "';"; 
     } else if (databaseType == 2) {
       // TODO
       sql = "";
