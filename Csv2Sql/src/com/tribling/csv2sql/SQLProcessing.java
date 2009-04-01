@@ -64,6 +64,9 @@ public class SQLProcessing {
   final public static int INDEXKIND_DEFAULT = 1;
   final public static int INDEXKIND_FULLTEXT = 2;
   
+  // TODO integrate this into all the queries
+  protected String uniqueIdField = "ImportID";
+  
   /**
    * constructor
    */
@@ -72,6 +75,10 @@ public class SQLProcessing {
 
   protected void dropTableOff() {
     this.dropTableOff = true;
+  }
+  
+  public void setUniqueIdField(String uniqueIdField) {
+    this.uniqueIdField = uniqueIdField;
   }
 
   /**
