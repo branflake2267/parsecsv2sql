@@ -592,7 +592,7 @@ public class SQLProcessing {
    * @param column
    * @param type [TEXT, VARCHAR(255)]
    */
-  protected void createColumn(String column, String type) {
+  public void createColumn(String column, String type) {
 
     if (column == null) {
       return;
