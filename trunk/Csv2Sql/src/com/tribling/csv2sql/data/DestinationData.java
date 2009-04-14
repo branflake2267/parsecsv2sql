@@ -70,6 +70,8 @@ public class DestinationData {
   // Also will need Identity Columns listed
   public boolean createIndexs = true;
 
+  // when no field names exist in the first row, make this true
+  public boolean firstRowHasNoFieldNames = false;
 
   /**
    * make database type an integer
