@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import com.csvreader.CsvReader;
+import com.sun.org.apache.bcel.internal.generic.DDIV;
 import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.MatchFieldData;
@@ -23,6 +24,9 @@ public class CSVProcessing extends FlatFileProcessing {
   // sql methods
   private Optimise sql = new Optimise();
 
+  // destination data settings, used in first column processing
+  private DestinationData destinationData = null;
+
   /**
    * constructor
    */
@@ -38,6 +42,7 @@ public class CSVProcessing extends FlatFileProcessing {
    */
   protected void setData(char delimiter, DestinationData destinationData, MatchFieldData[] matchFields) {
     this.delimiter = delimiter;
+    this.destinationData  = destinationData;
 
     try {
       sql.setDestinationData(destinationData);
@@ -108,10 +113,13 @@ public class CSVProcessing extends FlatFileProcessing {
 
   /**
    * get columns from file, and create them in database if need be
+   *  
+   *  ~~~ 1st row processing ~~~~
    * 
    * @throws Exception
    */
   private void getColumnsInHeader() {
+    
     ColumnData[] columns = null;	
     try {
       reader.readHeaders();
@@ -123,6 +131,7 @@ public class CSVProcessing extends FlatFileProcessing {
     // insert columns into database if need be
     if (columns != null) {
       sql.createColumns(columns);
+
     } else {
       System.err.println("CSV Reader could not get columns");
       System.exit(1);
@@ -139,6 +148,12 @@ public class CSVProcessing extends FlatFileProcessing {
 
     String[] values = null;
     int index = 0;
+    
+    // when the first row is data, need to move up one row to start
+    if (destinationData.firstRowHasNoFieldNames == true) {
+      index--;
+    }
+    
     try {
       while (reader.readRecord()) {
 
@@ -162,7 +177,10 @@ public class CSVProcessing extends FlatFileProcessing {
   }
 
   /**
-   * make a column 1(header) list of the fields, which will always be needed when inserting/updating the data into sql
+   * make a column 1(header) list of the fields, 
+   *   which will always be needed when inserting/updating the data into sql
+   * 
+   *   ~~~ first row processsing ~~~
    * 
    * @param columns
    * @return
@@ -176,7 +194,13 @@ public class CSVProcessing extends FlatFileProcessing {
       columns[i] = evaluate(0, i, columns[i]);
       
       cols[i] = new ColumnData();
-      cols[i].column = columns[i];
+      
+      if (destinationData.firstRowHasNoFieldNames == true) {
+        cols[i].column = " "; // this will change into 'c0','c1',... column names
+      } else {
+        cols[i].column = columns[i];
+      }
+      
     }
 
     return cols;
@@ -206,4 +230,5 @@ public class CSVProcessing extends FlatFileProcessing {
     return values;
   }
 
+  
 }

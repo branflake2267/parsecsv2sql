@@ -55,6 +55,14 @@ public class FlatFileProcessing {
     return b;
   }
   
+  /**
+   * evaluate the data for match in flat file processing settings
+   * 
+   * @param row
+   * @param column
+   * @param value
+   * @return
+   */
   protected String evaluate(int row, int column, String value) {
     
     if (settings.size() == 0) {
