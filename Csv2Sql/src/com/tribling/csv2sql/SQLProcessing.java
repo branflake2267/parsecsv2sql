@@ -89,6 +89,11 @@ public class SQLProcessing {
    */
   public void setDestinationData(DestinationData destinationData) {
 
+    if (destinationData == null) {
+      System.out.println("ERROR: DestinationData was not Set");
+      System.exit(1);
+    }
+    
     dd = destinationData;
 
     // test for db type
@@ -272,7 +277,7 @@ public class SQLProcessing {
   /**
    * sql drop table
    */
-  private void dropTable() {
+  public void dropTable() {
 
     String query = "";
     if (databaseType == 1) {
