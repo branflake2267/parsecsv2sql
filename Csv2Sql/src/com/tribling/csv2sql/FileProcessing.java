@@ -105,7 +105,7 @@ public class FileProcessing {
         if (isDirectory == true && i > 0 && howManyAreFiles(files) > 1) {
           csvProcess.dropTableOff();
         }
-
+        
         csvProcess.parseFile(i, files[i]);
       }
     }
