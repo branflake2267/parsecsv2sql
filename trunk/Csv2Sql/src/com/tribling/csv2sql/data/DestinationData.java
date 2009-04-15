@@ -73,6 +73,9 @@ public class DestinationData {
   // when no field names exist in the first row, make this true
   public boolean firstRowHasNoFieldNames = false;
 
+  // save the source file into the records
+  public boolean setSrcFileIntoColumn = false;
+  
   /**
    * make database type an integer
    * @return

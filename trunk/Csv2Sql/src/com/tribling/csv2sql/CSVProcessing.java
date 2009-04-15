@@ -25,8 +25,10 @@ public class CSVProcessing extends FlatFileProcessing {
   private Optimise sql = new Optimise();
 
   // destination data settings, used in first column processing
-  private DestinationData destinationData = null;
+  private DestinationData dd = null;
 
+  private File processingfile = null;
+  
   /**
    * constructor
    */
@@ -42,7 +44,7 @@ public class CSVProcessing extends FlatFileProcessing {
    */
   protected void setData(char delimiter, DestinationData destinationData, MatchFieldData[] matchFields) {
     this.delimiter = delimiter;
-    this.destinationData  = destinationData;
+    this.dd  = destinationData;
 
     try {
       sql.setDestinationData(destinationData);
@@ -61,7 +63,7 @@ public class CSVProcessing extends FlatFileProcessing {
   public void dropTableOff() {
     sql.dropTableOff();
   }
-
+  
   /**
    * parse the file, insert/update sql, then optimise it if needed.
    *  
@@ -71,6 +73,8 @@ public class CSVProcessing extends FlatFileProcessing {
   protected void parseFile(int fileIndex, File file) {
     this.file = file;
 
+    sql.setFile(file);
+    
     // open a sql connection
     sql.openConnection();
 
@@ -78,7 +82,7 @@ public class CSVProcessing extends FlatFileProcessing {
     sql.createTable();
 
     // create columns importid, datecreated, dateupdated used for tracking
-    sql.createImportTrackingColumns();
+    sql.createDefaultFields();
 
     // open the file
     openFileAndRead();
@@ -150,7 +154,7 @@ public class CSVProcessing extends FlatFileProcessing {
     int index = 0;
     
     // when the first row is data, need to move up one row to start
-    if (destinationData.firstRowHasNoFieldNames == true) {
+    if (dd.firstRowHasNoFieldNames == true) {
       index--;
     }
     
@@ -187,6 +191,9 @@ public class CSVProcessing extends FlatFileProcessing {
    */
   private ColumnData[] makeColumnlist(String[] columns) {
 
+    // add some custome columns
+    columns = extendColumns(columns);
+    
     ColumnData[] cols = new ColumnData[columns.length];
     for(int i=0; i < columns.length; i++) {
 
@@ -195,7 +202,7 @@ public class CSVProcessing extends FlatFileProcessing {
       
       cols[i] = new ColumnData();
       
-      if (destinationData.firstRowHasNoFieldNames == true) {
+      if (dd.firstRowHasNoFieldNames == true && i < columns.length-1) { //skip extended columns
         cols[i].column = " "; // this will change into 'c0','c1',... column names
       } else {
         cols[i].column = columns[i];
@@ -204,6 +211,36 @@ public class CSVProcessing extends FlatFileProcessing {
     }
 
     return cols;
+  }
+  
+  /**
+   * add some custom columns
+   *  
+   * @param columns
+   * @return
+   */
+  private String[] extendColumns(String[] columns) {
+    
+    int extendCount = 0;
+    
+    if (dd.setSrcFileIntoColumn == true) {
+     extendCount++; 
+    }
+    
+    int newCount = extendCount + columns.length;
+    String[] c = new String[newCount];
+    
+    for (int i=0; i < columns.length; i++) {
+      c[i] = columns[i];
+    }
+    
+    int b = columns.length;
+    if (dd.setSrcFileIntoColumn) {
+      c[b] = "SrcFile";
+      b++;
+    }
+    
+    return c;
   }
 
   private void listValues(int index, String[] values) {
@@ -227,8 +264,35 @@ public class CSVProcessing extends FlatFileProcessing {
     for (int i=0; i < values.length; i++) {
       values[i] = evaluate(row, i, values[i]);
     }
+    
+    // add in custom values - to match custom column
+    values = extendValues(row, values);
+    
     return values;
   }
 
+  private String[] extendValues(int row, String[] values) {
+    
+    int extendCount = 0;
+    
+    if (dd.setSrcFileIntoColumn == true) {
+     extendCount++; 
+    }
+    
+    int newCount = extendCount + values.length;
+    String[] v = new String[newCount];
+    
+    for (int i=0; i < values.length; i++) {
+      v[i] = values[i];
+    }
+    
+    int b = values.length;
+    if (dd.setSrcFileIntoColumn) {
+      v[b] = file.getAbsolutePath();
+      b++;
+    }
+    
+    return v;
+  }
   
 }

@@ -235,16 +235,8 @@ public class SQLProcessing {
    * 1. create import id 2. create date created field 3. create date updated
    * field 4. create index of teh identities, to make the updates go faster
    */
-  protected void createImportTrackingColumns() {
+  protected void createDefaultFields() {
     // in some cases the fields below might not exist so lets verify that.
-
-    // importid
-    /*
-     * TODO - how to do with auto increment, and who holds the primary key
-     * String column = "ImportId"; String type = ""; if (databaseType == 1) {
-     * type = "Int DEFAULT 0"; } else if (databaseType == 2) { type =
-     * "DATETIME NULL"; } createColumn(column, type);
-     */
 
     // DateCreated - shows when this record was inserted
     String column = "DateCreated";

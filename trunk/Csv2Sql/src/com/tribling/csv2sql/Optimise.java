@@ -1,5 +1,6 @@
 package com.tribling.csv2sql;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -40,6 +41,9 @@ public class Optimise extends SQLProcessing {
   // when formating a date column, transform it to a new column instead of updating it self.
   // TODO may move this to a different format later?
   private String transformToColumn = null;
+
+  // this is the file being processed
+  private File file = null;
   
   /**
    * constructor
@@ -1096,6 +1100,10 @@ public class Optimise extends SQLProcessing {
   private void checkDateTransformationColumn(String column) {
     String type = "DATETIME DEFAULT NULL";
     createColumn(column, type);
+  }
+
+  public void setFile(File file) {
+    this.file = file;
   }
   
 }
