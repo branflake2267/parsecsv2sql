@@ -272,7 +272,7 @@ public class Optimise extends SQLProcessing {
     // possible skip: does column already have this type? skip if it does
     ColumnData compareColumn = getColumn(column);
     if (columnType.toLowerCase().contains(compareColumn.type.toLowerCase())) {
-      System.out.println("Column already has this columnType: " + compareColumn.type);
+      //System.out.println("Column already has this columnType: " + compareColumn.type);
       return;
     }
 
@@ -299,8 +299,6 @@ public class Optimise extends SQLProcessing {
       System.err.println("Alter failure: " + alterQuery);
       e.printStackTrace();
       System.out.println("");
-
-
     }
 
   }
@@ -384,7 +382,7 @@ public class Optimise extends SQLProcessing {
         "." + dd.table + " " + ignoreNullValues + " " + random + ";"; 
     }
 
-    System.out.println("Analyzing Column For Type: " + column + " query: " + query);
+    //System.out.println("Analyzing Column For Type: " + column + " query: " + query);
 
     try { 
       // only read 500 records at a time, so not use a ton of memory for large samples
@@ -421,7 +419,7 @@ public class Optimise extends SQLProcessing {
       sql = "";
     }
     
-    System.out.println("getMaxFieldLength sql: " + sql);
+    //System.out.println("getMaxFieldLength sql: " + sql);
     
     int columnLen = getQueryInt(sql);
     
