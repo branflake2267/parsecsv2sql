@@ -412,7 +412,7 @@ public class SQLProcessing {
     "FROM `" + dd.database + "` " + where + " ;";
     
 
-    System.out.println("query: " + query);
+    //System.out.println("query: " + query);
 
     ColumnData[] columns = null;
     try {
