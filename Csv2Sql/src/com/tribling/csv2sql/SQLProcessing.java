@@ -1489,6 +1489,8 @@ public class SQLProcessing {
     String query = "SELECT ImportId FROM `" + dd.database + "`.`" + dd.table
         + "` " + "WHERE " + whereQuery + " LIMIT 0,1";
 
+    //System.out.println("Exist?: " + query);
+    
     int id = getQueryIdent(query);
 
     return id;
