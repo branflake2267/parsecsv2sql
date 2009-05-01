@@ -8,7 +8,6 @@ import com.csvreader.CsvReader;
 import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.MatchFieldData;
-import com.tribling.csv2sql.lib.FlatFileProcessing;
 
 public class CSVProcessing extends FlatFileProcessing {
 
@@ -54,9 +53,12 @@ public class CSVProcessing extends FlatFileProcessing {
       System.exit(1);
     }
     sql.setMatchFields(matchFields);
-
   }
-
+  
+  public void setData(char delimiter) {
+    this.delimiter = delimiter;
+  }
+  
   /**
    * when reading a directory of files, don't drop table when moving to the second file notification
    */
@@ -70,7 +72,7 @@ public class CSVProcessing extends FlatFileProcessing {
    * @param fileIndex - when reading a director of files(.list) this is the index number of which file its on.
    * @param file - the file to parse
    */
-  protected void parseFile(int fileIndex, File file) {
+  protected void parseFile_Sql(int fileIndex, File file) {
     this.file = file;
 
     sql.setFile(file);
@@ -102,12 +104,47 @@ public class CSVProcessing extends FlatFileProcessing {
     // done with connection
     sql.closeConnection();
   }
+  
+  protected boolean parseFile_Match(int fileIndex, File file) {
+    this.file = file;
+
+    // open the file
+    openFileAndRead();
+
+    // process columns
+    getColumnsInHeader();
+    
+    if (foundMatch == true) {
+      return true;
+    }
+    
+    // loop through data rows
+    iterateRowsData(fileIndex);
+
+    if (foundMatch == true) {
+      return true;
+    }
+    
+    return false;
+  }
 
   /**
    * open file and start reading it
    */
   private void openFileAndRead() {
+    
     try {
+      if (Character.toString(delimiter) == null) {
+        System.out.println("openFileAndRead: You forgot to set a delimiter. Exiting.");
+        System.exit(1);
+      }
+    } catch (Exception e1) {
+      System.out.println("openFileAndRead: You forgot to set a delimiter. Exiting.");
+      e1.printStackTrace();
+      System.exit(1);
+    }
+    
+    try {     
       reader = new CsvReader(file.toString(), delimiter);
     } catch (FileNotFoundException e) {
       System.err.println("CSV Reader, Could not open CSV Reader");
@@ -129,13 +166,24 @@ public class CSVProcessing extends FlatFileProcessing {
       reader.readHeaders();
       columns = makeColumnlist(reader.getHeaders());
     } catch (IOException e) {
+      System.out.println("getColumnsInHeader: couln't read columns");
       e.printStackTrace();
     }
 
     // insert columns into database if need be
     if (columns != null) {
-      sql.createColumns(columns);
-
+      
+      // add data to table
+      if (mode == MODE_SQLIMPORT) {
+        sql.createColumns(columns);
+      } else if (mode == MODE_FINDFILEMATCH) {
+        if (foundMatch == true) {
+          return;
+        }
+      } else if (mode == MODE_FILEEXPORT) {
+        // TODO add in file export ability
+      } 
+      
     } else {
       System.err.println("CSV Reader could not get columns");
       System.exit(1);
@@ -166,7 +214,15 @@ public class CSVProcessing extends FlatFileProcessing {
         values = processRow(index+1, values);
         
         // add data to table
-        sql.addData(indexFile, index, values);
+        if (mode == MODE_SQLIMPORT) {
+          sql.addData(indexFile, index, values);
+        } else if (mode == MODE_FINDFILEMATCH) {
+          if (foundMatch == true) {
+            return;
+          }
+        } else if (mode == MODE_FILEEXPORT) {
+          // TODO add in file export ability
+        } 
 
         // debug
         //listValues(index, values);
@@ -202,7 +258,7 @@ public class CSVProcessing extends FlatFileProcessing {
       
       cols[i] = new ColumnData();
       
-      if (dd.firstRowHasNoFieldNames == true && i < columns.length-1) { //skip extended columns
+      if (dd != null && dd.firstRowHasNoFieldNames == true && i < columns.length-1) { //skip extended columns
         cols[i].column = " "; // this will change into 'c0','c1',... column names
       } else {
         cols[i].column = columns[i];
@@ -223,7 +279,7 @@ public class CSVProcessing extends FlatFileProcessing {
     
     int extendCount = 0;
     
-    if (dd.setSrcFileIntoColumn == true) {
+    if (dd != null && dd.setSrcFileIntoColumn == true) {
      extendCount++; 
     }
     
@@ -235,7 +291,7 @@ public class CSVProcessing extends FlatFileProcessing {
     }
     
     int b = columns.length;
-    if (dd.setSrcFileIntoColumn) {
+    if (dd != null && dd.setSrcFileIntoColumn) {
       c[b] = "SrcFile";
       b++;
     }
