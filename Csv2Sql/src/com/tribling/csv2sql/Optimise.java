@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import com.tribling.csv2sql.data.ColumnData;
-import com.tribling.csv2sql.datetime.DateTimeParser;
+import com.tribling.csv2sql.lib.datetime.DateTimeParser;
 
 /**
  * 
