@@ -94,21 +94,14 @@ public class FlatFileProcessing {
     // loop through settings
     for (int i=0; i < settings.size(); i++) {
       
+      // break if found the match
+      if (foundMatch == true) {
+        return null;
+      }
+      
       // does a setting match row,column
       if (doesffsd_match(settings.get(i), row, column, value) == true) {
-      
-        // change csv value if matched
-        if (mode == MODE_SQLIMPORT | mode == MODE_FILEEXPORT) {
           value = changeIt(settings.get(i), value);
-        } else if (mode == MODE_FINDFILEMATCH) {
-          foundMatch = true;
-        }
-        
-      } else {
-        // reset if need be
-        if (mode == MODE_FINDFILEMATCH) {
-          foundMatch = false;
-        }
       }
       
     }
@@ -185,6 +178,8 @@ public class FlatFileProcessing {
     case FlatFileSettingsData.CHANGEVALUEINTODATETIME:
       v = changeValueToDateFormat(ffsd, 2, value);
       break;
+    case FlatFileSettingsData.FINDINFILE_REGEX:
+      v = findMatchbyRegex(ffsd, value);
     default:
       v = value;
       break;
@@ -193,6 +188,28 @@ public class FlatFileProcessing {
     return v;
   }
   
+  private String findMatchbyRegex(FlatFileSettingsData ffsd, String value) {
+
+    if (value == null) {
+      foundMatch = false;
+      return value;
+    }
+    
+    String re = ffsd.regex;
+    Pattern p = Pattern.compile(re);
+    Matcher m = p.matcher(value);
+    boolean found = m.find();
+
+    String v = "";
+    if (found == true) {
+      foundMatch = true;
+    } else {
+      foundMatch = false;
+    }
+    
+    return value;
+  }
+
   /**
    * change value when empty
    * 

@@ -202,7 +202,7 @@ public class CSVProcessing extends FlatFileProcessing {
     int index = 0;
     
     // when the first row is data, need to move up one row to start
-    if (dd.firstRowHasNoFieldNames == true) {
+    if (dd != null && dd.firstRowHasNoFieldNames == true) {
       index--;
     }
     
@@ -318,6 +318,9 @@ public class CSVProcessing extends FlatFileProcessing {
    */
   private String[] processRow(int row, String[] values) {
     for (int i=0; i < values.length; i++) {
+      if (foundMatch == true) {
+        break;
+      }
       values[i] = evaluate(row, i, values[i]);
     }
     
@@ -331,7 +334,7 @@ public class CSVProcessing extends FlatFileProcessing {
     
     int extendCount = 0;
     
-    if (dd.setSrcFileIntoColumn == true) {
+    if (dd != null && dd.setSrcFileIntoColumn == true) {
      extendCount++; 
     }
     
@@ -343,7 +346,7 @@ public class CSVProcessing extends FlatFileProcessing {
     }
     
     int b = values.length;
-    if (dd.setSrcFileIntoColumn) {
+    if (dd != null && dd.setSrcFileIntoColumn) {
       v[b] = file.getAbsolutePath();
       b++;
     }
