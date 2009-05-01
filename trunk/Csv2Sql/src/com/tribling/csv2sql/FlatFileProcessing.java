@@ -1,4 +1,4 @@
-package com.tribling.csv2sql.lib;
+package com.tribling.csv2sql;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -18,6 +18,19 @@ import com.tribling.csv2sql.lib.datetime.DateTimeParser;
  */
 public class FlatFileProcessing {
 
+  public final static int MODE_SQLIMPORT = 1;
+  
+  // find a match in a file and return
+  public final static int MODE_FINDFILEMATCH = 2;
+  
+  public final static int MODE_FILEEXPORT = 3; // TODO - future mode
+  
+  // what mode is the csv processing runnign in
+  protected int mode = MODE_SQLIMPORT; // default mode is sql import 
+  
+  // found a match in match mode
+  protected boolean foundMatch = false;
+  
   //set all the settings into this object array
   private ArrayList<FlatFileSettingsData> settings = new ArrayList<FlatFileSettingsData>();
   
@@ -29,6 +42,15 @@ public class FlatFileProcessing {
   
   public void setData(FlatFileSettingsData ffsd) {
     this.settings = ffsd.getSettings();
+  }
+  
+  /**
+   * set what type of mode the processing will run in, sql, file export, file find a match...
+   * 
+   * @param mode
+   */
+  public void setMode(int mode) {
+    this.mode = mode;
   }
   
   /**
@@ -76,8 +98,17 @@ public class FlatFileProcessing {
       if (doesffsd_match(settings.get(i), row, column, value) == true) {
       
         // change csv value if matched
-        value = changeIt(settings.get(i), value);
-      
+        if (mode == MODE_SQLIMPORT | mode == MODE_FILEEXPORT) {
+          value = changeIt(settings.get(i), value);
+        } else if (mode == MODE_FINDFILEMATCH) {
+          foundMatch = true;
+        }
+        
+      } else {
+        // reset if need be
+        if (mode == MODE_FINDFILEMATCH) {
+          foundMatch = false;
+        }
       }
       
     }

@@ -17,9 +17,16 @@ public class FileProcessing {
 
   private MatchFieldData[] matchFields = null;
 
+  @Deprecated // move to source data
   private char delimiter;
 
   private boolean isDirectory = false;
+
+  // source data
+  private SourceData sourceData = null;
+
+  // flat file settings
+  private FlatFileSettingsData ffsd = null;
 
   /**
    * constructor
@@ -27,18 +34,25 @@ public class FileProcessing {
   public FileProcessing() {
   }
 
+  public void setData(SourceData sourceData) {
+    this.sourceData = sourceData;
+    csvProcess.setData(sourceData.delimiter);
+  }
+  
   public void setData(FlatFileSettingsData ffsd) {
-   csvProcess.setData(ffsd);
+    this.ffsd = ffsd;
+    csvProcess.setData(ffsd);
   }
   
   /**
-   * set the data, and it will run
+   * set the data and run
    * 
    * @param sourceData
    * @param destinationData
    * @param matchFields
    */
   public void setData(SourceData sourceData, DestinationData destinationData, MatchFieldData[] matchFields) {
+    this.sourceData = sourceData;
     this.delimiter = sourceData.delimiter;
     this.desinationData = destinationData;
 
@@ -50,7 +64,7 @@ public class FileProcessing {
     csvProcess.setData(delimiter, destinationData, matchFields);
 
     try {
-      run(sourceData);
+      run_Sql_Import();
     } catch (Exception e) {
       System.out.println("File Error:");
       e.printStackTrace();
@@ -63,7 +77,7 @@ public class FileProcessing {
    * @param sourceData
    * @throws Exception 
    */
-  private void run(SourceData sourceData) {
+  private void run_Sql_Import() {
 
     File[] files;
 
@@ -85,7 +99,7 @@ public class FileProcessing {
 
     System.out.println("All Done: with files.");
   }
-
+  
   /**
    * start the loop through the files
    * 
@@ -106,12 +120,12 @@ public class FileProcessing {
           csvProcess.dropTableOff();
         }
         
-        csvProcess.parseFile(i, files[i]);
+        csvProcess.parseFile_Sql(i, files[i]);
       }
     }
 
   }
-
+  
   /**
    * how many real files are we going to process, this delegates the drop table
    * @param files
@@ -127,4 +141,64 @@ public class FileProcessing {
     return is;
   }
 
+  
+  
+  
+
+  public File findMatchInFile() {
+        
+    if (sourceData == null) {
+      System.out.println("SourceData not set. Exiting.");
+      System.exit(1);
+    }
+    
+    if (ffsd == null) {
+      System.out.println("FlatFileSettings not set. Exiting.");
+      System.exit(1);
+    }
+    
+    // set to match a file, not sql import
+    csvProcess.setMode(FlatFileProcessing.MODE_FINDFILEMATCH);
+    
+    File[] files;
+    isDirectory = sourceData.file.isDirectory();
+    if (isDirectory == true) {
+      files = sourceData.file.listFiles();
+      Arrays.sort(files);
+    } else {
+      files = new File[1];
+      files[0] = sourceData.file;
+      if (sourceData.file.isFile() == false) {
+        System.err.println("File is not a file; It has to be a valid directory or file.");
+        System.exit(1);
+      }
+    }
+
+    File foundFile = loop_ToFindMatch(files);
+    
+    return foundFile;
+  }
+  
+  private File loop_ToFindMatch(File[] files) {
+
+    Arrays.sort(files);
+
+    File foundfile = null;
+    for (int i=0; i < files.length; i++) {
+
+      System.out.println("Processing File: " + files[i].getName());
+
+      if (files[i].isFile() == true) {
+        boolean found = csvProcess.parseFile_Match(i, files[i]);
+        if (found == true) {
+          foundfile = files[i];
+          break;
+        }
+      }
+    }
+
+    return foundfile;
+  }
+
+  
 }
