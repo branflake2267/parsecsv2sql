@@ -1,4 +1,4 @@
-package com.tribling.csv2sql;
+package com.tribling.csv2sql.lib;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
