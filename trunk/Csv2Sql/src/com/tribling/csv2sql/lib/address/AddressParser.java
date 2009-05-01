@@ -1,4 +1,4 @@
-package com.tribling.csv2sql.address;
+package com.tribling.csv2sql.lib.address;
 
 import java.util.Arrays;
 import java.util.regex.Matcher;

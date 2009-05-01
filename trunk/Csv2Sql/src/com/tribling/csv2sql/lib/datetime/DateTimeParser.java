@@ -1,4 +1,4 @@
-package com.tribling.csv2sql.datetime;
+package com.tribling.csv2sql.lib.datetime;
 
 import java.text.DateFormat;
 import java.text.ParseException;

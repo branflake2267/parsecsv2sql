@@ -1,11 +1,11 @@
-package com.tribling.csv2sql;
+package com.tribling.csv2sql.lib;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.tribling.csv2sql.data.FlatFileSettingsData;
-import com.tribling.csv2sql.datetime.DateTimeParser;
+import com.tribling.csv2sql.lib.datetime.DateTimeParser;
 
 /**
  * process the flat file before going into sql
@@ -27,7 +27,7 @@ public class FlatFileProcessing {
   public FlatFileProcessing() {
   }
   
-  protected void setData(FlatFileSettingsData ffsd) {
+  public void setData(FlatFileSettingsData ffsd) {
     this.settings = ffsd.getSettings();
   }
   
