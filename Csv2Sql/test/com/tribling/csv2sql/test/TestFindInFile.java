@@ -15,10 +15,9 @@ public class TestFindInFile {
   public void run() {
     
     FlatFileSettingsData ffsd = new FlatFileSettingsData();
-    int row = -1; 
-    int column = 0;
-    ffsd.findInFile_byRegex(row, column, "11201");
+    ffsd.findInFile_byRegex("total", "32837");
     
+    // char delimiter = "\t".charAt(0);
     char delimiter = ',';
     
     String system = System.getProperty("os.name").toLowerCase();
