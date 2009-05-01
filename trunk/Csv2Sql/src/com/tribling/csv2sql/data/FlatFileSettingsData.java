@@ -24,7 +24,7 @@ public class FlatFileSettingsData {
   // sql datetime format
   public final static int CHANGEVALUEINTODATETIME = 7;
   
-  public final static int FINDINFILE_REGEX = 8;
+  public final static int FINDINFILE_REGEX_COLROW = 8;
   
   /**
    * constructor
@@ -141,9 +141,17 @@ public class FlatFileSettingsData {
    */
   public void findInFile_byRegex(int row, int column, String regex) {
     FlatFileSettingsData ffsd = new FlatFileSettingsData();
-    ffsd.action = FINDINFILE_REGEX;
+    ffsd.action = FINDINFILE_REGEX_COLROW;
     ffsd.row = row;
     ffsd.column = column;
+    ffsd.regex = regex;
+    settings.add(ffsd);
+  }
+  
+  public void findInFile_byRegex(String headerField, String regex) {
+    FlatFileSettingsData ffsd = new FlatFileSettingsData();
+    ffsd.action = FINDINFILE_REGEX_COLROW;
+    ffsd.headerField = headerField;
     ffsd.regex = regex;
     settings.add(ffsd);
   }
