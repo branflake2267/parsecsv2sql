@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import com.csvreader.CsvReader;
-import com.sun.org.apache.bcel.internal.generic.DDIV;
 import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.MatchFieldData;
@@ -43,7 +42,7 @@ public class CSVProcessing extends FlatFileProcessing {
    * @param destinationData
    * @param matchFields
    */
-  protected void setData(char delimiter, DestinationData destinationData, MatchFieldData[] matchFields) {
+  public void setData(char delimiter, DestinationData destinationData, MatchFieldData[] matchFields) {
     this.delimiter = delimiter;
     this.dd  = destinationData;
 
