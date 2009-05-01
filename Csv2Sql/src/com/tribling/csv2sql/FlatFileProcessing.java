@@ -178,7 +178,7 @@ public class FlatFileProcessing {
     case FlatFileSettingsData.CHANGEVALUEINTODATETIME:
       v = changeValueToDateFormat(ffsd, 2, value);
       break;
-    case FlatFileSettingsData.FINDINFILE_REGEX:
+    case FlatFileSettingsData.FINDINFILE_REGEX_COLROW:
       v = findMatchbyRegex(ffsd, value);
     default:
       v = value;

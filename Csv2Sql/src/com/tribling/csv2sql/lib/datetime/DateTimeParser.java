@@ -48,6 +48,7 @@ public class DateTimeParser {
   }
 
   public Date getDate(String dt) {
+    this.datetime = dt;
     // type doesn't matter, b/c returning date
     getDate(TYPE_ENG_DATE);
     return date;
