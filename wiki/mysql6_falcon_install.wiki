@@ -59,7 +59,6 @@ sudo make install
 
 
 
-
 #mysqls help./b
 shell> groupadd mysql
 shell> useradd -g mysql mysql
