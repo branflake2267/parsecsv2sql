@@ -1,0 +1,78 @@
+#summary my notes on installing mysql6-falcon
+
+= mysql install notes =
+
+{{{
+# http://www.howtoforge.com/mysql5_debian_sarge
+# http://mapopa.blogspot.com/2009/03/compiling-mysql6.html
+
+# get mysql source
+
+# copy source - compile from this - do this incase you mess up
+cp -R mysql-6.0.10-alpha mysql6
+
+cd ./mysql6
+
+sudo apt-get install build-essential
+sudo apt-get install lib64ncurses5 libncurses5 libncurses5-dbg libncurses-dev
+sudo apt-get install autoconf libtool
+
+# auto configure 
+autoreconf -vif
+
+# configure options
+#./configure --help
+
+./configure --prefix=/srv/mysql6 --datadir=/mnt/ssd/mysql
+
+make
+
+sudo make install
+
+
+
+# copied my.cnf to /etc/mysql/my.cnf and linked /etc/my.cnf
+# set [mysqld] datadir=/srv/mysql6 basedir=/srv/ssd/mysql
+
+# add user and group
+# set perimissions where needed
+
+# setup the default system
+./bin/mysql_install_db --user=mysql --basedir=/srv/mysql6 --builddir=/home/branflake2267/downloads/mysql6b --datadir=/mnt/ssd/mysql
+
+# add hash next to skip-federated - notate it
+
+#add mysql.server to /etc/init.d/mysql.server
+
+# change basedir and datadir in mysql.server
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#mysqls help./b
+shell> groupadd mysql
+shell> useradd -g mysql mysql
+shell> gunzip < mysql-VERSION.tar.gz | tar -xvf -
+shell> cd mysql-VERSION
+shell> ./configure --prefix=/usr/local/mysql
+shell> make
+shell> make install
+shell> cp support-files/my-medium.cnf /etc/my.cnf
+shell> cd /usr/local/mysql
+shell> chown -R mysql .
+shell> chgrp -R mysql .
+shell> bin/mysql_install_db --user=mysql
+shell> chown -R root .
+shell> chown -R mysql var
+shell> bin/mysqld_safe --user=mysql &
+}}}
