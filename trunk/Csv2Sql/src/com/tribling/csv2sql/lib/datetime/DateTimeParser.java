@@ -105,6 +105,9 @@ public class DateTimeParser {
     } else if (checkforFormat_monthDayYear() == true) { // keep letter type first - like matching jan or Janurary
       s = df.format(date);
       
+    } else if (checkforFormat_weird1() == true) { // 3-apr-09
+      s = df.format(date);
+      
     } else if (checkforFormat_datetime12hr() == true ) {
       s = df.format(date);
       
@@ -131,6 +134,7 @@ public class DateTimeParser {
 
   /**
    * match jan09 orJan2009 
+   * 
    * @return
    */
   public boolean checkforFormat_monthYearTogether() {
@@ -212,9 +216,13 @@ public class DateTimeParser {
     return found;
   }
   
+  /**
+   * jan 01 2009 or jan 01 09 or jan, 01 09 or jan, 01 2009
+   * 
+   * @return
+   */
   public boolean checkforFormat_monthDayYear() {
 
-    // jan 01 2009 or jan 01 09 or jan, 01 09 or jan, 01 2009
     String re = "^([a-zA-Z]+)[.,\\-\040/]+([0-9]+)[,\\-\040/]+([0-9]+)$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
@@ -253,9 +261,13 @@ public class DateTimeParser {
     return found;
   }
   
+  /**
+   * mm/dd/yyyy hh:min:ss AM
+   * 
+   * @return
+   */
   public boolean checkforFormat_datetime12hr() {
 
-    // mm/dd/yyyy hh:min:ss AM
     String re = "^([0-9]+)[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})[/\\-\040\\.](am|pm)$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
@@ -309,9 +321,13 @@ public class DateTimeParser {
     return found;
   }
 
+  /**
+   * mm/dd/yyyy hh:min:ss
+   * 
+   * @return
+   */
   public boolean checkforFormat_datetime24hr() {
 
-    // mm/dd/yyyy hh:min:ss
     String re = "^([0-9]+)[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
@@ -405,9 +421,13 @@ public class DateTimeParser {
     return found;
   }
 
+  /**
+   * mm/yyyy
+   * 
+   * @return
+   */
   public boolean checkforFormat_engDateStringNoDay() {
 
-    // mm/yyyy
     String re = "^([0-9]+)[/\\-\040\\.]+([0-9]+)$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
@@ -444,6 +464,7 @@ public class DateTimeParser {
   
   /**
    * custom format -bsgbB620090200054003 or 20090200054003
+   * 
    * @return
    */
   public boolean checkforFormat_Intformat() {
@@ -488,6 +509,52 @@ public class DateTimeParser {
     cal.set(Calendar.HOUR, hour);
     cal.set(Calendar.MINUTE, min);
     cal.set(Calendar.SECOND, sec);
+
+    date = cal.getTime();
+
+    return found;
+  }
+  
+  /**
+   * 3-apr-09 or 3 apr 09  or 3.apr.09 
+   * 
+   * @return
+   */
+  public boolean checkforFormat_weird1() {
+
+    // dd mm yy
+    String re = "^([0-9]+)[\040-\\.]+([a-zA-Z]+)[\040-\\.]+([0-9]+)$";
+    Pattern p = Pattern.compile(re);
+    Matcher m = p.matcher(datetime);
+    boolean found = m.find();
+
+    int month = 0;
+    int day = 0;
+    int year = 0;
+    if (found == true) {
+      String dd = m.group(1);
+      String mm = m.group(2);
+      String yy = m.group(3);
+      
+      if (mm == null | dd == null | yy == null) {
+        return false;
+      }
+      
+      month = getMonth(mm) - 1;
+      day = getDay(dd);
+      year = getYear(yy);
+      
+    } else {
+      return false;
+    }
+    
+    Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.DAY_OF_MONTH, day);
+    cal.set(Calendar.MONTH, month);
+    cal.set(Calendar.YEAR, year);
+    cal.set(Calendar.HOUR, 0);
+    cal.set(Calendar.MINUTE, 0);
+    cal.set(Calendar.SECOND, 0);
 
     date = cal.getTime();
 
@@ -584,11 +651,8 @@ public class DateTimeParser {
     int t = Integer.parseInt(s);
     return t;
   }
-
-
-
-
-  /**=p
+  
+  /**
    * TODO - more to do
    * 
    * @param s
@@ -646,5 +710,18 @@ public class DateTimeParser {
     return dateFormat.format(date);
   }
 
+  public boolean test_EngDate(String parsedate, String expected) {
+    
+    String result = getDate_EngString(parsedate);
+    
+    boolean b = false;
+    if (result.equals(expected) == true) {
+      b = true;
+    }
+    
+    System.out.println("parsedate: " + parsedate + " expected: " + expected + " result: " + b);
+    
+    return b;
+  }
 
 }
