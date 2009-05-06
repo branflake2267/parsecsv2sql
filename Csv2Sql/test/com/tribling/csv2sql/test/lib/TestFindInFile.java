@@ -1,4 +1,4 @@
-package com.tribling.csv2sql.test;
+package com.tribling.csv2sql.test.lib;
 
 import java.io.File;
 
