@@ -111,13 +111,19 @@ public class DateTimeParser {
     } else if (checkforFormat_datetime12hr() == true ) { // month first
       s = df.format(date);
       
+    } else if (checkforFormat_datetime12hra() == true ) { // month first
+      s = df.format(date);
+      
     } else if (checkforFormat_datetime12hr2() == true ) { // year first
       s = df.format(date);
       
     } else if (checkforFormat_datetime24hr() == true ) { // month first
       s = df.format(date);
       
-    }  else if (checkforFormat_datetime24hr2() == true ) { // year first
+    } else if (checkforFormat_datetime24hra() == true ) { // month first
+      s = df.format(date);
+      
+    } else if (checkforFormat_datetime24hr2() == true ) { // year first
       s = df.format(date);
       
     } else if (checkforFormat_engDateString() == true ) {
@@ -274,7 +280,7 @@ public class DateTimeParser {
    */
   public boolean checkforFormat_datetime12hr() {
 
-    String re = "^([0-9]{1,2})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})[/\\-\040\\.](am|pm)$";
+    String re = "^([0-9]{1,2})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})[/\\-\040\\.]?(am|pm)$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
     boolean found = m.find();
@@ -328,7 +334,7 @@ public class DateTimeParser {
   }
 
   /**
-   * mm/dd/yyyy hh:min:ss -- what happens when there is year starts first?
+   * mm/dd/yyyy hh:min:ss
    * 
    * @return
    */
@@ -382,6 +388,127 @@ public class DateTimeParser {
     return found;
   }
   
+
+
+  /**
+   * mm/dd/yyyy hh:min AM
+   * 
+   * @return
+   */
+  public boolean checkforFormat_datetime12hra() {
+
+    String re = "^([0-9]{1,2})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2})[/\\-\040\\.]?(am|pm)$";
+    Pattern p = Pattern.compile(re);
+    Matcher m = p.matcher(datetime);
+    boolean found = m.find();
+
+    int month = 0;
+    int day = 0;
+    int year = 0;
+    int hour = 0;
+    int minutes = 0;
+    int seconds = 0;
+    if (found == true) {
+      String mm = m.group(1);
+      String dd = m.group(2);
+      String yy = m.group(3);
+      String hh = m.group(4);
+      String min = m.group(5);
+     //String ss = m.group(6);
+      String ampm = m.group(6);
+      
+      if (mm == null | dd == null | yy == null | hh == null | min == null | ampm == null) {
+        return false;
+      }
+      
+      month = getMonth(mm) - 1;
+      day = getDay(dd);
+      year = getYear(yy);
+      if (ampm.equals("am")) {
+        hour = Integer.parseInt(hh);  
+      } else {
+        hour = Integer.parseInt(hh) + 12;
+      }
+      
+      minutes = Integer.parseInt(min);
+      //seconds = Integer.parseInt(ss);
+       
+    } else {
+      return false;
+    }
+    
+    Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.DAY_OF_MONTH, day);
+    cal.set(Calendar.MONTH, month);
+    cal.set(Calendar.YEAR, year);
+    cal.set(Calendar.HOUR_OF_DAY, hour);
+    cal.set(Calendar.MINUTE, minutes);
+    cal.set(Calendar.SECOND, 0);
+
+    date = cal.getTime();
+
+    return found;
+  }
+
+  /**
+   * mm/dd/yyyy hh:min 
+   * 
+   * @return
+   */
+  public boolean checkforFormat_datetime24hra() {
+
+    String re = "^([0-9]{1,2})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2})$";
+    Pattern p = Pattern.compile(re);
+    Matcher m = p.matcher(datetime);
+    boolean found = m.find();
+
+    int month = 0;
+    int day = 0;
+    int year = 0;
+    int hour = 0;
+    int minutes = 0;
+    int seconds = 0;
+    if (found == true) {
+      String mm = m.group(1);
+      String dd = m.group(2);
+      String yy = m.group(3);
+      String hh = m.group(4);
+      String min = m.group(5);
+      //String ss = m.group(6);
+      
+      if (mm == null | dd == null | yy == null | hh == null | min == null) {
+        return false;
+      }
+      
+      month = getMonth(mm) - 1;
+      day = getDay(dd);
+      year = getYear(yy);
+      hour = Integer.parseInt(hh);
+      minutes = Integer.parseInt(min);
+      //seconds = Integer.parseInt(ss);
+       
+    } else {
+      return false;
+    }
+    
+    Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.DAY_OF_MONTH, day);
+    cal.set(Calendar.MONTH, month);
+    cal.set(Calendar.YEAR, year);
+    cal.set(Calendar.HOUR_OF_DAY, hour);
+    cal.set(Calendar.MINUTE, minutes);
+    cal.set(Calendar.SECOND, 0);
+
+
+    date = cal.getTime();
+
+    return found;
+  }
+  
+  
+  
+  
+  
   /**
    * yyyy-mm-dd hh:min:ss AM
    * 
@@ -389,7 +516,7 @@ public class DateTimeParser {
    */
   public boolean checkforFormat_datetime12hr2() {
 
-    String re = "^([0-9]{4})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})[/\\-\040\\.](am|pm)$";
+    String re = "^([0-9]{4})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})[/\\-\040\\.]?(am|pm)$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
     boolean found = m.find();
