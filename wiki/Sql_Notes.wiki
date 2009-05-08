@@ -9,3 +9,7 @@ Statement select = connection.createStatement(java.sql.ResultSet.TYPE_FORWARD_ON
 select.setFetchSize(1000); 
 ResultSet result = select.executeQuery(query);
 }}}
+
+
+= Quering a boolean value = 
+ Something that I miss when quering `Active`=[0|1], when you want both (`Active` IN (0,1)) 
