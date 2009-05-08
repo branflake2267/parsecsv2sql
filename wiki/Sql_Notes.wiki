@@ -11,5 +11,5 @@ ResultSet result = select.executeQuery(query);
 }}}
 
 
-= Quering a boolean value = 
- Something that I miss when quering `Active`=[0|1], when you want both (`Active` IN (0,1)) 
+= Querying a Boolean = 
+Querying `Active`=[0|1], when you want both (`Active` IN (0,1)) 
