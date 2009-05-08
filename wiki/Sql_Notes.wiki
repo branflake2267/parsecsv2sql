@@ -12,4 +12,4 @@ ResultSet result = select.executeQuery(query);
 
 
 = Querying a Boolean = 
-Querying `Active`=[0|1], when you want both (`Active` IN (0,1)) 
+ Querying `Active`=[0|1], when you want both (`Active` IN (0,1)) 
