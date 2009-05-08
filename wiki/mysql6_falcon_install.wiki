@@ -3,7 +3,7 @@
 = MySql install notes on Ubuntu 9.04 =
  If you use this, you may have to read in between the lines here and there. I wasn't able to get the icc already compiled version to work b/c of a syntax error with my_print_defaults. But I compiled it from source and its working perfect. The sub-query system is so much faster, its unbelievable. I recommend using the mysql6-falcon alpha linux source install.
 
- Compile Mysql6-falcon for ubuntu 9.04
+ Compile Mysql6-falcon for ubuntu 9.04.
 {{{
 # http://www.howtoforge.com/mysql5_debian_sarge
 # http://mapopa.blogspot.com/2009/03/compiling-mysql6.html
