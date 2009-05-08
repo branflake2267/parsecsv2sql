@@ -1,4 +1,5 @@
 #summary Things to remember for sql
+#labels Featured
 
 = Stuff I want to remember =
 
