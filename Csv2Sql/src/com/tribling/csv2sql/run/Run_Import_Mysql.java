@@ -7,7 +7,7 @@ import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.MatchFieldData;
 import com.tribling.csv2sql.data.SourceData;
 
-public class Run_test_Import_Mysql {
+public class Run_Import_Mysql {
 	
 	/**
 	 * start it

@@ -8,7 +8,7 @@ import com.tribling.csv2sql.data.MatchFieldData;
 import com.tribling.csv2sql.data.SourceData;
 
 
-public class Run_Test_Import {
+public class Run_Import {
 	
 	public static void main(String[] args) {
 		run();

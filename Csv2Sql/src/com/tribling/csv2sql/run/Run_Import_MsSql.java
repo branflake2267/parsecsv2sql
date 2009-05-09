@@ -8,7 +8,7 @@ import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.MatchFieldData;
 import com.tribling.csv2sql.data.SourceData;
 
-public class Run_Test_Import_MsSql {
+public class Run_Import_MsSql {
 
 
 	private static DestinationData destinationData = null;
