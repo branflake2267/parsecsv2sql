@@ -35,6 +35,7 @@ public class Run_Test_Import {
     indexTable();
     
     customSql();
+    
   }
   
   private static void setParameters() {
@@ -57,7 +58,7 @@ public class Run_Test_Import {
     dd.password = "test";
     dd.port = "3306";
     dd.tableSchema = "";
-    dd.table = "import_test1"; 
+    dd.table = "import_test"; 
     
     MatchFieldData[] matchFields = new MatchFieldData[2];
     matchFields[0] = new MatchFieldData();
@@ -67,25 +68,25 @@ public class Run_Test_Import {
     matchFields[1].sourceField = "d";
     matchFields[1].destinationField = "dododo";
     
+    // set records uniqueness 
     MatchFieldData[] idents = new MatchFieldData[2];
     idents[0] = new MatchFieldData();
     idents[1] = new MatchFieldData();
     idents[0].sourceField = "a";
     idents[0].destinationField = "aaaa";
     idents[0].sourceField = "b";
-    idents[0].destinationField = "b";
-    
+    idents[0].destinationField = "bbb";
     dd.identityColumns = idents;
     
-    // transform on the fly
+    // transform on the fly - transform before sql processing
     ffsd = new FlatFileSettingsData();
     // transforms the column e to dateString
     ffsd.setchangeValueIntoDateStringFormat("e"); 
   }
   
   private static void importData() {
-    FileProcessing process = new FileProcessing();
-    process.setData(sourceData, dd, matchFields);
+    FileProcessing p = new FileProcessing();
+    p.setData(sourceData, dd, matchFields);
   }
 
   private static void optimiseTable() {
@@ -141,15 +142,15 @@ public class Run_Test_Import {
       sql = "DELETE FROM " + dd.table + " WHERE (dt= '') OR (dt IS NULL)";
     }
 
-    SQLProcessing process = new SQLProcessing();
+    SQLProcessing p = new SQLProcessing();
     try {
-      process.setDestinationData(dd);
+      p.setDestinationData(dd);
     } catch (Exception e) {
       e.printStackTrace();
     }
-    process.openConnection();
-    process.updateSql(sql);
-    process.closeConnection();
+    p.openConnection();
+    p.updateSql(sql);
+    p.closeConnection();
   }
 
 }
