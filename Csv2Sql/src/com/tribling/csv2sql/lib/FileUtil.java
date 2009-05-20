@@ -136,13 +136,67 @@ public class FileUtil {
     return linecount;
   }
   
+  /**
+   * move file to new directory, and it will change the file name if one exists already
+   * 
+   * @param moveFile
+   * @param toDir
+   */
+  public void moveFile(String moveFile, String toDir) {
+    moveFile(new File(moveFile), new File(toDir));
+  }
+ 
+  public void moveFile(File moveFile, String toDir) {
+    moveFile(moveFile, new File(toDir));
+  }
   
+  public void moveFile(File moveFile, File toDir) {
+    
+    File checkFile = new File(toDir.getPath() + "/" + moveFile.getName());
+    String f = "";
+    if (checkFile.exists() == true) {
+      int i = getFileCount(toDir);
+      f = i + "_";
+    } 
+    
+    File file = moveFile;
+    File dir = toDir;
+    file.renameTo(new File(dir, f + file.getName()));
+  }
   
+  private int getFileCount(File dir) {
+    int i = 0;
+    File[] files = dir.listFiles();
+    if (files != null) {
+      i = files.length;
+    }
+    return i;
+  }
   
+  public void createDirectory(String path) {
+    
+    if (path == null && path.length() == 0) {
+      System.out.println("createDirectory path was null");
+      return;
+    }
+    
+    File file = new File(path);
+    file.mkdirs();
+  }
   
-  
-  
-  
+  /**
+   * move this file to a done folder
+   * 
+   * @param file
+   */
+  public void moveFileToDoneFolder(File file) {
+    
+    // create done folder if it doesn't exist
+    String donePath = file.getPath() + "/done";
+    createDirectory(donePath);
+    
+    moveFile(file, donePath);
+  }
   
   
   

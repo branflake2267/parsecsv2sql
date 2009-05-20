@@ -73,8 +73,11 @@ public class DestinationData {
   // when no field names exist in the first row, make this true
   public boolean firstRowHasNoFieldNames = false;
 
-  // save the source file into the records
+  // save the source file into the records srcFile= /home/branflake2267/home.txt
   public boolean setSrcFileIntoColumn = false;
+  
+  // after processing the file, move it to the done folder
+  public boolean moveFileToDone = false;
   
   /**
    * make database type an integer

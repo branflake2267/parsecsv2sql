@@ -380,15 +380,14 @@ public class SQLProcessing {
   /**
    * get column a column
    * 
-   * @param column
-   *          - if this is null, get all the columns
+   * @param column - if this is null, get all the columns
    * @return
    */
   private ColumnData[] getColumn_Mysql(String column) {
 
     String cquery = "";
     if (column != null) {
-      if (column.length() > 1) {
+      if (column.length() > 0) {
         cquery = " FIELD LIKE '" + column + "' ";
       }
     }
@@ -398,20 +397,20 @@ public class SQLProcessing {
       if (cquery.length() > 0) {
         doOnlyTextColumns += " AND ";
       }
-      doOnlyTextColumns += " Type like 'Text%' ";
+      doOnlyTextColumns += " TYPE like 'Text%' ";
     }
     
     String where = "";
     if (cquery.length() > 0 | doOnlyTextColumns.length() > 0) {
       where = " WHERE " + cquery + doOnlyTextColumns;
-    }
+    } 
 
     String query = "";
     query = "SHOW COLUMNS FROM `" + dd.table + "` " + 
     "FROM `" + dd.database + "` " + where + " ;";
     
 
-    //System.out.println("query: " + query);
+    System.out.println("query: " + query);
 
     ColumnData[] columns = null;
     try {
@@ -1488,7 +1487,7 @@ public class SQLProcessing {
     String query = "SELECT ImportId FROM `" + dd.database + "`.`" + dd.table
         + "` " + "WHERE " + whereQuery + " LIMIT 0,1";
 
-    //System.out.println("Exist?: " + query);
+    System.out.println("Exist?: " + query);
     
     int id = getQueryIdent(query);
 
