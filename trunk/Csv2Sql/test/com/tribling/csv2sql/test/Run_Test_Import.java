@@ -36,6 +36,8 @@ public class Run_Test_Import {
     
     customSql();
     
+    // TODO -- add custom query a duplicate in to test this
+    deleteDuplicates();
   }
   
   private static void setParameters() {
@@ -154,6 +156,17 @@ public class Run_Test_Import {
     p.openConnection();
     p.updateSql(sql);
     p.closeConnection();
+  }
+  
+  private static void deleteDuplicates() {
+    
+    Optimise o = new Optimise();
+    try {
+      o.setDestinationData(dd);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    o.deleteDuplicates();
   }
 
 }
