@@ -1,6 +1,9 @@
 package com.tribling.csv2sql.test;
 
 import java.io.File;
+import java.net.URISyntaxException;
+
+import sun.tools.jar.Main;
 
 import com.tribling.csv2sql.FileProcessing;
 import com.tribling.csv2sql.Optimise;
@@ -43,18 +46,24 @@ public class Run_Test_Import {
   private static void setParameters() {
     char delimiter = ',';
 
-    String file = "test.csv"; 
+    File executionlocation = null;
+    try {
+      executionlocation = new File(Run_Test_Import.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+    } catch (URISyntaxException e) {
+      e.printStackTrace();
+    }
+    String path = executionlocation.getPath();
+    String file = path + "/com/tribling/csv2sql/test/test.txt"; 
     
     sourceData = new SourceData();
     sourceData.delimiter = delimiter;
     sourceData.file = new File(file);
     
     dd = new DestinationData();
-    dd.optimise = false;
     dd.dropTable = false;
     dd.checkForExistingRecordsAndUpdate = true;
     dd.databaseType = "MySql";
-    dd.host = "localhost";
+    dd.host = "192.168.10.79";
     dd.database = "test";
     dd.username = "test";
     dd.password = "test";
@@ -64,11 +73,13 @@ public class Run_Test_Import {
     
     // field mapping
     // when originating flat file fields match source var, then destinationfield var is put in
-    MatchFieldData[] matchFields = new MatchFieldData[2];
+    matchFields = new MatchFieldData[2];
     matchFields[0] = new MatchFieldData();
+    matchFields[1] = new MatchFieldData();
+    
     matchFields[0].sourceField = "a";
     matchFields[0].destinationField = "aaaa";
-    matchFields[1] = new MatchFieldData();
+   
     matchFields[1].sourceField = "d";
     matchFields[1].destinationField = "dododo";
     
@@ -76,10 +87,13 @@ public class Run_Test_Import {
     MatchFieldData[] idents = new MatchFieldData[2];
     idents[0] = new MatchFieldData();
     idents[1] = new MatchFieldData();
+    
     idents[0].sourceField = "a";
     idents[0].destinationField = "aaaa";
-    idents[0].sourceField = "b";
-    idents[0].destinationField = "bbb";
+    
+    idents[1].sourceField = "b";
+    idents[1].destinationField = "bbb";
+    
     dd.identityColumns = idents;
     
     // transform on the fly - transform before sql processing
