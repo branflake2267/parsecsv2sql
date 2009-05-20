@@ -102,12 +102,18 @@ public class Run_Test_Import {
     ffsd.setchangeValueIntoDateStringFormat("e"); 
   }
   
+  /**
+   * import the flat file into sql
+   */
   private static void importData() {
     FileProcessing p = new FileProcessing();
     p.setData(ffsd);
     p.setData(sourceData, dd, matchFields);
   }
 
+  /**
+   * optimize the sql table
+   */
   private static void optimiseTable() {
     
     dd.deleteEmptyColumns = true;
