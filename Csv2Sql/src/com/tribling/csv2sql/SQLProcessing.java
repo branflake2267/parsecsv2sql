@@ -832,7 +832,8 @@ public class SQLProcessing {
     
     String msg = e.getMessage();
     
-    if (msg.contains("too long") == false) {
+    // TODO - datetime date 01/01/2009 being put into a datetime column
+    if (msg.contains("too long") == false) { // || msg.contains("truncation") == false happens whith datetime stuffing
       return false;
     } 
     
@@ -1729,8 +1730,7 @@ public class SQLProcessing {
       }
       resize = columns[i].testValue(value);
       if (resize > 0) {
-        String type = resizeColumnLength(columns[i].column, columns[i].type,
-            resize);
+        String type = resizeColumnLength(columns[i].column, columns[i].type, resize);
         columns[i].setType(type);
       }
     }

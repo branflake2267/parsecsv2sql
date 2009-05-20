@@ -92,7 +92,7 @@ public class Run_Test_Import {
     idents[0].destinationField = "aaaa";
     
     idents[1].sourceField = "b";
-    idents[1].destinationField = "bbb";
+    idents[1].destinationField = "b";
     
     dd.identityColumns = idents;
     
@@ -104,6 +104,7 @@ public class Run_Test_Import {
   
   private static void importData() {
     FileProcessing p = new FileProcessing();
+    p.setData(ffsd);
     p.setData(sourceData, dd, matchFields);
   }
 
@@ -122,8 +123,9 @@ public class Run_Test_Import {
     }
     
     // transform column dt to a new column datetime
-    o.setColumnToTransformTo("datetime");
-    o.formatColumn_Date_EngString("dt");
+    // dt column will get copied and transformed to datetime
+    o.setColumnToTransformTo("datetime"); 
+    o.formatColumn_Date_DateTime("dt");
     
     // optimise the entire table
     o.runOptimise();
