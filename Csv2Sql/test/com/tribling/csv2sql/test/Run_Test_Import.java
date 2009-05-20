@@ -60,6 +60,8 @@ public class Run_Test_Import {
     dd.tableSchema = "";
     dd.table = "import_test"; 
     
+    // field mapping
+    // when originating flat file fields match source var, then destinationfield var is put in
     MatchFieldData[] matchFields = new MatchFieldData[2];
     matchFields[0] = new MatchFieldData();
     matchFields[0].sourceField = "a";
@@ -93,8 +95,9 @@ public class Run_Test_Import {
     
     dd.deleteEmptyColumns = true;
     dd.optimise = true;
-    dd.optimise_TextOnly = true;
+    dd.optimise_TextOnly = true; // only optimise text columns
     
+    // optimise the data structure
     Optimise o = new Optimise();
     try {
       o.setDestinationData(dd);
