@@ -7,6 +7,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import com.csvreader.CsvReader;
+
 public class FileUtil {
 
   public FileUtil() {
@@ -152,6 +154,10 @@ public class FileUtil {
   
   public void moveFile(File moveFile, File toDir) {
     
+    if (toDir.exists() == false) {
+      toDir.mkdirs();
+    }
+    
     File checkFile = new File(toDir.getPath() + "/" + moveFile.getName());
     String f = "";
     if (checkFile.exists() == true) {
@@ -189,7 +195,7 @@ public class FileUtil {
    * 
    * @param file
    */
-  public void moveFileToDoneFolder(File file) {
+  public void moveFileToFolder_Done(File file) {
     
     // create done folder if it doesn't exist
     String donePath = file.getPath() + "/done";
@@ -198,8 +204,58 @@ public class FileUtil {
     moveFile(file, donePath);
   }
   
-  
-  
+  /**
+   * match a file with the same header values given
+   * 
+   * @param file
+   * @param matchHeaderValues
+   * @param delimiter
+   * @return
+   */
+  public boolean doesFileHeaderMatchStr(File file, String matchHeaderValues, char delimiter) {
+    
+    // match with out a delimiter
+    String sdelimiter = Character.toString(delimiter);
+    matchHeaderValues = matchHeaderValues.replaceAll(sdelimiter, "");
+
+    
+    CsvReader reader = null;
+    try {     
+      reader = new CsvReader(file.toString(), delimiter);
+    } catch (FileNotFoundException e) {
+      System.err.println("doesFileHeaderMatchStr: Could not open CSV Reader");
+      e.printStackTrace();
+    }
+    
+    if (reader == null) {
+      return false;
+    }
+    
+    String[] header = null;
+    try {
+      header = reader.getHeaders();
+    } catch (IOException e) {
+      System.out.println("doesFileHeaderMatchStr: could not read headers");
+      e.printStackTrace();
+    }
+    
+    if (header == null) {
+      return false;
+    }
+    
+    String sheader = "";
+    for (int i=0; i < header.length; i++) {
+      sheader += header[i];
+    }
+    
+    if (sheader == matchHeaderValues) {
+      return true;
+    }
+    
+    // TODO - do a lessor, use less file values to make string and check ??
+    
+    return false;
+  }
   
   
   
