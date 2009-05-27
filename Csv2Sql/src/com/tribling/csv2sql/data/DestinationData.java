@@ -79,6 +79,9 @@ public class DestinationData {
   // after processing the file, move it to the done folder
   public boolean moveFileToDone = false;
   
+  // stop at column, don't process any columns over this count. 0 process all
+  public int stopAtColumnCount = 0;
+  
   /**
    * make database type an integer
    * @return

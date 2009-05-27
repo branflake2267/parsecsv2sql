@@ -176,6 +176,7 @@ public class CSVProcessing extends FlatFileProcessing {
       // add data to table
       if (mode == MODE_SQLIMPORT) {
         sql.createColumns(columns);
+        
       } else if (mode == MODE_FINDFILEMATCH) {
         if (foundMatch == true) {
           return;
@@ -211,7 +212,7 @@ public class CSVProcessing extends FlatFileProcessing {
 
         values = reader.getValues();
 
-        values = processRow(index+1, values);
+        values = processRowValues(index+1, values);
         
         // add data to table
         if (mode == MODE_SQLIMPORT) {
@@ -316,12 +317,16 @@ public class CSVProcessing extends FlatFileProcessing {
    * @param values
    * @return
    */
-  private String[] processRow(int row, String[] values) {
+  private String[] processRowValues(int row, String[] values) {
     for (int i=0; i < values.length; i++) {
       if (foundMatch == true) {
         break;
       }
       values[i] = evaluate(row, i, values[i]);
+      
+      if (dd.stopAtColumnCount > 1 && dd.stopAtColumnCount == i) {
+        break;
+      }
     }
     
     // add in custom values - to match custom column

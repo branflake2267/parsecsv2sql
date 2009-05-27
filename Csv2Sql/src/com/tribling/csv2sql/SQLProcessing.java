@@ -518,6 +518,10 @@ public class SQLProcessing {
 
       cols[i] = new ColumnData();
       cols[i] = getColumn(columns[i].column);
+      
+      if (dd.stopAtColumnCount > 1 && dd.stopAtColumnCount == i) {
+        break;
+      }
     }
 
     this.columns = cols;
