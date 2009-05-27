@@ -165,6 +165,7 @@ public class CSVProcessing extends FlatFileProcessing {
     try {
       reader.readHeaders();
       columns = makeColumnlist(reader.getHeaders());
+      columns = stopAtColumnsCount(columns);
     } catch (IOException e) {
       System.out.println("getColumnsInHeader: couln't read columns");
       e.printStackTrace();
@@ -192,6 +193,20 @@ public class CSVProcessing extends FlatFileProcessing {
 
   }
 
+  private ColumnData[] stopAtColumnsCount(ColumnData[] columns) {
+    int c = columns.length;
+    
+    if (dd.stopAtColumnCount > 1 && columns.length > dd.stopAtColumnCount) {
+      c = dd.stopAtColumnCount;
+    }
+    
+    ColumnData[] b = new ColumnData[c];
+    for (int i=0; i < c; i++) {
+      b[i] = columns[i];
+    }
+    return b;
+  }
+
   /**
    * iterate through data in file
    * 
@@ -212,6 +227,8 @@ public class CSVProcessing extends FlatFileProcessing {
 
         values = reader.getValues();
 
+        values = stopAtColumnCount(values);
+        
         values = processRowValues(index+1, values);
         
         // add data to table
@@ -237,6 +254,21 @@ public class CSVProcessing extends FlatFileProcessing {
 
   }
 
+  private String[] stopAtColumnCount(String[] values) {
+   
+    int c = values.length;
+    
+    if (dd.stopAtColumnCount > 1 && values.length > dd.stopAtColumnCount) {
+      c = dd.stopAtColumnCount;
+    }
+    
+    String[] b = new String[c];
+    for (int i=0; i < c; i++) {
+      b[i] = values[i];
+    }
+    return b;
+  }
+  
   /**
    * make a column 1(header) list of the fields, 
    *   which will always be needed when inserting/updating the data into sql
@@ -323,10 +355,6 @@ public class CSVProcessing extends FlatFileProcessing {
         break;
       }
       values[i] = evaluate(row, i, values[i]);
-      
-      if (dd.stopAtColumnCount > 1 && dd.stopAtColumnCount == i) {
-        break;
-      }
     }
     
     // add in custom values - to match custom column
