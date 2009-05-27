@@ -12,7 +12,7 @@ public class ColumnData {
 	public String type = "TEXT";
 	
 	// column field length for the given type
-	public int length = 0;
+	public int lengthChar = 0;
 	
 	/**
 	 * constructor - nothing to do
@@ -39,7 +39,7 @@ public class ColumnData {
 		}
 		
 		if (len.length() > 0) {
-			length = Integer.parseInt(len);
+			lengthChar = Integer.parseInt(len);
 		}	
 	}
 
@@ -83,7 +83,7 @@ public class ColumnData {
 	public int testVarchar(String value) {
 		
 		int resize = 0;
-		if (value.length() > length) {
+		if (value.length() > lengthChar) {
 			resize = value.length();
 		}
 		
