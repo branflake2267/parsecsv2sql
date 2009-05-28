@@ -196,7 +196,7 @@ public class CSVProcessing extends FlatFileProcessing {
   private ColumnData[] stopAtColumnsCount(ColumnData[] columns) {
     int c = columns.length;
     
-    if (dd.stopAtColumnCount > 1 && columns.length > dd.stopAtColumnCount) {
+    if (dd != null && dd.stopAtColumnCount > 1 && columns.length > dd.stopAtColumnCount) {
       c = dd.stopAtColumnCount;
     }
     
@@ -258,7 +258,7 @@ public class CSVProcessing extends FlatFileProcessing {
    
     int c = values.length;
     
-    if (dd.stopAtColumnCount > 1 && values.length > dd.stopAtColumnCount) {
+    if (dd != null && dd.stopAtColumnCount > 1 && values.length > dd.stopAtColumnCount) {
       c = dd.stopAtColumnCount;
     }
     
