@@ -29,6 +29,8 @@ public class MoveFile extends FileUtil {
   
   public void run() {
     processFiles();
+    
+    System.out.println("Finished");
   }
   
   private void processFiles() {
