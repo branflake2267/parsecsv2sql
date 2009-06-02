@@ -233,6 +233,7 @@ public class FileUtil {
     
     String[] header = null;
     try {
+      reader.readHeaders();
       header = reader.getHeaders();
     } catch (IOException e) {
       System.out.println("doesFileHeaderMatchStr: could not read headers");
@@ -248,7 +249,7 @@ public class FileUtil {
       sheader += header[i];
     }
     
-    if (sheader == matchHeaderValues) {
+    if (sheader.equals(matchHeaderValues)) {
       return true;
     }
     

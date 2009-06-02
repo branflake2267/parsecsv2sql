@@ -2,6 +2,7 @@ package com.tribling.csv2sql.lib.file;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import com.tribling.csv2sql.lib.FileUtil;
 
@@ -33,8 +34,10 @@ public class MoveFile extends FileUtil {
   private void processFiles() {
     
     File[] files = dir.listFiles();
+    Arrays.sort(files);
     
     for (int i=0; i < files.length; i++) {
+      System.out.println("processing file: " + files[i].getName());
       check(files[i]);
     }
     
@@ -49,7 +52,9 @@ public class MoveFile extends FileUtil {
       String toDir = moveFileData.get(i).pathToMoveToDir;
       
       if (doesFileHeaderMatchStr(file, matchHeaderValues, delimiter) == true) {
+        System.out.println("\tmoving file:" + file.getName());
         moveFile(file, toDir);
+        break;
       }
       
     }

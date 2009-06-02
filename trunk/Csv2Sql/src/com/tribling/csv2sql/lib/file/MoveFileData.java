@@ -17,6 +17,8 @@ public class MoveFileData {
   /**
    * set a sample file to get the matchheaderValues from
    * 
+   * TODO - what to do with non csv files
+   * 
    * @param fileOrdir
    */
   public void setMatchHeaderValues(File fileOrdir) {
@@ -34,6 +36,7 @@ public class MoveFileData {
     } catch (FileNotFoundException e) {
       System.err.println("doesFileHeaderMatchStr: Could not open CSV Reader");
       e.printStackTrace();
+      return;
     }
     
     if (reader == null) {
@@ -42,10 +45,12 @@ public class MoveFileData {
     
     String[] header = null;
     try {
+      reader.readHeaders();
       header = reader.getHeaders();
     } catch (IOException e) {
       System.out.println("doesFileHeaderMatchStr: could not read headers");
       e.printStackTrace();
+      
     }
     
     if (header == null) {
