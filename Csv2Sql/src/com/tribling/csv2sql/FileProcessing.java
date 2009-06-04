@@ -7,6 +7,7 @@ import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.FlatFileSettingsData;
 import com.tribling.csv2sql.data.MatchFieldData;
 import com.tribling.csv2sql.data.SourceData;
+import com.tribling.csv2sql.lib.FileUtil;
 
 public class FileProcessing {
 
@@ -121,9 +122,18 @@ public class FileProcessing {
         }
         
         csvProcess.parseFile_Sql(i, files[i]);
+        
+        moveFileWhenDone(files[i]);
       }
     }
 
+  }
+  
+  private void moveFileWhenDone(File file) {
+    if (desinationData != null && desinationData.moveFileToDone == true) {
+      FileUtil f = new FileUtil();
+      f.moveFileToFolder_Done(file);
+    }
   }
   
   /**
