@@ -52,7 +52,7 @@ sudo make install
 
 # change basedir and datadir in mysql.server
 
-
+# start server and add the user
 
 
 
