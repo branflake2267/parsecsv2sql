@@ -57,6 +57,8 @@ sudo make install
 # start server
 sudo /etc/init.d/mysql.server start
 
+# mysql - no password exists for root localhost user yet
+./bin/mysql -uroot -p  
 
 
 
