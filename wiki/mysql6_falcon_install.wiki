@@ -61,7 +61,10 @@ sudo /etc/init.d/mysql.server start
 ./bin/mysql -uroot -p  
 
 
-
+# add user
+CREATE USER 'Branflake2267'@'localhost' IDENTIFIED BY 'password*7';
+GRANT ALL PRIVILEGES ON *.* TO 'Branflake2267'@'localhost' WITH GRANT OPTION;
+flush privileges;
 
 
 
