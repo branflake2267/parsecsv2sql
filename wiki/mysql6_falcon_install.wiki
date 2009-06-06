@@ -48,11 +48,16 @@ sudo make install
 
 # add hash next to skip-federated - notate it
 
-#add mysql.server to /etc/init.d/mysql.server
+#add ./share/mysql/mysql.server to /etc/init.d/mysql.server
 
 # change basedir and datadir in mysql.server
 
-# start server and add the user
+# link ./bin/mysql to /usr/bin/mysql
+
+# start server
+sudo /etc/init.d/mysql.server start
+
+
 
 
 
