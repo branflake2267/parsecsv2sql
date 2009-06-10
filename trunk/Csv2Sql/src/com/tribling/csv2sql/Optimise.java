@@ -95,8 +95,29 @@ public class Optimise extends SQLProcessing {
     // loop through each column
     optimizeColumns(columns);
 
+    // mysql optimize
+    optimizeTable();
+    
     // close the connections at the end
     closeConnection();
+  }
+  
+  public void optimizeTable() {
+    String sql = "";
+    if (databaseType == 1) {
+      sql = "OPTIMIZE " + dd.database + "." + dd.table;
+    }
+    try {
+      Connection conn = getConnection();
+      Statement update = conn.createStatement();
+      update.executeUpdate(sql);
+      update.close();
+      
+    } catch (SQLException e) {
+      System.err.println("Alter failure: " + sql);
+      e.printStackTrace();
+      System.out.println("");
+    }
   }
   
   /**
@@ -280,7 +301,7 @@ public class Optimise extends SQLProcessing {
     String alterQuery = "";
     if (databaseType == 1) {
       modifyColumn = "`" + column + "` " + columnType;
-      alterQuery = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` MODIFY COLUMN " + modifyColumn;
+      alterQuery = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` MODIFY COLUMN " + modifyColumn + " DISABLE KEYS";
       
     } else if (databaseType == 2) {
       modifyColumn = "[" + column + "] " + columnType;
