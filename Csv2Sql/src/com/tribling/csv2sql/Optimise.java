@@ -108,7 +108,7 @@ public class Optimise extends SQLProcessing {
   public void optimizeTable() {
     String sql = "";
     if (databaseType == 1) {
-      sql = "OPTIMIZE " + dd.database + "." + dd.table;
+      sql = "OPTIMIZE TABLE " + dd.table;
     }
     try {
       Connection conn = getConnection();
@@ -117,7 +117,7 @@ public class Optimise extends SQLProcessing {
       update.close();
       
     } catch (SQLException e) {
-      System.err.println("Alter failure: " + sql);
+      System.err.println("optimize failure: " + sql);
       e.printStackTrace();
       System.out.println("");
     }
@@ -126,7 +126,7 @@ public class Optimise extends SQLProcessing {
   public void repairTable() {
     String sql = "";
     if (databaseType == 1) {
-      sql = "REPAIR " + dd.database + "." + dd.table;
+      sql = "REPAIR TABLE " + dd.table + " QUICK";
     }
     try {
       Connection conn = getConnection();
@@ -135,7 +135,7 @@ public class Optimise extends SQLProcessing {
       update.close();
       
     } catch (SQLException e) {
-      System.err.println("Alter failure: " + sql);
+      System.err.println("repair failure: " + sql);
       e.printStackTrace();
       System.out.println("");
     }
