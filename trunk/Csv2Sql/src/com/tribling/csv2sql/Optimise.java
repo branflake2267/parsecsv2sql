@@ -320,10 +320,11 @@ public class Optimise extends SQLProcessing {
 
     String modifyColumn = "";
     String alterQuery = "";
+    String disableKeys = null;
     if (databaseType == 1) {
       modifyColumn = "`" + column + "` " + columnType;
-      alterQuery = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` MODIFY COLUMN " + modifyColumn + " DISABLE KEYS";
-      
+      alterQuery += "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` MODIFY COLUMN " + modifyColumn + "";
+      disableKeys = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` DISABLE KEYS; ";
     } else if (databaseType == 2) {
       modifyColumn = "[" + column + "] " + columnType;
       alterQuery = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + " ALTER COLUMN " + modifyColumn;
@@ -334,6 +335,9 @@ public class Optimise extends SQLProcessing {
     try {
       Connection conn = getConnection();
       Statement update = conn.createStatement();
+      if (disableKeys != null) {
+        update.executeUpdate(disableKeys);
+      }
       update.executeUpdate(alterQuery);
       update.close();
       
