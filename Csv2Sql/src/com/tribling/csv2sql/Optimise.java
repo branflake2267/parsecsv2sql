@@ -98,6 +98,9 @@ public class Optimise extends SQLProcessing {
     // mysql optimize
     optimizeTable();
     
+    // fix indexes
+    repairTable();
+    
     // close the connections at the end
     closeConnection();
   }
@@ -106,6 +109,24 @@ public class Optimise extends SQLProcessing {
     String sql = "";
     if (databaseType == 1) {
       sql = "OPTIMIZE " + dd.database + "." + dd.table;
+    }
+    try {
+      Connection conn = getConnection();
+      Statement update = conn.createStatement();
+      update.executeUpdate(sql);
+      update.close();
+      
+    } catch (SQLException e) {
+      System.err.println("Alter failure: " + sql);
+      e.printStackTrace();
+      System.out.println("");
+    }
+  }
+  
+  public void repairTable() {
+    String sql = "";
+    if (databaseType == 1) {
+      sql = "REPAIR " + dd.database + "." + dd.table;
     }
     try {
       Connection conn = getConnection();
