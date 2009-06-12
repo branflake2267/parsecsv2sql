@@ -8,7 +8,8 @@ public class Run_TextParser {
     
     WordParser process = new WordParser();
     process.setText("I went to the store. Hi I am brandon.");
-    process.runThree();
+    int comboSize = 3;
+    process.run(comboSize);
     
   }
 
