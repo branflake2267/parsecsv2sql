@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class TextParser {
+public class WordParser {
 
   private String text = null;
 
@@ -14,7 +14,7 @@ public class TextParser {
 
   private ArrayList<String> combos = new ArrayList<String>();
 
-  public TextParser() {
+  public WordParser() {
 
   }
 
@@ -31,6 +31,34 @@ public class TextParser {
     countWords();
   }
 
+  public void runTwo() {
+
+    if (text == null) {
+      System.out.println("can't work with null");
+      return;
+    }
+
+    if (wordCount < 2) {
+      return;
+    }
+    
+    int start = 0;
+    int end = 2;
+    for (int i = 0; i < wordCount; i++) {
+
+      String s = getTextWords(start, end);
+      System.out.println("words:" + s);
+
+      start++;
+      end++;
+
+      if (end > wordCount) {
+        break;
+      }
+
+    }
+  }
+  
   public void runThree() {
 
     if (text == null) {
@@ -38,11 +66,43 @@ public class TextParser {
       return;
     }
 
+    if (wordCount < 3) {
+      return;
+    }
+    
     // 0,3
     // 1,4
     // 2,5...
     int start = 0;
     int end = 3;
+    for (int i = 0; i < wordCount; i++) {
+
+      String s = getTextWords(start, end);
+      System.out.println("words:" + s);
+
+      start++;
+      end++;
+
+      if (end > wordCount) {
+        break;
+      }
+
+    }
+  }
+  
+  public void runFour() {
+
+    if (text == null) {
+      System.out.println("can't work with null");
+      return;
+    }
+
+    if (wordCount < 4) {
+      return;
+    }
+    
+    int start = 0;
+    int end = 4;
     for (int i = 0; i < wordCount; i++) {
 
       String s = getTextWords(start, end);
