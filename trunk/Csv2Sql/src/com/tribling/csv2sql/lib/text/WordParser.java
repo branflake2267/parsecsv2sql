@@ -31,6 +31,33 @@ public class WordParser {
     countWords();
   }
 
+  public void run(int howManyWords) {
+    if (text == null) {
+      System.out.println("can't work with null");
+      return;
+    }
+
+    if (wordCount < 2) {
+      return;
+    }
+    
+    int start = 0;
+    int end = howManyWords;
+    for (int i = 0; i < wordCount; i++) {
+
+      String s = getTextWords(start, end);
+      System.out.println("words:" + s);
+
+      start++;
+      end++;
+
+      if (end > wordCount) {
+        break;
+      }
+
+    }
+  }
+  
   public void runTwo() {
 
     if (text == null) {
