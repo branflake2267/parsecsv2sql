@@ -15,7 +15,6 @@ public class WordParser {
   private ArrayList<String> combos = null;
 
   public WordParser() {
-
   }
 
   public void setText(String text) {
@@ -25,6 +24,9 @@ public class WordParser {
       return;
     }
 
+    // setup a new combo object, clear past object so not to add more
+    combos = new ArrayList<String>();
+    
     this.text = text;
     this.text = this.text.trim();
     clean();
@@ -38,13 +40,13 @@ public class WordParser {
     }
 
     if (wordCount < 2) {
+      // TODO - Has to be more than to words, why did i put this here, can't remember
       return;
     }
     
     int start = 0;
     int end = howManyWords;
     for (int i = 0; i < wordCount; i++) {
-      combos = new ArrayList<String>();
       String s = getTextWords(start, end);
       System.out.println("words:" + s);
 
@@ -73,11 +75,10 @@ public class WordParser {
 
     String s = "";
     for (int i = start; i < end; i++) {
-        try {
-    		s += split[i] + " ";
-    		} catch (Exception e) {
-    		s += "";
-    		}
+      try {
+        s += split[i] + " ";
+      } catch (Exception e) {
+      }
     }
 
     s = s.trim();
@@ -106,8 +107,13 @@ public class WordParser {
   }
 
   private void countWords() {
-    split = text.trim().split("[\040]+");
-    wordCount = split.length;
+    // TODO - do more error checking and report back no combo
+    try {
+      split = text.trim().split("[\040]+");
+      wordCount = split.length;
+    } catch (Exception e) {
+    }
+    
   }
 
   public ArrayList<String> getCombos() {
