@@ -23,12 +23,13 @@ public class WordParser {
       System.out.println("can't work with null");
       return;
     }
-
+    
     // setup a new combo object, clear past object so not to add more
     combos = new ArrayList<String>();
-    
+
     this.text = text;
     this.text = this.text.trim();
+    
     clean();
     countWords();
   }
