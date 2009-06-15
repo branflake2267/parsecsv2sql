@@ -12,7 +12,7 @@ public class WordParser {
 
   private String[] split = null;
 
-  private ArrayList<String> combos = new ArrayList<String>();
+  private ArrayList<String> combos = null;
 
   public WordParser() {
 
@@ -44,7 +44,7 @@ public class WordParser {
     int start = 0;
     int end = howManyWords;
     for (int i = 0; i < wordCount; i++) {
-
+      combos = new ArrayList<String>();
       String s = getTextWords(start, end);
       System.out.println("words:" + s);
 
@@ -73,7 +73,11 @@ public class WordParser {
 
     String s = "";
     for (int i = start; i < end; i++) {
-      s += split[i] + " ";
+      try {
+		s += split[i] + " ";
+		} catch (Exception e) {
+		s += "";
+		}
     }
 
     s = s.trim();
