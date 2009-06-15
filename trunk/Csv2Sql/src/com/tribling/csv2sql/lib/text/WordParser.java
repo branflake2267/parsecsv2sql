@@ -73,11 +73,11 @@ public class WordParser {
 
     String s = "";
     for (int i = start; i < end; i++) {
-      try {
-		s += split[i] + " ";
-		} catch (Exception e) {
-		s += "";
-		}
+        try {
+    		s += split[i] + " ";
+    		} catch (Exception e) {
+    		s += "";
+    		}
     }
 
     s = s.trim();
