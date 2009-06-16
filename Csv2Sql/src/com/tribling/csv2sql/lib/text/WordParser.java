@@ -93,6 +93,7 @@ public class WordParser {
     text = text.replaceAll("\\.", " ");
     text = text.replaceAll("\\!", " ");
     text = text.replaceAll("\\?", " ");
+    text = text.replaceAll("\\,", " ");
     text = text.replaceAll("[0-9%]", " ");
     text = text.replaceAll("\t", " ");
     text = text.replaceAll("\n", " ");
