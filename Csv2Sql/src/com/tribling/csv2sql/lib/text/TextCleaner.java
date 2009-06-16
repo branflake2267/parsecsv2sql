@@ -55,7 +55,7 @@ public class TextCleaner {
     text = text.replaceAll("\\,", " ");
   }
   
-  public void setRemoveAllSymbols() {
+  public void setRemoveAllNonAlpha() {
 
     text = text.replaceAll("\\.", " ");
     text = text.replaceAll("\\!", " ");
@@ -66,7 +66,7 @@ public class TextCleaner {
     text = text.replaceAll("\r", " ");
     text = text.replaceAll("'", "");
     text = text.replaceAll("[\\W]", " ");
-    
+        
   }
   
   public void clean() {
