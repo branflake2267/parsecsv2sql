@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 
 public class WordParser {
 
+  private TextCleaner textCleaner = new TextCleaner();
+  
   private String text = null;
 
   private int wordCount = 0;
@@ -90,18 +92,10 @@ public class WordParser {
   }
 
   private void clean() {
-    text = text.replaceAll("\\.", " ");
-    text = text.replaceAll("\\!", " ");
-    text = text.replaceAll("\\?", " ");
-    text = text.replaceAll("\\,", " ");
-    text = text.replaceAll("[0-9%]", " ");
-    text = text.replaceAll("\t", " ");
-    text = text.replaceAll("\n", " ");
-    text = text.replaceAll("\r", " ");
-    text = text.replaceAll("'", "");
-    text = text.replaceAll("[\\W]", " ");
-    
-    //System.out.println("CLEAN: " + text);
+    textCleaner.setText(text);
+    textCleaner.setRemoveAllNonAlpha();
+    textCleaner.clean();
+    text = textCleaner.getText();
   }
   
   public String getText() {
