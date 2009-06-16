@@ -8,21 +8,30 @@ import com.csvreader.CsvReader;
 
 public class MoveFileData {
 
+  public static final int MATCH_HEADERS = 1;
+  public static final int MATCH_FILENAME = 2;
+  private int matchHow = 0;
+  
+  // TODO change to private
   public String matchHeaderValues = null;
   
+  // TODO change to private
   public char delimiter;
   
+  // TODO change to private
   public String pathToMoveToDir = null;
+  
+  // regex a file name by this
+  private String matchFileNameRegex = null;
   
   /**
    * set a sample file to get the matchheaderValues from
    * 
-   * TODO - what to do with non csv files
-   * 
    * @param fileOrdir
    */
   public void setMatchHeaderValues(File fileOrdir) {
-   
+    matchHow = MATCH_HEADERS;
+    
     File file = null;
     if (fileOrdir.isDirectory()) {
       file = fileOrdir.listFiles()[0];
@@ -63,6 +72,31 @@ public class MoveFileData {
     }
     
     matchHeaderValues = sheader;
+  }
+  
+  public void setMatchByFileName(String regex) {
+    this.matchHow = MATCH_FILENAME;
+    this.matchFileNameRegex = regex;
+  }
+  
+  public int getMatchHow() {
+    return this.matchHow;
+  }
+  
+  public String getHeaders() {
+    return this.matchHeaderValues;
+  }
+  
+  public char getDelimiter() {
+    return this.delimiter;
+  }
+  
+  public String getMovePath() {
+    return this.pathToMoveToDir;
+  }
+  
+  public String getFileNameRegex() {
+    return this.matchFileNameRegex;
   }
   
 }
