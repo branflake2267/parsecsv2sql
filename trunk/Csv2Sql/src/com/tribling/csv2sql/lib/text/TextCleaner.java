@@ -1,6 +1,7 @@
 package com.tribling.csv2sql.lib.text;
 
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 public class TextCleaner {
  
@@ -10,6 +11,8 @@ public class TextCleaner {
 
   public TextCleaner() {
   }
+
+  // TODO find duplicates (?\b\w+\b)(?=.+\b\k\b)
   
   public void setText(String text) {
     this.text  = text;
@@ -21,10 +24,49 @@ public class TextCleaner {
    * @param regex
    */
   public void setRemoveRegex(String regex) {
+    if (regex == null | regex.length() == 0) {
+      return;
+    }
     if (removeRegex == null) {
       removeRegex = new ArrayList<String>();
     }
     removeRegex.add(regex);
+  }
+  
+  public void setRemoveAllWord_CaseIns(String word) {
+    if (word == null | word.length() == 0) {
+      return;
+    }
+    if (removeRegex == null) {
+      removeRegex = new ArrayList<String>();
+    }
+    
+    String regex = "(?i)\\b("+word+")\\b";
+    
+    removeRegex.add(regex);
+  }
+  
+  public void setRemoveAllPunctuation() {
+    text = text.replaceAll("\\.", " ");
+    text = text.replaceAll("\\!", " ");
+    text = text.replaceAll("\\?", " ");
+    text = text.replaceAll("\\.", " ");
+    text = text.replaceAll("\\!", " ");
+    text = text.replaceAll("\\,", " ");
+  }
+  
+  public void setRemoveAllSymbols() {
+
+    text = text.replaceAll("\\.", " ");
+    text = text.replaceAll("\\!", " ");
+    text = text.replaceAll("\\?", " ");
+    text = text.replaceAll("[0-9%]", " ");
+    text = text.replaceAll("\t", " ");
+    text = text.replaceAll("\n", " ");
+    text = text.replaceAll("\r", " ");
+    text = text.replaceAll("'", "");
+    text = text.replaceAll("[\\W]", " ");
+    
   }
   
   public void clean() {
@@ -36,7 +78,7 @@ public class TextCleaner {
   }
   
   public String getText() {
-    return this.text;
+    return this.text.trim();
   }
   
   private void removeLineBreaks() {
@@ -64,4 +106,6 @@ public class TextCleaner {
   private void fixWordSpacing() {
     text = text.replaceAll("[\040]+", " ");
   }
+  
+
 }
