@@ -51,7 +51,6 @@ public class TextCleaner {
     text = text.replaceAll("\\!", " ");
     text = text.replaceAll("\\?", " ");
     text = text.replaceAll("\\.", " ");
-    text = text.replaceAll("\\!", " ");
     text = text.replaceAll("\\,", " ");
   }
   
@@ -65,16 +64,14 @@ public class TextCleaner {
     text = text.replaceAll("\n", " ");
     text = text.replaceAll("\r", " ");
     text = text.replaceAll("'", "");
-    text = text.replaceAll("[\\W]", " ");
+    text = text.replaceAll("[\\W]", " "); // this shoul do it all
         
   }
   
   public void clean() {
-    
     removeLineBreaks();
     removeRegex();
     fixWordSpacing();
-    
   }
   
   public String getText() {
