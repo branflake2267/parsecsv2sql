@@ -721,14 +721,13 @@ public class SQLProcessing {
    */
   protected Connection getConnection() {
 
-    /*
-     * // TODO check to see if connection dies for some reason // TODO add
-     * better error checking on longevity of connection if (conn1 == null) { if
-     * (databaseType == 1) { conn1 = getConn_MySql(); } else if (databaseType ==
-     * 2) { conn1 = getConn_MsSql(); } } if (conn2 == null) { if (databaseType
-     * == 1) { conn2 = getConn_MySql(); } else if (databaseType == 2) { conn2 =
-     * getConn_MsSql(); } }
-     */
+    if (conn1 == null && dd != null) {
+      openConnection();
+    }
+    
+    if (conn2 == null && dd != null) {
+      openConnection();
+    }
 
     Connection c = null;
     if (connLoadBalance == 0) {
@@ -1024,6 +1023,8 @@ public class SQLProcessing {
     s = s.replace(" ", "_");
     s = s.replace("(", "");
     s = s.replace(")", "");
+    s = s.replaceAll("(\\W)", "");
+    //s = s.replaceAll("(\\-)", "");
 
     return s;
   }
