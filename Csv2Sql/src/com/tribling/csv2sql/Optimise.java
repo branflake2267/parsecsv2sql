@@ -106,10 +106,11 @@ public class Optimise extends SQLProcessing {
   }
   
   public void optimizeTable() {
-    String sql = "";
+    String sql = ""; 
     if (databaseType == 1) {
       sql = "OPTIMIZE TABLE " + dd.table;
     }
+    
     try {
       Connection conn = getConnection();
       Statement update = conn.createStatement();
