@@ -143,7 +143,7 @@ public class Transfer extends SQLProcessing {
 
   private void save() {
     
-    int id = doIdentsExistAlready();
+    int id = doIdentsExistAlready(database_dest);
     
     if (id > 0) { // update
       // TODO generate fields
@@ -153,13 +153,11 @@ public class Transfer extends SQLProcessing {
 
   }
   
-  private int doIdentsExistAlready() {
-    setDatabaseData(database_dest);
+  private int doIdentsExistAlready(DatabaseData databaseData) {
+    setDatabaseData(databaseData);
     openConnection();
     
-    ColumnData colPrim = getPrimaryKey();
-    
-    String primaryKey = colPrim.getColumnName();
+    String primaryKey = getPrimaryKeyId(databaseData);
     
     String sql = "Select `" + primaryKey + "` FROM `" + table + "` WHERE "  + getSqlIdent();
     
@@ -169,16 +167,33 @@ public class Transfer extends SQLProcessing {
     
     return id;
   }
+  
+  private String getPrimaryKeyId(DatabaseData databaseData) {
+    
+    setDatabaseData(databaseData);
+    openConnection();
+    
+    ColumnData columnData = getPrimaryKey();
+    
+    String primaryKey = columnData.getColumnName();
+    
+    closeConnection();
+    
+    return primaryKey;
+  }
 
   private String getSqlIdent() {
     
     String sql = "";
     for (int i=0; i < columnData_des.length; i++) {
       if (columnData_des[i].getIsPrimaryKey() == true) {
-        sql = "`" + columnData_des[i].getColumnName() + "`='" + SQLProcessing.escapeForSql(columnData_des[i].getValue()) + "'";
+        
+        sql = "(`" + columnData_des[i].getColumnName() + "`='" + SQLProcessing.escapeForSql(columnData_des[i].getValue()) + "')";
+        
         if (i < columnData_des.length -1) {
           sql = " AND ";
         }
+        
       }
     }
     
