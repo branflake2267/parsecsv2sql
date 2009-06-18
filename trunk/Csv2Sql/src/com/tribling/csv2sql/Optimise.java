@@ -314,7 +314,7 @@ public class Optimise extends SQLProcessing {
     
     // possible skip: does column already have this type? skip if it does
     ColumnData compareColumn = getColumn(column);
-    if (columnType.toLowerCase().contains(compareColumn.type.toLowerCase())) {
+    if (columnType.toLowerCase().contains(compareColumn.columnType.toLowerCase())) {
       //System.out.println("Column already has this columnType: " + compareColumn.type);
       return;
     }

@@ -1,7 +1,6 @@
 package com.tribling.csv2sql.lib.text;
 
 import java.util.ArrayList;
-import java.util.regex.Pattern;
 
 public class TextCleaner {
  
