@@ -3,8 +3,6 @@ package com.tribling.csv2sql.test;
 import java.io.File;
 import java.net.URISyntaxException;
 
-import sun.tools.jar.Main;
-
 import com.tribling.csv2sql.FileProcessing;
 import com.tribling.csv2sql.Optimise;
 import com.tribling.csv2sql.SQLProcessing;

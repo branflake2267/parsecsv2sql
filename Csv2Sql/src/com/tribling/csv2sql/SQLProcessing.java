@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import com.tribling.csv2sql.data.ColumnData;
+import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.IdentityData;
 import com.tribling.csv2sql.data.MatchFieldData;
@@ -28,6 +29,10 @@ import com.tribling.csv2sql.data.SortSourceField;
  */
 public class SQLProcessing {
  
+  // index types
+  public static final int INDEXKIND_DEFAULT = 1;
+  public static final int INDEXKIND_FULLTEXT = 2;
+  
   int connLoadBalance = 0;
   protected Connection conn1 = null;
   protected Connection conn2 = null;
@@ -37,6 +42,9 @@ public class SQLProcessing {
   private int indexFile = 0;
 
   protected DestinationData dd = null;
+  
+  // TODO - make this the primary 
+  protected DatabaseData databaseData = null;
 
   private boolean dropTableOff = false;
 
@@ -50,19 +58,6 @@ public class SQLProcessing {
   // to make sure the data will fit into the columns that already exist
   private ColumnData[] columns = null;
 
-  // column types - TODO keep expanding
-  final public static int FIELDTYPE_TEXT = 1;
-  final public static int FIELDTYPE_VARCHAR = 2;
-  final public static int FIELDTYPE_SMALLINT = 3;
-  final public static int FIELDTYPE_INT = 4;
-  final public static int FIELDTYPE_BITINT = 5;
-  final public static int FIELDTYPE_DECIMAL = 6;
-  final public static int FIELDTYPE_DATETIME = 7;
-  
-  // indexing types
-  final public static int INDEXKIND_DEFAULT = 1;
-  final public static int INDEXKIND_FULLTEXT = 2;
-  
   // TODO integrate this into all the queries
   protected String uniqueIdField = "ImportID";
   
@@ -80,6 +75,18 @@ public class SQLProcessing {
     this.uniqueIdField = uniqueIdField;
   }
 
+  /**
+   * TODO switch into this format later
+   * 
+   * @param databaseData
+   */
+  public void setDatabaseData(DatabaseData databaseData) {
+    
+    // work around for now
+    dd.setDatabaseData(databaseData);
+    
+  }
+  
   /**
    * set the destination data
    * 
@@ -104,36 +111,31 @@ public class SQLProcessing {
     }
 
     if (dd.username.length() == 0) {
-      System.err
-          .println("ERROR: No username: What is the sql database username?");
+      System.err.println("ERROR: No username: What is the sql database username?");
       System.exit(1);
     }
 
     if (dd.password.length() == 0) {
-      System.err
-          .println("ERROR: No password: What is the sql database password?");
+      System.err.println("ERROR: No password: What is the sql database password?");
       System.exit(1);
     }
 
     if (destinationData.host.length() == 0) {
-      System.err
-          .println("ERROR: No host: Where is the server located? ie. [IpAddress|host.domain.tld]");
+      System.err.println("ERROR: No host: Where is the server located? ie. [IpAddress|host.domain.tld]");
       System.exit(1);
     }
 
     if (destinationData.port.length() == 0) {
-      System.err
-          .println("ERROR: No port: What doorway is the sql server behind? ie. [3306|1433]");
+      System.err.println("ERROR: No port: What doorway is the sql server behind? ie. [3306|1433]");
       System.exit(1);
     }
 
     if (destinationData.table.length() == 0) {
-      System.err
-          .println("ERROR: No destination table: What table do you want to import this data to?");
+      System.err.println("ERROR: No destination table: What table do you want to import this data to?");
       System.exit(1);
     }
   }
-
+  
   protected void setMatchFields(MatchFieldData[] matchFields) {
     this.matchFields = matchFields;
   }
@@ -275,8 +277,7 @@ public class SQLProcessing {
       query = "DROP TABLE IF EXISTS `" + dd.database + "`.`" + dd.table + "`;";
     } else if (databaseType == 2) {
       if (isTableExist()) {
-        query = "DROP TABLE " + dd.database + "." + dd.tableSchema + "."
-            + dd.table + ";";
+        query = "DROP TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + ";";
       }
     }
 
@@ -405,9 +406,8 @@ public class SQLProcessing {
       where = " WHERE " + cquery + doOnlyTextColumns;
     } 
 
-    String query = "";
-    query = "SHOW COLUMNS FROM `" + dd.table + "` " + 
-    "FROM `" + dd.database + "` " + where + " ;";
+    String query = "SHOW COLUMNS FROM `" + dd.table + "` " + 
+      "FROM `" + dd.database + "` " + where + " ;";
     
 
     System.out.println("query: " + query);
@@ -438,7 +438,7 @@ public class SQLProcessing {
 
     return columns;
   }
-
+  
   private ColumnData[] getColumns_MsSql() {
     return getColumn_MsSql(null);
   }
@@ -503,6 +503,51 @@ public class SQLProcessing {
     return columns;
   }
 
+  public ColumnData getPrimaryKey() {
+    ColumnData columnData = null;
+    if (databaseType == 1) {
+      columnData = getPrimaryKey_MySql();
+    } else if (databaseType == 2) {
+      columnData = getPrimaryKey_MsSql();
+    }
+    return columnData;
+  }
+
+  private ColumnData getPrimaryKey_MySql() {
+    
+    String where = "`Key`='PRI'";
+    
+    String sql = "SHOW COLUMNS FROM `" + dd.table + "` " + 
+      "FROM `" + dd.database + "` " + where + " ;";
+  
+    System.out.println("query: " + sql);
+  
+    ColumnData column = new ColumnData();
+    try {
+      Connection conn = getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        column.setIsPrimaryKey(true);
+        column.setColumnName(result.getString(1));
+        column.setType(result.getString(2));
+      }
+      result.close();
+      select.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    }
+
+    return column;
+  }
+  
+  private ColumnData getPrimaryKey_MsSql() {
+    // TODO
+    return null;
+  }
+  
+  
   /**
    * create columns
    * 
@@ -640,19 +685,19 @@ public class SQLProcessing {
   private void createColumn(String column, int type) {
 
     String t = "";
-    if (type == FIELDTYPE_TEXT) {
+    if (type == ColumnData.FIELDTYPE_TEXT) {
       t = "TEXT DEFAULT NULL";
-    } else if (type == FIELDTYPE_VARCHAR) {
+    } else if (type == ColumnData.FIELDTYPE_VARCHAR) {
       t = "VARCHAR(255) DEFAULT NULL";
-    } else if (type == FIELDTYPE_SMALLINT) {
+    } else if (type == ColumnData.FIELDTYPE_SMALLINT) {
       
-    } else if (type == FIELDTYPE_INT) {
+    } else if (type == ColumnData.FIELDTYPE_INT) {
       
-    } else if (type == FIELDTYPE_BITINT) {
+    } else if (type == ColumnData.FIELDTYPE_BITINT) {
       
-    } else if (type == FIELDTYPE_DECIMAL) {
+    } else if (type == ColumnData.FIELDTYPE_DECIMAL) {
       
-    } else if (type == FIELDTYPE_DATETIME) {
+    } else if (type == ColumnData.FIELDTYPE_DATETIME) {
       
     } else {
       t = "TEXT DEFAULT NULL";
@@ -854,7 +899,7 @@ public class SQLProcessing {
     
     // get column type
     ColumnData cd = getColumn(column);
-    String columnType = cd.type;
+    String columnType = cd.columnType;
     
     resizeColumnLength(column, columnType, length);
     
@@ -939,20 +984,20 @@ public class SQLProcessing {
     return rtn;
   }
 
-  protected int getQueryInt(String query) {
+  protected int getQueryInt(String sql) {
 
     int i = 0;
     try {
       Connection conn = getConnection();
       Statement select = conn.createStatement();
-      ResultSet result = select.executeQuery(query);
+      ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         i = result.getInt(1);
       }
       select.close();
       result.close();
     } catch (SQLException e) {
-      System.err.println("Mysql Statement Error:" + query);
+      System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
     }
 
@@ -1313,8 +1358,8 @@ public class SQLProcessing {
 
     String sql = "";
     if (databaseType == 1) {
-      sql = "SHOW INDEX FROM `" + dd.table + "` FROM `" + dd.database + "` "
-          + "WHERE Key_name != 'Primary'";
+      sql = "SHOW INDEX FROM `" + dd.table + "` FROM `" + dd.database + "` " + 
+        "WHERE Key_name != 'Primary'";
     } else if (databaseType == 2) {
       sql = "";
     }
@@ -1735,7 +1780,7 @@ public class SQLProcessing {
       }
       resize = columns[i].testValue(value);
       if (resize > 0) {
-        String type = resizeColumnLength(columns[i].column, columns[i].type, resize);
+        String type = resizeColumnLength(columns[i].column, columns[i].columnType, resize);
         columns[i].setType(type);
       }
     }
@@ -1801,7 +1846,7 @@ public class SQLProcessing {
     
     String srcColumn = c.column;
     String dstColumn = c.column + "__Reverse";
-    String type = c.type;
+    String type = c.columnType;
     createColumn(dstColumn, type);
     
     // copy the data

@@ -10,10 +10,10 @@ package com.tribling.csv2sql.data;
  */
 public class MatchFieldData implements Comparable<MatchFieldData> {
  
-  // when finding this field in source
+  // source field name
 	public String sourceField;
 	
-	// change it to this field
+	// destination field name
 	public String destinationField;
 	
 	// when using identity insert index on a beginning type
@@ -21,6 +21,12 @@ public class MatchFieldData implements Comparable<MatchFieldData> {
 	// otherwise an identity column starts with varchar(50)
 	public String destinationField_ColumnType = null;
 	
+	
+	// when this field is used for transfer, and different data value appears overwrite? 
+	private boolean overWriteOnUpdate = true;
+	
+  // used to set these field names as the identity values, or primary key values
+  private boolean isIdentity = false;
 	
 	/**
 	 * constructor

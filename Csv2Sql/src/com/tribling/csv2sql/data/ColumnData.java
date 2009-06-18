@@ -5,32 +5,73 @@ import java.util.regex.Pattern;
 
 public class ColumnData {
 
-  // column name - make it sql happy
+  // column data types 
+  public static final int FIELDTYPE_TEXT = 1;
+  public static final int FIELDTYPE_VARCHAR = 2;
+  public static final int FIELDTYPE_SMALLINT = 3;
+  public static final int FIELDTYPE_INT = 4;
+  public static final int FIELDTYPE_BITINT = 5;
+  public static final int FIELDTYPE_DECIMAL = 6;
+  public static final int FIELDTYPE_DATETIME = 7;
+  
+  private boolean isPrimaryKey = false;
+  
+  // column name
 	public String column = "";
 	
-	// column field type
-	public String type = "TEXT";
+	// column field type - like INTEGER DEFAULT 0
+	public String columnType = "TEXT";
 	
-	// column field length for the given type
+	// column field length for the given column type
 	public int lengthChar = 0;
 	
+	// columns associated value
+	private String value = null;
+	
+	// true:overwrite any value false:only update on blank
+	private boolean overWriteOnUpdate = true;
+	
 	/**
-	 * constructor - nothing to do
+	 * constructor
 	 */
 	public ColumnData() {
 	}
 
+	public void setValue(String value) {
+	  this.value = value;
+	}
+	
+	public String getValue() {
+	  return value;
+	}
+	
+	public String getColumnName() {
+	  return column;
+	}
+	
+	public void setColumnName(String column) {
+	  this.column = column;
+	}
+
+	public void setIsPrimaryKey(boolean b) {
+	  isPrimaryKey = b;
+	}
+	
+	public boolean getIsPrimaryKey() {
+	  return isPrimaryKey;
+	}
+	
 	/**
 	 * set column type and extract length
 	 * 
-	 * @param type
+	 * @param columnType
 	 */
-	public void setType(String type) {
-		this.type = type.toLowerCase();
+	public void setType(String columnType) {
+		this.columnType = columnType.toLowerCase();
 		
 		String regex = "([0-9]+)";
 		Pattern p = Pattern.compile(regex);
-		Matcher m = p.matcher(type);
+		Matcher m = p.matcher(columnType);
 		boolean found = m.find();
 
 		String len = "";
@@ -43,6 +84,10 @@ public class ColumnData {
 		}	
 	}
 
+	public int getCharLength() {
+	  return lengthChar;
+	}
+	
 	/**
 	 * test value length to see if it will fit
 	 * 
@@ -52,9 +97,10 @@ public class ColumnData {
 	public int testValue(String value) {
 		
 		int resize = 0;
-		if (type.contains("text")) {
+		if (columnType.contains("text")) {
 			resize = testText(value);
-		} else if (type.contains("varchar")) {
+			
+		} else if (columnType.contains("varchar")) {
 			resize = testVarchar(value);
 		} 
 		
