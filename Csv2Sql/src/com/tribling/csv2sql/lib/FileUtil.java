@@ -198,7 +198,7 @@ public class FileUtil {
   public void moveFileToFolder_Done(File file) {
     
     // create done folder if it doesn't exist
-    String donePath = file.getPath() + "/done";
+    String donePath = file.getParent() + "/done"; 
     createDirectory(donePath);
     
     moveFile(file, donePath);
