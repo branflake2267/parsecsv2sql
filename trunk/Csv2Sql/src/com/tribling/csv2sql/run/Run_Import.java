@@ -4,7 +4,7 @@ import java.io.File;
 
 import com.tribling.csv2sql.FileProcessing;
 import com.tribling.csv2sql.data.DestinationData;
-import com.tribling.csv2sql.data.MatchFieldData;
+import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.SourceData;
 
 
@@ -37,17 +37,17 @@ public class Run_Import {
 		destinationData.table = "tmp_table"; 
 		
 		
-		MatchFieldData[] matchFields = new MatchFieldData[4];
-		matchFields[0] = new MatchFieldData();
+		FieldData[] matchFields = new FieldData[4];
+		matchFields[0] = new FieldData();
 		matchFields[0].sourceField = "Orig Empl Id";
 		matchFields[0].destinationField = "EmployeeID";
-		matchFields[1] = new MatchFieldData();
+		matchFields[1] = new FieldData();
 		matchFields[1].sourceField = "R.1";
 		matchFields[1].destinationField = "NPS";
-		matchFields[2] = new MatchFieldData();
+		matchFields[2] = new FieldData();
 		matchFields[2].sourceField = "Tech Id";
 		matchFields[2].destinationField = "TechID";
-		matchFields[3] = new MatchFieldData();
+		matchFields[3] = new FieldData();
 		matchFields[3].sourceField = "Trouble Tkt";
 		matchFields[3].destinationField = "TTN";
 

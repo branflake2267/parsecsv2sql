@@ -32,7 +32,7 @@ public class DestinationData {
   public String tableSchema;
   
   // identiy columns to match update instead of insert?
-  public MatchFieldData[] identityColumns;
+  public FieldData[] identityColumns;
 
   // drop table if exists before insert 
   // (if looping files in a directory, it will drop table in the beginning)

@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.FlatFileSettingsData;
-import com.tribling.csv2sql.data.MatchFieldData;
+import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.SourceData;
 import com.tribling.csv2sql.lib.FileUtil;
 
@@ -16,7 +16,7 @@ public class FileProcessing {
   // sql items
   private DestinationData desinationData = null;
 
-  private MatchFieldData[] matchFields = null;
+  private FieldData[] matchFields = null;
 
   @Deprecated // move to source data
   private char delimiter;
@@ -52,7 +52,7 @@ public class FileProcessing {
    * @param destinationData
    * @param matchFields
    */
-  public void setData(SourceData sourceData, DestinationData destinationData, MatchFieldData[] matchFields) {
+  public void setData(SourceData sourceData, DestinationData destinationData, FieldData[] matchFields) {
     this.sourceData = sourceData;
     this.delimiter = sourceData.delimiter;
     this.desinationData = destinationData;

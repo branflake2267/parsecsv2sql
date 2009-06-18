@@ -5,7 +5,7 @@ import java.io.File;
 import com.tribling.csv2sql.FileProcessing;
 import com.tribling.csv2sql.Optimise;
 import com.tribling.csv2sql.data.DestinationData;
-import com.tribling.csv2sql.data.MatchFieldData;
+import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.SourceData;
 
 public class Run_Import_MsSql {
@@ -59,9 +59,9 @@ public class Run_Import_MsSql {
 		
 		
 		// use these unique ids to compare to existing data
-		MatchFieldData[] idents = new MatchFieldData[2];
-		idents[0] = new MatchFieldData();
-		idents[1] = new MatchFieldData();
+		FieldData[] idents = new FieldData[2];
+		idents[0] = new FieldData();
+		idents[1] = new FieldData();
 		
 		idents[0].sourceField = "Orig Id";
 		idents[0].destinationField = "EmployeeID";
@@ -74,9 +74,9 @@ public class Run_Import_MsSql {
 		
 		// init object for data storage
 		int matchCount = 17;
-		MatchFieldData[] matchFields = new MatchFieldData[matchCount];
+		FieldData[] matchFields = new FieldData[matchCount];
 		for (int i=0; i < matchCount; i++) {
-			matchFields[i] = new MatchFieldData();
+			matchFields[i] = new FieldData();
 		}
 		
 		matchFields[0].sourceField = "Orig Id";

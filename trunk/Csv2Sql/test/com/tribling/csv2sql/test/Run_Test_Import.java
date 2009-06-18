@@ -8,14 +8,14 @@ import com.tribling.csv2sql.Optimise;
 import com.tribling.csv2sql.SQLProcessing;
 import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.FlatFileSettingsData;
-import com.tribling.csv2sql.data.MatchFieldData;
+import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.SourceData;
 
 public class Run_Test_Import {
 
   private static SourceData sourceData = null;
   
-  private static MatchFieldData[] matchFields = null;
+  private static FieldData[] matchFields = null;
   
   private static DestinationData dd = null;
   
@@ -71,9 +71,9 @@ public class Run_Test_Import {
     
     // field mapping
     // when originating flat file fields match source var, then destinationfield var is put in
-    matchFields = new MatchFieldData[2];
-    matchFields[0] = new MatchFieldData();
-    matchFields[1] = new MatchFieldData();
+    matchFields = new FieldData[2];
+    matchFields[0] = new FieldData();
+    matchFields[1] = new FieldData();
     
     matchFields[0].sourceField = "a";
     matchFields[0].destinationField = "aaaa";
@@ -82,9 +82,9 @@ public class Run_Test_Import {
     matchFields[1].destinationField = "dododo";
     
     // set records uniqueness 
-    MatchFieldData[] idents = new MatchFieldData[2];
-    idents[0] = new MatchFieldData();
-    idents[1] = new MatchFieldData();
+    FieldData[] idents = new FieldData[2];
+    idents[0] = new FieldData();
+    idents[1] = new FieldData();
     
     idents[0].sourceField = "a";
     idents[0].destinationField = "aaaa";
