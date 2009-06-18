@@ -4,7 +4,7 @@ import java.io.File;
 
 import com.tribling.csv2sql.FileProcessing;
 import com.tribling.csv2sql.data.DestinationData;
-import com.tribling.csv2sql.data.MatchFieldData;
+import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.SourceData;
 
 public class Run_Import_Mysql {
@@ -46,13 +46,13 @@ public class Run_Import_Mysql {
 		dd.table = "tmp_test"; 
 		
 		
-		MatchFieldData[] matchFields = new MatchFieldData[1];
-		matchFields[0] = new MatchFieldData();
+		FieldData[] matchFields = new FieldData[1];
+		matchFields[0] = new FieldData();
 		matchFields[0].sourceField = "ID";
 		matchFields[0].destinationField = "UID";
 
-		MatchFieldData[] idents = new MatchFieldData[1];
-		idents[0] = new MatchFieldData();
+		FieldData[] idents = new FieldData[1];
+		idents[0] = new FieldData();
 		idents[0].sourceField = "ID";
 		idents[0].destinationField = "UID";
 		dd.identityColumns = idents;

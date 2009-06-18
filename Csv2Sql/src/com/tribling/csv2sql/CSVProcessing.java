@@ -7,7 +7,7 @@ import java.io.IOException;
 import com.csvreader.CsvReader;
 import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DestinationData;
-import com.tribling.csv2sql.data.MatchFieldData;
+import com.tribling.csv2sql.data.FieldData;
 
 public class CSVProcessing extends FlatFileProcessing {
 
@@ -41,7 +41,7 @@ public class CSVProcessing extends FlatFileProcessing {
    * @param destinationData
    * @param matchFields
    */
-  public void setData(char delimiter, DestinationData destinationData, MatchFieldData[] matchFields) {
+  public void setData(char delimiter, DestinationData destinationData, FieldData[] matchFields) {
     this.delimiter = delimiter;
     this.dd  = destinationData;
 

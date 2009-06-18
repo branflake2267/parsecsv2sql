@@ -17,7 +17,7 @@ import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.IdentityData;
-import com.tribling.csv2sql.data.MatchFieldData;
+import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.SortDestinationField;
 import com.tribling.csv2sql.data.SortSourceField;
 
@@ -49,7 +49,7 @@ public class SQLProcessing {
   private boolean dropTableOff = false;
 
   // replace these fields
-  private MatchFieldData[] matchFields = null;
+  private FieldData[] matchFields = null;
 
   // what database brand?
   protected int databaseType = 0;
@@ -136,7 +136,7 @@ public class SQLProcessing {
     }
   }
   
-  protected void setMatchFields(MatchFieldData[] matchFields) {
+  protected void setMatchFields(FieldData[] matchFields) {
     this.matchFields = matchFields;
   }
 
@@ -718,9 +718,9 @@ public class SQLProcessing {
       return column;
     }
 
-    Comparator<MatchFieldData> searchByComparator = new SortSourceField();
+    Comparator<FieldData> searchByComparator = new SortSourceField();
 
-    MatchFieldData searchFor = new MatchFieldData();
+    FieldData searchFor = new FieldData();
     searchFor.sourceField = column;
 
     int index = Arrays.binarySearch(matchFields, searchFor, searchByComparator);
@@ -1741,8 +1741,8 @@ public class SQLProcessing {
       return true;
     }
 
-    Comparator<MatchFieldData> searchByComparator = new SortDestinationField();
-    MatchFieldData searchFor = new MatchFieldData();
+    Comparator<FieldData> searchByComparator = new SortDestinationField();
+    FieldData searchFor = new FieldData();
     searchFor.destinationField = column;
 
     int index = -1;

@@ -7,7 +7,7 @@ import java.sql.Statement;
 
 import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
-import com.tribling.csv2sql.data.MatchFieldData;
+import com.tribling.csv2sql.data.FieldData;
 
 /**
  * transfer data from one table to another
@@ -28,14 +28,15 @@ public class Transfer extends SQLProcessing {
   // destination database settings
   private DatabaseData database_dest = null;
   
-  // table being copied
-  private String table = null;
+  // transfering from table to table
+  private String tableFrom = null;
+  private String tableTo = null;
   
   // table identity fields established so not to create duplicates
-  private MatchFieldData[] identFields = null;
+  private FieldData[] identFields = null;
 
   // table mapped fields from src to data
-  private MatchFieldData[] mappedFields = null;
+  private FieldData[] mappedFields = null;
 
   // column data structure which will be the destinations 
   private ColumnData[] columnData_src = null;
@@ -53,26 +54,21 @@ public class Transfer extends SQLProcessing {
     this.database_src = database_src;
     this.database_dest = database_dest;
   }
-  
-  /**
-   * start the data transfer
-   * 
-   * @param table
-   * @param identFields_src
-   * @param mappedFields
-   */
-  public void setData(String table, MatchFieldData[] mappedFields) {
-    this.table = table;
-    this.mappedFields = mappedFields;
-  }
-  
-  public void transferAllFields() {
+
+  public void transferAllFields(String fromTable, String toTable) {
     this.mode = MODE_TRANSFER_ALL;
+    this.tableFrom = fromTable;
+    this.tableTo = toTable;
+    // TODO - get all fields here into a mappedFields object
     start();
   }
   
-  public void transferOnlyMappedFields() {
+  public void transferOnlyMappedFields(String fromTable, String toTable, FieldData[] mappedFields) {
     this.mode = MODE_TRANSFER_ONLY;
+    this.tableFrom = fromTable;
+    this.tableTo = toTable;
+    this.mappedFields = mappedFields;
+    
     start();
   }
   
@@ -118,7 +114,7 @@ public class Transfer extends SQLProcessing {
   private void process() {
 
     String sql = "";
-    sql = "SELECT * FROM `" + table + "` ";
+    sql = "SELECT * FROM `" + tableFrom + "` ";
     
     try {
       Connection conn = database_src.getConnection();
@@ -159,7 +155,7 @@ public class Transfer extends SQLProcessing {
     
     String primaryKey = getPrimaryKeyId(databaseData);
     
-    String sql = "Select `" + primaryKey + "` FROM `" + table + "` WHERE "  + getSqlIdent();
+    String sql = "Select `" + primaryKey + "` FROM `" + tableFrom + "` WHERE "  + getSqlIdent();
     
     int id = getQueryInt(sql);
     

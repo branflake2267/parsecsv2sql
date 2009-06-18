@@ -8,7 +8,7 @@ package com.tribling.csv2sql.data;
  * @author branflake2267
  *
  */
-public class MatchFieldData implements Comparable<MatchFieldData> {
+public class FieldData implements Comparable<FieldData> {
  
   // source field name
 	public String sourceField;
@@ -28,11 +28,11 @@ public class MatchFieldData implements Comparable<MatchFieldData> {
 	/**
 	 * constructor
 	 */
-	public MatchFieldData() {
+	public FieldData() {
 	}
 
 	
-	public int compareTo(MatchFieldData b) {
+	public int compareTo(FieldData b) {
 		
 		if (sourceField == null) {
 			return 0;
