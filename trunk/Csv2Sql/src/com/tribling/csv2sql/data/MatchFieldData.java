@@ -22,11 +22,8 @@ public class MatchFieldData implements Comparable<MatchFieldData> {
 	public String destinationField_ColumnType = null;
 	
 	
-	// when this field is used for transfer, and different data value appears overwrite? 
-	private boolean overWriteOnUpdate = true;
-	
-  // used to set these field names as the identity values, or primary key values
-  private boolean isIdentity = false;
+	// Transfer: on copy when dest value is blank
+	private boolean onlyOverwriteBlank = true;
 	
 	/**
 	 * constructor
