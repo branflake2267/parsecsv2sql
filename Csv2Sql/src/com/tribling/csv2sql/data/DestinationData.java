@@ -123,6 +123,7 @@ public class DestinationData {
     this.port = databaseData.getPort();
     this.username = databaseData.getUsername();
     this.password = databaseData.getPassword();
+    this.database = databaseData.getDatabase();
     
     if (databaseData.getDatabaseType() == DatabaseData.TYPE_MYSQL) {
       this.databaseType = "MySql";

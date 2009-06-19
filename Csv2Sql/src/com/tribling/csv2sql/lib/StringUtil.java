@@ -29,4 +29,22 @@ public class StringUtil {
     return found;
   }
   
+  public static String getValue(String regex, String value) {
+    if (regex == null | value == null) {
+      return null;
+    }
+    
+    try {
+      Pattern p = Pattern.compile(regex);
+      Matcher m = p.matcher(value);
+      boolean found = m.find();
+      if (found == true) {
+        value = m.group(1);
+      }
+    } catch (Exception e) {
+      System.out.println("findMatch: regex error");
+    }
+    
+    return value;
+  }
 }

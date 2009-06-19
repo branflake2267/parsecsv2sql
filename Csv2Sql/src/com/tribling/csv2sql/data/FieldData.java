@@ -1,5 +1,7 @@
 package com.tribling.csv2sql.data;
 
+import java.util.HashMap;
+
 /**
  * match source field and transform them into the destination field
  * 
@@ -9,7 +11,7 @@ package com.tribling.csv2sql.data;
  *
  */
 public class FieldData implements Comparable<FieldData> {
- 
+  
   // source field name
 	public String sourceField;
 	
@@ -21,9 +23,20 @@ public class FieldData implements Comparable<FieldData> {
 	// otherwise an identity column starts with varchar(50)
 	public String destinationField_ColumnType = null;
 	
+	// Transfer: this designates this column is used as the primary key
+	public boolean isPrimaryKey = false;
 	
 	// Transfer: on copy when dest value is blank
-	private boolean onlyOverwriteBlank = true;
+	public boolean onlyOverwriteBlank = true;
+	
+	// Transfer: only take this from the source field
+	public String regexSourceField = null;
+	
+	// Transfer: different destination table for this value
+	public String differentDestinationTable = null;
+	
+	// Transfer: different destination table hard code column + values - one to many definition
+	public HashMap<String, String> hardOneToMany = null; // new HashMap<String, String>(); 
 	
 	/**
 	 * constructor
@@ -31,7 +44,9 @@ public class FieldData implements Comparable<FieldData> {
 	public FieldData() {
 	}
 
-	
+	/**
+	 * sort the fields by source field
+	 */
 	public int compareTo(FieldData b) {
 		
 		if (sourceField == null) {
