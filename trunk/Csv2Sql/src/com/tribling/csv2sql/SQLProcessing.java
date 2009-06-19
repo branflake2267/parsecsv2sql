@@ -82,8 +82,19 @@ public class SQLProcessing {
    */
   public void setDatabaseData(DatabaseData databaseData) {
     
+    // work around
+    if (dd == null) {
+      dd = new DestinationData();
+    }
+    
     // work around for now
     dd.setDatabaseData(databaseData);
+    
+    if (databaseData.getDatabaseType() == DatabaseData.TYPE_MYSQL) {
+      this.databaseType = DatabaseData.TYPE_MYSQL;
+    } else if (databaseData.getDatabaseType() == DatabaseData.TYPE_MSSQL) {
+      this.databaseType = DatabaseData.TYPE_MSSQL;
+    }
     
   }
   
@@ -512,6 +523,18 @@ public class SQLProcessing {
     }
     return columnData;
   }
+  
+  public ColumnData getPrimaryKey(String table) {
+    dd.table = table;
+    ColumnData columnData = null;
+    if (databaseType == 1) {
+      columnData = getPrimaryKey_MySql();
+    } else if (databaseType == 2) {
+      columnData = getPrimaryKey_MsSql();
+    }
+    dd.table = null;
+    return columnData;
+  }
 
   private ColumnData getPrimaryKey_MySql() {
     
@@ -539,6 +562,42 @@ public class SQLProcessing {
       e.printStackTrace();
     }
 
+    return column;
+  }
+  
+  /**
+   * get the primary key column
+   * 
+   * @param databaseData
+   * @param table
+   * @return
+   */
+  protected ColumnData getPrimaryKey_MySql_v2(DatabaseData databaseData, String table) {
+    
+    String where = "WHERE `Key`='PRI'";
+    
+    String sql = "SHOW COLUMNS FROM " + table + " " + 
+      "FROM `" + databaseData.getDatabase() + "` " + where + " ;";
+  
+    //System.out.println("query: " + sql);
+  
+    ColumnData column = new ColumnData();
+    try {
+      Connection conn = databaseData.getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        column.setIsPrimaryKey(true);
+        column.setColumnName(result.getString(1));
+        column.setType(result.getString(2));
+      }
+      result.close();
+      select.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    }
+    
     return column;
   }
   
@@ -741,8 +800,7 @@ public class SQLProcessing {
 
     String url = "jdbc:mysql://" + dd.host + ":" + dd.port + "/";
     String driver = "com.mysql.jdbc.Driver";
-    System.out.println("getConn_MySql: url:" + url + " user: " + dd.username
-        + " driver: " + driver);
+    System.out.println("getConn_MySql: url:" + url + " user: " + dd.username + " driver: " + driver);
 
     Connection conn = null;
     try {
@@ -861,7 +919,36 @@ public class SQLProcessing {
       dealWithSqlError(e, query);
     }
   }
+  
+  protected void updateSql_v2(DatabaseData databaseData, String sql) {
+
+     if (sql == null) {
+       System.out.println("no query given");
+       return;
+     }
+
+     System.out.println("f:" + indexFile + ": row:" + index + ". " + sql); 
+     
+     try {
+       Connection conn = databaseData.getConnection();
+       Statement update = conn.createStatement();
+       update.executeUpdate(sql);
+       update.close();
+     } catch (SQLException e) {
+       setDatabaseData(databaseData);
+       openConnection();
+       dealWithSqlError(e, sql);
+       dd.table = null;
+       closeConnection();
+     }
+   }
    
+  /**
+   * deal with errors, auto fix them, like truncation
+   * 
+   * @param e
+   * @param query
+   */
   private void dealWithSqlError(SQLException e, String query) {
     
     if (dealwithTruncationError(e, query) == true) {
@@ -989,6 +1076,33 @@ public class SQLProcessing {
     int i = 0;
     try {
       Connection conn = getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        i = result.getInt(1);
+      }
+      select.close();
+      result.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    }
+
+    return i;
+  }
+  
+  /**
+   * get an Integer value from sql query
+   * 
+   * @param databaseData
+   * @param sql
+   * @return
+   */
+  protected int getQueryInt_v2(DatabaseData databaseData, String sql) {
+
+    int i = 0;
+    try {
+      Connection conn = databaseData.getConnection();
       Statement select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {

@@ -3,6 +3,8 @@ package com.tribling.csv2sql.data;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.tribling.csv2sql.lib.StringUtil;
+
 public class ColumnData {
 
   // column data types 
@@ -29,7 +31,13 @@ public class ColumnData {
 	private String value = null;
 	
 	// true:overwrite any value false:only update on blank
-	private boolean overWriteOnUpdate = true;
+	private boolean overwriteOnlyWhenBlank = true;
+	
+	// set the value using regex
+	private String regex = null;
+	
+	// table that the column resides in, optional
+	private String table = null;
 	
 	/**
 	 * constructor
@@ -38,6 +46,10 @@ public class ColumnData {
 	}
 
 	public void setValue(String value) {
+	  // use regex to get the value
+	  if (regex != null) {
+	    value = StringUtil.getValue(regex, value);
+	  }
 	  this.value = value;
 	}
 	
@@ -59,6 +71,30 @@ public class ColumnData {
 	
 	public boolean getIsPrimaryKey() {
 	  return isPrimaryKey;
+	}
+	
+	public void setOverwriteWhenBlank(boolean b) {
+	  this.overwriteOnlyWhenBlank = b;
+	}
+	
+	public boolean getOverwriteWhenBlank() {
+	  return this.overwriteOnlyWhenBlank;
+	}
+	
+	public void setRegex(String regex) {
+	  this.regex = regex;
+	}
+	
+	public String getRegex() {
+	  return regex;
+	}
+	
+	public void setTable(String table) {
+	  this.table = table;
+	}
+	
+	public String getTable() {
+	  return this.table;
 	}
 	
 	/**
@@ -159,5 +195,53 @@ public class ColumnData {
     return 0;
 	}
 	
+	
+  /**
+   * find primary key column name
+   * 
+   * @param columnData
+   * @return
+   */
+  public static String getColumnNameOfPrimaryKey(ColumnData[] columnData) {
+    String s = "";
+    for (int i=0; i < columnData.length; i++) {
+      if (columnData[i].getIsPrimaryKey() == true) {
+        s = columnData[i].getColumnName();
+        break;
+      }
+    }
+    return s;
+  }
+  
+  /**
+   * get the index of primary key 
+   * 
+   * @param columnData
+   * @return
+   */
+  public static int getIndexOfPrimaryKey(ColumnData[] columnData) {
+    int f = -1;
+    for (int i=0; i < columnData.length; i++) {
+      if (columnData[i].getIsPrimaryKey() == true) {
+        f = i;
+        break;
+      }
+    }
+    return f;
+  }
+  
+  /**
+   * get the value of the primary key
+   * 
+   * @param columnData
+   * @return
+   */
+  public static String getValueOfPrimaryKey(ColumnData[] columnData) {
+    int indexPrimKey = getIndexOfPrimaryKey(columnData);
+    String value = columnData[indexPrimKey].getValue();
+    return value;
+  }
+  
+
 	
 }
