@@ -26,8 +26,11 @@ public class FieldData implements Comparable<FieldData> {
 	// Transfer: this designates this column is used as the primary key
 	public boolean isPrimaryKey = false;
 	
-	// Transfer: on copy when dest value is blank
+	// Transfer: on copy when dest value is blank. (Zero is not blank, and is something)
 	public boolean onlyOverwriteBlank = true;
+	
+	// Transfer: if a zero shows up, it can be overwritten.
+	public boolean onlyOverwriteZero = true;
 	
 	// Transfer: only take this from the source field
 	public String regexSourceField = null;

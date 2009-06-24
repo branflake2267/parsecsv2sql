@@ -133,6 +133,7 @@ public class Transfer extends SQLProcessing {
       columnData_src[i].setColumnName(mappedFields[i].sourceField);
       columnData_src[i].setIsPrimaryKey(mappedFields[i].isPrimaryKey);
       columnData_src[i].setOverwriteWhenBlank(mappedFields[i].onlyOverwriteBlank);
+      columnData_src[i].setOverwriteWhenZero(mappedFields[i].onlyOverwriteZero);
       columnData_src[i].setRegex(mappedFields[i].regexSourceField);
       
       columnData_des[i].setColumnName(mappedFields[i].destinationField);
@@ -290,7 +291,6 @@ public class Transfer extends SQLProcessing {
     
     updateSql_v2(database_des, sql);
 
-    
   }
   
   private String getWhere() {
@@ -469,14 +469,17 @@ public class Transfer extends SQLProcessing {
     for (int i=0; i < columnData_src.length; i++) {
       
       boolean onlyOverwriteBlank = columnData_des[i].getOverwriteWhenBlank();
+      boolean onlyOverwriteZero = columnData_des[i].getOverwriteWhenZero();
+      
       String desValue = columnData_des[i].getValue();
       
       if (desValue == null) {
         desValue = "";
       }
       
-      if (onlyOverwriteBlank == true && 
-          (desValue.equals("null") | desValue.length() == 0)) { // write when blank
+      // TODO - is zero always considered a blank, maybe not?
+      if ( (onlyOverwriteBlank == true && (desValue.equals("null") | desValue.length() == 0)) | 
+          (onlyOverwriteZero == true && (desValue.equals("null") | desValue.length() == 0 | desValue.equals("0"))) ) { // write when blank
         columnData_des[i].setValue(columnData_src[i].getValue());
       } 
       
@@ -491,14 +494,16 @@ public class Transfer extends SQLProcessing {
     for (int i=0; i < columnData_src_oneToMany.length; i++) {
       
       boolean onlyOverwriteBlank = columnData_des_oneToMany[i].getOverwriteWhenBlank();
+      boolean onlyOverwriteZero = columnData_des[i].getOverwriteWhenZero();
+      
       String desValue = columnData_des_oneToMany[i].getValue();
       
       if (desValue == null) {
         desValue = "";
       }
       
-      if (onlyOverwriteBlank == true && 
-          (desValue.equals("null") | desValue.length() == 0)) { // write when blank
+      if ( (onlyOverwriteBlank == true && (desValue.equals("null") | desValue.length() == 0)) | 
+          (onlyOverwriteZero == true && (desValue.equals("null") | desValue.length() == 0 | desValue.equals("0"))) ) { // write when blank
         columnData_des_oneToMany[i].setValue(columnData_src_oneToMany[i].getValue());
       } 
       

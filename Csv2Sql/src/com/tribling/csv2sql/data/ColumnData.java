@@ -33,6 +33,9 @@ public class ColumnData {
 	// true:overwrite any value false:only update on blank
 	private boolean overwriteOnlyWhenBlank = true;
 	
+	// true: if a zero shows up its ok to overwrite
+	private boolean overwriteOnlyWhenZero = true;
+	
 	// set the value using regex
 	private String regex = null;
 	
@@ -80,6 +83,14 @@ public class ColumnData {
 	public boolean getOverwriteWhenBlank() {
 	  return this.overwriteOnlyWhenBlank;
 	}
+	
+	public void setOverwriteWhenZero(boolean b) {
+    this.overwriteOnlyWhenZero = b;
+  }
+
+  public boolean getOverwriteWhenZero() {
+    return this.overwriteOnlyWhenZero;
+  }
 	
 	public void setRegex(String regex) {
 	  this.regex = regex;
