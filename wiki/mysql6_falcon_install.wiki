@@ -1,6 +1,9 @@
 #summary my notes on installing mysql6-falcon
 #labels Featured
 
+= Development Cycle Has Changed =
+ The development cycle has changed so I am trying 5.4 out. My main need is the subquery optimization, which I think is fixed in 5.1+. So I am trying 5.4 out.
+
 = MySql install notes on Ubuntu 9.04 =
  If you use this, you may have to read in between the lines here and there. I wasn't able to get the icc already compiled version to work b/c of a syntax error with my_print_defaults. But I compiled it from source and its working perfect. The sub-query system is so much faster, its unbelievable. I recommend using the mysql6-falcon alpha linux source install.
 
