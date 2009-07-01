@@ -62,10 +62,13 @@ sudo ./bin/mysql_install_db --user=mysql --basedir=/srv/mysql5_4 --builddir=/hom
 # add hash next to skip-federated - notate it 
 
 #add ./share/mysql/mysql.server to /etc/init.d/mysql.server
+sudo cp ./share/mysql/mysql.server /etc/init.d/
+
 
 # change basedir and datadir in mysql.server
 
 # link ./bin/mysql to /usr/bin/mysql
+
 
 # start server
 sudo /etc/init.d/mysql.server start
