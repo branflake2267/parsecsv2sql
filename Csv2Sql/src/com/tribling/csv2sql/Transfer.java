@@ -214,9 +214,11 @@ public class Transfer extends SQLProcessing {
     
    // does the value already exist?
    for (int i=0; i < columnData_des_oneToMany.length; i++) {
+     
      int onetoId = getOneToManyId(columnData_des_oneToMany[i], hardOneToMany.get(i));
      
      saveOneToMany(onetoId, columnData_des_oneToMany[i], hardOneToMany.get(i));
+     
    }
     
   }
@@ -225,19 +227,23 @@ public class Transfer extends SQLProcessing {
     
     String hardFields = getFields_OneToMany_Hard(hardOneToMany, 1);
     
-    String fields = getFields_OneToMany();
+    String datafields = getFields_OneToMany(columnData);
     if (hardFields.length() > 0) {
-      fields += ", " + hardFields;
+      datafields += ", " + hardFields;
     }
     
     String sql = "";
     if (onetoId > 0) { // update?
-      fields += ",DateUpdated=NOW()";
+      
+      datafields += ",DateUpdated=NOW()";
       String where = "(`" + oneToManyTablePrimaryKey.getColumnName() + "`='" + onetoId + "')";
-      sql = "UPDATE " + columnData.getTable() + " SET " + fields + " WHERE " + where;
+      sql = "UPDATE " + columnData.getTable() + " SET " + datafields + " WHERE " + where;
+      
     } else { // insert
-      fields += ",DateCreated=NOW()";
-      sql = "INSERT INTO " + columnData.getTable() + " SET " + fields;
+      
+      datafields += ",DateCreated=NOW()";
+      sql = "INSERT INTO " + columnData.getTable() + " SET " + datafields;
+      
     }
     
     updateSql_v2(database_des, sql);
@@ -251,6 +257,8 @@ public class Transfer extends SQLProcessing {
     String where = getOneToManySqlWhere(columnData, hardOneToMany);
 
     String sql = "SELECT " + oneToManyTablePrimaryKey.getColumnName() + " FROM " + columnData.getTable() + " WHERE " + where;
+    
+    System.out.println("checking onetomany: " + sql);
     
     int id = getQueryInt_v2(database_des, sql);
     
@@ -314,32 +322,26 @@ public class Transfer extends SQLProcessing {
     return sql;
   }
   
-  private String getFields_OneToMany() {
+  private String getFields_OneToMany(ColumnData columnData) {
     
     String sql = "";
     
-    // one to many relationship
+    // one to many relationship defined into the hash table like userId=3134
     sql += oneToMany_RelationshipSql + ", ";
     
-    // mapped fields
-    for (int i=0; i < columnData_des_oneToMany.length; i++) {
-      String column = columnData_des_oneToMany[i].getColumnName();
-      String value = columnData_des_oneToMany[i].getValue();
-      
-      sql += "`" + column + "`='" + value + "'";
-      if (i < columnData_des_oneToMany.length -1) {
-        sql += ",";
-      }
-    }
-    
+    // data fields
+    String column = columnData.getColumnName();
+    String value = columnData.getValue();
+    sql += "`" + column + "`='" + value + "'";
+
     return sql;
   }
   
-  private String getFields_OneToMany_Hard(HashMap<String, String> hardOneToMany, int type) {
+  private String getFields_OneToMany_Hard(HashMap<String, String> hardOneToMany, int internaltype) {
     String sep = "";
-    if (type == 1) {
+    if (internaltype == 1) {
       sep = ",";
-    } else if (type == 2) {
+    } else if (internaltype == 2) {
       sep = " AND ";
     }
     
@@ -489,6 +491,7 @@ public class Transfer extends SQLProcessing {
   
   private void merge_OneToMany() {
     
+    // TODO - not sure if I need a merge
     // TODO - what no values exist on the other end?
     
     for (int i=0; i < columnData_src_oneToMany.length; i++) {
@@ -501,14 +504,16 @@ public class Transfer extends SQLProcessing {
       if (desValue == null) {
         desValue = "";
       }
-      
+      /* this won't apply here for now, b/c I am just looking to see if the value exists in the table if not write.
       if ( (onlyOverwriteBlank == true && (desValue.equals("null") | desValue.length() == 0)) | 
           (onlyOverwriteZero == true && (desValue.equals("null") | desValue.length() == 0 | desValue.equals("0"))) ) { // write when blank
         columnData_des_oneToMany[i].setValue(columnData_src_oneToMany[i].getValue());
       } 
-      
+      */
+      columnData_des_oneToMany[i].setValue(columnData_src_oneToMany[i].getValue());
     }
    
+    //System.out.println("Pause");
   }
   
 }
