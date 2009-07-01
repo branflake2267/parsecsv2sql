@@ -40,10 +40,18 @@ make
 sudo make install
 
 
+# my.cnf
+sudo cp ./share/mysql/my-large.cnf /etc/mysql/my.cnf 
+sudo ln -s /etc/mysql/my.cnf /etc/my.cnf - just in case
 
-# copied my.cnf to /etc/mysql/my.cnf and linked /etc/my.cnf
-# sudo ln -s /etc/mysql/my.cnf /etc/my.cnf - just in case
-# set [mysqld] datadir=/srv/mysql6 basedir=/srv/ssd/mysql
+# edit my.cnf
+[mysqld]
+basedir=/srv/mysql5_4
+datadir=/srv/mysql_data
+bind-addres = 0.0.0.0
+max_connections=500
+
+# set [mysqld] datadir=/srv/mysql5_4 basedir=/srv/ssd/mysql
 
 # add user and group
 # set perimissions where needed
