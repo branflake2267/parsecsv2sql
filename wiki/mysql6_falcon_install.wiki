@@ -54,18 +54,30 @@ max_connections=500
 sudo groupadd mysql
 sudo useradd -g mysql mysql
 
+# set file permissions
+sudo chown -R mysql .
+sudo chgrp -R mysql .
+
+# work around - edit ./my.cnf and comment -> #skip-federated 
+
 # setup the default system
 #./bin/mysql_install_db --user=mysql --basedir=/srv/mysql6_11 --builddir=/home/branflake2267/downloads/mysql-6.0.11-alpha
 sudo ./bin/mysql_install_db --user=mysql --basedir=/srv/mysql5_4 --builddir=/home/branflake2267/downloads/mysql-5.4.0-beta --datadir=/srv/mysql_data
 
+# set file permissions
+sudo chown -R root .
+
+
 # move startup script
 sudo cp ./share/mysql/mysql.server /etc/init.d/
 
+#edit startup script 
+sudo pico /etc/init.d/mysql.server
+basedir=/srv/mysql5_4
+datadir=/srv/mysql_data
 
-# change basedir and datadir in mysql.server
-
-# link ./bin/mysql to /usr/bin/mysql
-
+# link stuff you want to use in shell - or go to the bin dir
+sudo ln -s /srv/mysql5_4/bin/mysql /usr/local/bin/
 
 # start server
 sudo /etc/init.d/mysql.server start
@@ -73,6 +85,7 @@ sudo /etc/init.d/mysql.server start
 # mysql - no password exists for root localhost user yet
 ./bin/mysql -uroot -p  
 
+# remove user root:%
 
 # add user
 CREATE USER 'Branflake2267'@'localhost' IDENTIFIED BY 'password*7';
@@ -80,6 +93,7 @@ GRANT ALL PRIVILEGES ON *.* TO 'Branflake2267'@'localhost' WITH GRANT OPTION;
 flush privileges;
 
 
+# edit /etc/hosts and add hostnames that connect to your server
 
 
 
