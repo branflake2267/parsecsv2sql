@@ -42,6 +42,7 @@ sudo make install
 
 
 # copied my.cnf to /etc/mysql/my.cnf and linked /etc/my.cnf
+# sudo ln -s /etc/mysql/my.cnf /etc/my.cnf - just in case
 # set [mysqld] datadir=/srv/mysql6 basedir=/srv/ssd/mysql
 
 # add user and group
