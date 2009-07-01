@@ -32,6 +32,7 @@ autoreconf -vif
 #it was weird it stuck some stuff in the data directory that probably shouldn't be there but is fixable afterwords. I moved it to basedir/share/mysql
 ./configure --prefix=/srv/mysql6 --datadir=/mnt/ssd/mysql 
 #./configure --prefix=/srv/mysql6_11 #upgrading to .11
+#./configure --prefix=/srv/mysql5_4 #Moving to 5.4
 
 make
 
