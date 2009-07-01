@@ -273,7 +273,7 @@ public class Transfer extends SQLProcessing {
     }
     
     String where = getWhere() + " AND " +
-        "(`" + columnData.getColumnName()+"`='" + columnData.getValue() + "') " + whereHard;
+        "(`" + columnData.getColumnName()+"`='" +  escapeForSql(columnData.getValue()) + "') " + whereHard;
  
     return where;
   }
@@ -304,7 +304,7 @@ public class Transfer extends SQLProcessing {
   private String getWhere() {
     String srcPrimKeyValue = ColumnData.getValueOfPrimaryKey(columnData_src);
     String desPrimKeyColName = ColumnData.getColumnNameOfPrimaryKey(columnData_des);
-    String where = "(`" + desPrimKeyColName + "`='" + srcPrimKeyValue + "')";
+    String where = "(`" + desPrimKeyColName + "`='" +  escapeForSql(srcPrimKeyValue) + "')";
     return where;
   }
   
@@ -314,7 +314,7 @@ public class Transfer extends SQLProcessing {
       String column = columnData_des[i].getColumnName();
       String value = columnData_des[i].getValue();
       
-      sql += "`" + column + "`='" + value + "'";
+      sql += "`" + column + "`='" +  escapeForSql(value) + "'";
       if (i < columnData_des.length -1) {
         sql += ",";
       }
@@ -332,7 +332,7 @@ public class Transfer extends SQLProcessing {
     // data fields
     String column = columnData.getColumnName();
     String value = columnData.getValue();
-    sql += "`" + column + "`='" + value + "'";
+    sql += "`" + column + "`='" +  escapeForSql(value) + "'";
 
     return sql;
   }
@@ -354,7 +354,7 @@ public class Transfer extends SQLProcessing {
       if (i > 0) {
         sql += sep;
       }
-      sql += "`" + key + "`='" + value + "'";
+      sql += "`" + key + "`='" + escapeForSql(value) + "'";
       i++;
     }// end of while
     return sql;
@@ -369,9 +369,9 @@ public class Transfer extends SQLProcessing {
     String srcPrimKeyValue = ColumnData.getValueOfPrimaryKey(src);
     String desPrimKeyColName = ColumnData.getColumnNameOfPrimaryKey(des);
     
-    String where = "(`" + desPrimKeyColName + "`='" + srcPrimKeyValue + "')";
+    String where = "(`" + desPrimKeyColName + "`='" +  escapeForSql(srcPrimKeyValue) + "')";
     
-    oneToMany_RelationshipSql = "`" +desPrimKeyColName + "`='" + srcPrimKeyValue + "'"; 
+    oneToMany_RelationshipSql = "`" +desPrimKeyColName + "`='" +  escapeForSql(srcPrimKeyValue) + "'"; 
     
     String sql = "SELECT * FROM " + tableTo + " WHERE " + where + ";";
     
@@ -400,7 +400,7 @@ public class Transfer extends SQLProcessing {
     // TODO - is the primary different in one to many table?
     String srcPrimKeyValue = ColumnData.getValueOfPrimaryKey(columnData_src);
     String desPrimKeyColName = ColumnData.getColumnNameOfPrimaryKey(columnData_des);
-    String where = "(`" + desPrimKeyColName + "`='" + srcPrimKeyValue + "')";
+    String where = "(`" + desPrimKeyColName + "`='" +  escapeForSql(srcPrimKeyValue) + "')";
     
     for (int i=0; i < src.length; i++) {
       getDestinationValuesToCompareWith_OneToMany(where, src[i], des[i]);
