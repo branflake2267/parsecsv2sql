@@ -56,7 +56,7 @@ sudo useradd -g mysql mysql
 
 # setup the default system
 #./bin/mysql_install_db --user=mysql --basedir=/srv/mysql6_11 --builddir=/home/branflake2267/downloads/mysql-6.0.11-alpha
-./bin/mysql_install_db --user=mysql --basedir=/srv/mysql5_4 --builddir=/home/branflake2267/downloads/mysql-5.4.0-beta --datadir=/srv/mysql_data
+sudo ./bin/mysql_install_db --user=mysql --basedir=/srv/mysql5_4 --builddir=/home/branflake2267/downloads/mysql-5.4.0-beta --datadir=/srv/mysql_data
 
 
 # add hash next to skip-federated - notate it 
