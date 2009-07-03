@@ -27,7 +27,7 @@ sudo apt-get install lib64ncurses5 libncurses5 libncurses5-dbg libncurses-dev
 # for some reason I am install lib32ncurses5 lib32ncurses5-dev - which is a screen dump...
 sudo apt-get install autoconf libtool
 
-# auto configure 
+# auto configure - not sure if I really need to run this
 autoreconf -vif
 
 # configure options
