@@ -40,7 +40,12 @@ public class MoveFile extends FileUtil {
     
     for (int i=0; i < files.length; i++) {
       System.out.println("processing file: " + files[i].getName());
-      check(files[i]);
+      if (files[i].isDirectory()) {
+        // skip dir
+      } else {
+        check(files[i]);
+      }
+      
     }
     
   }
