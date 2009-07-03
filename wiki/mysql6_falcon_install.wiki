@@ -1,6 +1,9 @@
 #summary my notes on installing mysql6-falcon
 #labels Featured
 
+= Compile MySQL From Source =
+ * configure options http://dev.mysql.com/doc/refman/5.4/en/configure-options.html
+
 = Development Cycle Has Changed =
  The development cycle has changed so I am trying 5.4 out. My main need is the subquery optimization, which I think is fixed in 5.1+. So I am trying 5.4 out.
 
