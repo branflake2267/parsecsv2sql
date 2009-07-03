@@ -59,7 +59,7 @@ public class MoveFile extends FileUtil {
       String toDir = moveFileData.get(i).pathToMoveToDir;
       
       if (doesFileHeaderMatchStr(file, matchHeaderValues, delimiter) == true) {
-        System.out.println("\tmoving file:" + file.getName());
+        System.out.println("\tmoving file:" + file.getName() + " to: " + toDir);
         moveFile(file, toDir);
         break;
       }
