@@ -319,15 +319,17 @@ public class Optimise extends SQLProcessing {
       return;
     }
 
+    // TODO - the enable keys and disable keys still take the same amount of time, 
+    // and ending the task in the middle of, will cause the keys to be disabled until enabled manually later.
     String modifyColumn = "";
     String alterQuery = "";
     String disableKeys = null;
     String enableKeys = null;
     if (databaseType == 1) {
       modifyColumn = "`" + column + "` " + columnType;
-      disableKeys = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` DISABLE KEYS; ";
+      //disableKeys = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` DISABLE KEYS; ";
       alterQuery += "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` MODIFY COLUMN " + modifyColumn + "";
-      enableKeys = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` ENABLE KEYS; ";
+      //enableKeys = "ALTER TABLE `" + dd.database + "`.`" + dd.table + "` ENABLE KEYS; ";
     } else if (databaseType == 2) {
       modifyColumn = "[" + column + "] " + columnType;
       alterQuery = "ALTER TABLE " + dd.database + "." + dd.tableSchema + "." + dd.table + " ALTER COLUMN " + modifyColumn;
