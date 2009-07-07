@@ -53,6 +53,14 @@ public class DateTimeParser {
     getDate(TYPE_ENG_DATE);
     return date;
   }
+  
+  /**
+   * after parsing get the date object
+   * @return
+   */
+  public Date getDate() {
+    return this.date;
+  }
 
   /**
    * get datetime in string mm/dd/yyyy
@@ -126,6 +134,9 @@ public class DateTimeParser {
     } else if (checkforFormat_datetime24hr2() == true ) { // year first
       s = df.format(date);
       
+    } else if (checkforFormat_datetime24hr3() == true ) { // `yyyy-mm-dd` only
+      s = df.format(date);
+      
     } else if (checkforFormat_engDateString() == true ) {
       s = df.format(date);
       
@@ -149,7 +160,7 @@ public class DateTimeParser {
    * 
    * @return
    */
-  public boolean checkforFormat_monthYearTogether() {
+  private boolean checkforFormat_monthYearTogether() {
 
     // jan09 or jan2009
     String re = "^([a-zA-Z]+)([0-9]+)$";
@@ -191,7 +202,7 @@ public class DateTimeParser {
    * 
    * @return found
    */
-  public boolean checkforFormat_monthYear() {
+  private boolean checkforFormat_monthYear() {
 
     // jan-09 or january-09 or jan 09 or jan 2009  or jan, 2009
     String re = "^([a-zA-Z]+)[.,\\-\040]+?([0-9]+)$";
@@ -233,7 +244,7 @@ public class DateTimeParser {
    * 
    * @return
    */
-  public boolean checkforFormat_monthDayYear() {
+  private boolean checkforFormat_monthDayYear() {
 
     String re = "^([a-zA-Z]+)[.,\\-\040/]+([0-9]+)[,\\-\040/]+([0-9]+)$";
     Pattern p = Pattern.compile(re);
@@ -278,7 +289,7 @@ public class DateTimeParser {
    * 
    * @return
    */
-  public boolean checkforFormat_datetime12hr() {
+  private boolean checkforFormat_datetime12hr() {
 
     String re = "^([0-9]{1,2})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})[/\\-\040\\.]?(am|pm)$";
     Pattern p = Pattern.compile(re);
@@ -338,7 +349,7 @@ public class DateTimeParser {
    * 
    * @return
    */
-  public boolean checkforFormat_datetime24hr() {
+  private boolean checkforFormat_datetime24hr() {
 
     String re = "^([0-9]{1,2})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})$";
     Pattern p = Pattern.compile(re);
@@ -395,7 +406,7 @@ public class DateTimeParser {
    * 
    * @return
    */
-  public boolean checkforFormat_datetime12hra() {
+  private boolean checkforFormat_datetime12hra() {
 
     String re = "^([0-9]{1,2})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2})[/\\-\040\\.]?(am|pm)$";
     Pattern p = Pattern.compile(re);
@@ -455,7 +466,7 @@ public class DateTimeParser {
    * 
    * @return
    */
-  public boolean checkforFormat_datetime24hra() {
+  private boolean checkforFormat_datetime24hra() {
 
     String re = "^([0-9]{1,2})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2})$";
     Pattern p = Pattern.compile(re);
@@ -514,7 +525,7 @@ public class DateTimeParser {
    * 
    * @return
    */
-  public boolean checkforFormat_datetime12hr2() {
+  private boolean checkforFormat_datetime12hr2() {
 
     String re = "^([0-9]{4})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})[/\\-\040\\.]?(am|pm)$";
     Pattern p = Pattern.compile(re);
@@ -574,7 +585,7 @@ public class DateTimeParser {
    * 
    * @return
    */
-  public boolean checkforFormat_datetime24hr2() {
+  private boolean checkforFormat_datetime24hr2() {
 
     String re = "^([0-9]{4})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})$";
     Pattern p = Pattern.compile(re);
@@ -624,11 +635,61 @@ public class DateTimeParser {
   }
   
   /**
+   * yyyy-mm-dd
+   * @return
+   */
+  private boolean checkforFormat_datetime24hr3() {
+
+    String re = "^([0-9]{4})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)$";
+    Pattern p = Pattern.compile(re);
+    Matcher m = p.matcher(datetime);
+    boolean found = m.find();
+  
+    int month = 0;
+    int day = 0;
+    int year = 0;
+    int hour = 0;
+    int minutes = 0;
+    int seconds = 0;
+    if (found == true) {
+      String yy = m.group(1);
+      String mm = m.group(2);
+      String dd = m.group(3);
+  
+      if (mm == null | dd == null | yy == null) {
+        return false;
+      }
+  
+      month = getMonth(mm) - 1;
+      day = getDay(dd);
+      year = getYear(yy);
+      hour = 0;
+      minutes = 0;
+      seconds = 0;
+  
+    } else {
+      return false;
+    }
+  
+    Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.DAY_OF_MONTH, day);
+    cal.set(Calendar.MONTH, month);
+    cal.set(Calendar.YEAR, year);
+    cal.set(Calendar.HOUR_OF_DAY, hour);
+    cal.set(Calendar.MINUTE, minutes);
+    cal.set(Calendar.SECOND, seconds);
+  
+    date = cal.getTime();
+  
+    return found;
+  }
+  
+  /**
    * check for common string format mm/dd/yy or mm/dd/yyyy
    * 
    * @return found
    */
-  public boolean checkforFormat_engDateString() {
+  private boolean checkforFormat_engDateString() {
 
     // mm/dd/yyyy
     String re = "^([0-9]{1,2})[/\\-\040\\.]+([0-9]+)[/\\-\040\\.]+([0-9]+)$";
@@ -674,7 +735,7 @@ public class DateTimeParser {
    * 
    * @return
    */
-  public boolean checkforFormat_engDateStringNoDay() {
+  private boolean checkforFormat_engDateStringNoDay() {
 
     String re = "^([0-9]+)[/\\-\040\\.]+([0-9]+)$";
     Pattern p = Pattern.compile(re);
@@ -715,7 +776,7 @@ public class DateTimeParser {
    * 
    * @return
    */
-  public boolean checkforFormat_Intformat() {
+  private boolean checkforFormat_Intformat() {
 
     String re = "^.*?([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})$";
     Pattern p = Pattern.compile(re);
@@ -768,7 +829,7 @@ public class DateTimeParser {
    * 
    * @return
    */
-  public boolean checkforFormat_weird1() {
+  private boolean checkforFormat_weird1() {
 
     // dd mm yy
     String re = "^([0-9]+)[\040-\\.]+([a-zA-Z]+)[\040-\\.]+([0-9]+)$";
