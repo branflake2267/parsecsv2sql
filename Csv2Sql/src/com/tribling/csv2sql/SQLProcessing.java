@@ -2031,6 +2031,8 @@ public class SQLProcessing {
       // TODO
       sql = "";
     }
+    
+    System.out.println("sql: " + sql);
 
     int c = 0;
     try {
