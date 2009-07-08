@@ -123,4 +123,4 @@ shell> bin/mysqld_safe --user=mysql &
 }}}
 
 =Other Links=
-* http://ubuntuforums.org/showthread.php?t=93725
+ * http://ubuntuforums.org/showthread.php?t=93725
