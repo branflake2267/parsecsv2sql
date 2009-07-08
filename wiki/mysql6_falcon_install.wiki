@@ -50,7 +50,7 @@ sudo ln -s /etc/mysql/my.cnf /etc/my.cnf - just in case
 [mysqld]
 basedir=/srv/mysql5_4
 datadir=/srv/mysql_data
-bind-addres = 0.0.0.0
+bind-address = 0.0.0.0
 max_connections=500
 
 # first install then
