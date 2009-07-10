@@ -1118,6 +1118,7 @@ public class SQLProcessing {
     return i;
   }
 
+  // TODO this is like query int
   protected int getQueryIdent(String query) {
     int i = 0;
     try {
@@ -2031,8 +2032,6 @@ public class SQLProcessing {
       // TODO
       sql = "";
     }
-    
-    System.out.println("sql: " + sql);
 
     int c = 0;
     try {
