@@ -16,6 +16,9 @@ public class ColumnData {
   public static final int FIELDTYPE_DECIMAL = 6;
   public static final int FIELDTYPE_DATETIME = 7;
   
+  public static final int INDEXKIND_DEFAULT = 1;
+  public static final int INDEXKIND_FULLTEXT = 2;
+  
   private boolean isPrimaryKey = false;
   
   // column name
@@ -253,6 +256,23 @@ public class ColumnData {
     return value;
   }
   
+  public void fixName() {
 
+    // max column name length
+    if (column.length() > 64) {
+      column = column.substring(0, 63);
+    }
+    column = column.trim();
+
+    table = table.replaceAll("#", "_Num");
+    table = table.replaceAll("%", "_per");
+    table = table.replaceAll(".", "_");
+    table = table.replaceAll(" ", "_");
+    
+    table = table.replaceAll("[^\\w]", "");
+    table = table.replaceAll("[\r\n\t]", "");
+    table = table.replaceAll("(\\W)", "");
+
+  }
 	
 }

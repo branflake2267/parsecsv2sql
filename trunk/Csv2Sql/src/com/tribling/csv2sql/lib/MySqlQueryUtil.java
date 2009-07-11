@@ -7,6 +7,7 @@ import java.sql.Statement;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
+import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
 
 public class MySqlQueryUtil {
@@ -261,7 +262,7 @@ public class MySqlQueryUtil {
     return csv;
   }
 
-  public long update(DatabaseData dd, String sql) {
+  public static long update(DatabaseData dd, String sql) {
     long id = 0;
     try {
       Connection conn = dd.getConnection();
@@ -285,12 +286,12 @@ public class MySqlQueryUtil {
     return id;
   }
   
-  public static boolean queryStringAndConvertToBoolean(DatabaseData dd, String query) {
+  public static boolean queryStringAndConvertToBoolean(DatabaseData dd, String sql) {
     String value = null;
     try {
       Connection conn = dd.getConnection();
       Statement select = conn.createStatement();
-      ResultSet result = select.executeQuery(query);
+      ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         value = result.getString(1);
       }
@@ -300,7 +301,7 @@ public class MySqlQueryUtil {
       result = null;
       dd.closeConnection();
     } catch (SQLException e) {
-      System.err.println("Mysql Statement Error:" + query);
+      System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
     } finally {
       dd.closeConnection();
@@ -313,5 +314,7 @@ public class MySqlQueryUtil {
     }
     return b;
   }
+  
+
   
 }

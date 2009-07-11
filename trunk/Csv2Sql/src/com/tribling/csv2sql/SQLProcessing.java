@@ -30,6 +30,7 @@ import com.tribling.csv2sql.data.SortSourceField;
 public class SQLProcessing {
  
   // index types
+  // TODO - moving these to columnData
   public static final int INDEXKIND_DEFAULT = 1;
   public static final int INDEXKIND_FULLTEXT = 2;
   
