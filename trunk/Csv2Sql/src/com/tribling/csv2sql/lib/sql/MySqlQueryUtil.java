@@ -1,4 +1,4 @@
-package com.tribling.csv2sql.lib;
+package com.tribling.csv2sql.lib.sql;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -7,7 +7,6 @@ import java.sql.Statement;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
-import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
 
 public class MySqlQueryUtil {
