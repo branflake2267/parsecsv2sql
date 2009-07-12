@@ -1,11 +1,10 @@
-package com.tribling.csv2sql.lib;
+package com.tribling.csv2sql.lib.sql;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import com.tribling.csv2sql.Optimise;
 import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
 
@@ -175,13 +174,11 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     if (column == null | column.getColumnName().length() == 0) {
       return;
     }
-    // TODO - fix column Name?
+    
+    // be sure the column name doesn't have weird characters in it
+    column.fixName();
 
-    boolean exist = doesColumnExist(dd, table, column);
-    
-    // TODO Check if the same type, and do we need to enlarge the type?
-    // TODO compare Types same or not?
-    
+    boolean exist = doesColumnExist(dd, table, column);    
     if (exist == true) {
       return;
     }
@@ -194,7 +191,7 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
   }
   
   /**
-   * create a column by specifing a type and maybe length
+   * create a column by specifying a type and maybe length
    * 
    * @param dd
    * @param table
@@ -312,25 +309,7 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     }
     update(dd, sql);
   }
-  
-  public static void alterColumn(DatabaseData dd, String table, ColumnData column, String columnType) {
 
-    // 1. does column have index on it
-    // 2. remember index
-    // 3. alter column
-    // 4. restore index
-    
-  }
-  
-  public static void alterColumns(DatabaseData dd, String table, ColumnData[] columns, String columnType) {
-
-    // 1. do columns have indexs
-    // 2. remember indexs
-    // 3. alter column
-    // 4. restore index
-    
-  }
-  
   /**
    * query column characters longest length,
    *    it looks through the entire columns recordset and finds the longest string's character count
@@ -343,5 +322,5 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     String sql = "SELECT MAX(LENGTH(`" + column.getColumnName() + "`)) FROM " + dd.getDatabase() + "." + table + ";";
     return queryInteger(dd, sql);
   }
-  
+
 }

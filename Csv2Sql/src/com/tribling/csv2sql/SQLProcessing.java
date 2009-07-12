@@ -16,8 +16,8 @@ import org.apache.commons.lang.StringEscapeUtils;
 import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.DestinationData;
-import com.tribling.csv2sql.data.IdentityData;
 import com.tribling.csv2sql.data.FieldData;
+import com.tribling.csv2sql.data.IdentityData;
 import com.tribling.csv2sql.data.SortDestinationField;
 import com.tribling.csv2sql.data.SortSourceField;
 
