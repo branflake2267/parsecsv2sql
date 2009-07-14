@@ -84,7 +84,10 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
    * @param column
    * @return
    */
-  public static boolean doesColumnExist(DatabaseData dd, String table, ColumnData column) {
+  public static boolean doesColumnExist(DatabaseData dd, ColumnData column) {
+    
+    String table = column.getTable();
+    
     if (table == null | column == null) {
       return false;
     }
@@ -167,18 +170,24 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
    * 
    * @param dd
    * @param table
-   * @param column - column name
-   * @param type - varchar(255) or TEXT or TEXT DEFAULT NULL or INTEGER DEFAULT 0
+   * @param column - column name and type - varchar(255) or TEXT or TEXT DEFAULT NULL or INTEGER DEFAULT 0
    */
-  public static void createColumn(DatabaseData dd, String table, ColumnData column, String type) {
+  public static void createColumn(DatabaseData dd, ColumnData column) {
     if (column == null | column.getColumnName().length() == 0) {
       return;
     }
     
+    String type = column.getType();
+    if (type == null | type.length() == 0) {
+      type = "TEXT DEFAULT NULL";
+    }
+    
+    String table = column.getTable();
+    
     // be sure the column name doesn't have weird characters in it
     column.fixName();
 
-    boolean exist = doesColumnExist(dd, table, column);    
+    boolean exist = doesColumnExist(dd, column);    
     if (exist == true) {
       return;
     }
@@ -199,7 +208,7 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
    * @param columnType
    * @param length - varchar(length), decimal(length)
    */
-  public static void createColumn(DatabaseData dd, String table, ColumnData column, int columnType, String length) {
+  public static void createColumn(DatabaseData dd, ColumnData column, int columnType, String length) {
     if (length == null | length.length() == 0) {
       if (columnType == ColumnData.FIELDTYPE_VARCHAR) {
         length = "255";
@@ -225,7 +234,9 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     } else {
       type = "TEXT DEFAULT NULL";
     }
-    createColumn(dd, table, column, type);
+    column.setType(type);
+    
+    createColumn(dd, column);
   }
   
   /**

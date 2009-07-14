@@ -22,12 +22,18 @@ public class ColumnData {
   private boolean isPrimaryKey = false;
   
   // column name
+  // TODO public access to this var is deprecated, changing to method access
+  @Deprecated
 	public String column = "";
 	
 	// column field type - like INTEGER DEFAULT 0
+  // TODO public access to this var is deprecated, changing to method access
+  @Deprecated
 	public String columnType = "TEXT";
 	
 	// column field length for the given column type
+  // TODO public access to this var is deprecated, changing to method access
+  @Deprecated
 	public int lengthChar = 0;
 	
 	// columns associated value
@@ -49,6 +55,19 @@ public class ColumnData {
 	 * constructor
 	 */
 	public ColumnData() {
+	}
+	
+	/**
+	 * create a column object 
+	 * 
+	 * @param columnTable table name
+	 * @param columnName column name
+	 * @param columnType columnType ie. [TEXT DEFAULT NULL]
+	 */
+	public ColumnData(String columnTable, String columnName, String columnType) {
+	  setTable(columnTable);
+	  setColumnName(columnName);
+	  setType(columnType);
 	}
 
 	public void setValue(String value) {
@@ -132,6 +151,10 @@ public class ColumnData {
 		if (len.length() > 0) {
 			lengthChar = Integer.parseInt(len);
 		}	
+	}
+	
+	public String getType() {
+	  return columnType;
 	}
 
 	public int getCharLength() {
