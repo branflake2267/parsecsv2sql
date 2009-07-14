@@ -275,7 +275,7 @@ public class MySqlQueryUtil {
       result = null;
       update.close();
       update = null;
-      conn.close();
+      dd.closeConnection();
     } catch (SQLException e) {
       System.err.println("Error: update(): " + sql);
       e.printStackTrace();

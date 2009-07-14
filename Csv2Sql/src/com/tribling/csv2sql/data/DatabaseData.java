@@ -27,6 +27,9 @@ public class DatabaseData {
   // setup a connection and store it in this object for easy reference to
   private Connection conn = null;
   
+  // keep connection persisten
+  private boolean persistent = false;
+  
   /**
    * set database location and credentials
    * 
@@ -68,6 +71,14 @@ public class DatabaseData {
   public String getDatabase() {
     return database;
   }
+  
+  /**
+   * keep connection from closing
+   * @param b
+   */
+  public void setPersistent(boolean b) {
+    persistent = b;
+  }
 
   public void openConnection() {
     if (databaseType == TYPE_MYSQL) {
@@ -78,15 +89,61 @@ public class DatabaseData {
     // TODO - add jdo?
   }
   
+  public void openConnection(boolean persistent) {
+    this.persistent = persistent;
+    openConnection();
+  }
+  
   public Connection getConnection() {
+    try {
+      // open the connection if its closed
+      if (conn == null | conn.isClosed() == true) {
+        System.out.println("Having to open the connection agian for: " + "jdbc:mysql://" + host + ":" + port + "/");
+        openConnection();
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
+    }
     return conn;
   }
   
+  /**
+   * close the database connection
+   */
   public void closeConnection() {
-    try {
-      conn.close();
-    } catch (SQLException e) {
+    if (persistent == false) { 
+      
+      try {
+        conn.close();
+      } catch (SQLException e) {
+        e.printStackTrace();
+      } finally {
+        conn = null;
+      }
+      
+    } else if (persistent == true) {
+      // close it later
     }
+  }
+  
+  /**
+   * close the persistent connection
+   */
+  public void closePersistentConnection() {
+    persistent = false;
+    closeConnection();
+  }
+  
+  /**
+   * get a standalone connection for use outside of this object, make sure you close it.
+   * can be used for concurrent threading
+   * @return
+   */
+  public Connection getAnotherConnection() {
+    if (databaseType == 0) {
+      return null;
+    }
+    return getConn_MySql();
   }
   
   /**
@@ -136,4 +193,6 @@ public class DatabaseData {
     }
     return conn;
   }
+  
+
 }
