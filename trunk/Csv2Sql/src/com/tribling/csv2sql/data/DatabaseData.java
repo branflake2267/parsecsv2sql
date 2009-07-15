@@ -97,8 +97,8 @@ public class DatabaseData {
   public Connection getConnection() {
     try {
       // open the connection if its closed
-      if (conn == null | conn.isClosed() == true) {
-        System.out.println("Having to open the connection agian for: " + "jdbc:mysql://" + host + ":" + port + "/");
+      if (conn == null || conn.isClosed() == true) {
+        System.out.println("Having to open the connection agian for: " + "jdbc:mysql://" + host + ":" + port + "/" + database);
         openConnection();
       }
     } catch (SQLException e) {
@@ -112,7 +112,9 @@ public class DatabaseData {
    */
   public void closeConnection() {
     if (persistent == false) { 
-      
+      if (conn == null) {
+        return;
+      }
       try {
         conn.close();
       } catch (SQLException e) {
