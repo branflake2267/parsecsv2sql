@@ -86,11 +86,16 @@ public class DatabaseData {
     } else if (databaseType == TYPE_MSSQL) {
       conn = getConn_MsSql();
     } 
-    // TODO - add jdo?
   }
   
-  public void openConnection(boolean persistent) {
+  public void openConnection(final boolean persistent) {
+    if (persistent == false) {
+      System.out.println("break");
+    }
     this.persistent = persistent;
+    if (this.persistent == false) {
+      System.out.println("break");
+    }
     openConnection();
   }
   
@@ -115,6 +120,7 @@ public class DatabaseData {
       if (conn == null) {
         return;
       }
+      
       try {
         conn.close();
       } catch (SQLException e) {
@@ -132,8 +138,13 @@ public class DatabaseData {
    * close the persistent connection
    */
   public void closePersistentConnection() {
-    persistent = false;
-    closeConnection();
+    try {
+      conn.close();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    } finally {
+      conn = null;
+    }
   }
   
   /**
@@ -167,6 +178,10 @@ public class DatabaseData {
       e.printStackTrace();
       System.out.println("Fix Connection.");
       System.exit(1);
+    }
+    
+    if (conn == null) {
+      System.out.println("break");
     }
 
     return conn;
