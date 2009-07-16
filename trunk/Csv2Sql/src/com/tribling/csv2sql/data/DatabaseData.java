@@ -80,38 +80,31 @@ public class DatabaseData {
     persistent = b;
   }
 
-  public void openConnection() {
-    if (databaseType == TYPE_MYSQL) {
-      conn = getConn_MySql();
-    } else if (databaseType == TYPE_MSSQL) {
-      conn = getConn_MsSql();
-    } 
-  }
-  
-  public void openConnection(final boolean persistent) {
-    if (persistent == false) {
-      System.out.println("break");
-    }
-    this.persistent = persistent;
-    if (this.persistent == false) {
-      System.out.println("break");
-    }
-    openConnection();
-  }
+  public Connection openConnection() {
+    Connection conn = null;
+      if (databaseType == TYPE_MYSQL) {
+        conn = getConn_MySql();
+      } else if (databaseType == TYPE_MSSQL) {
+        conn = getConn_MsSql();
+      } 
+    return conn;
+}
   
   public Connection getConnection() {
-    try {
-      // open the connection if its closed
-      if (conn == null || conn.isClosed() == true) {
-        System.out.println("Having to open the connection agian for: " + "jdbc:mysql://" + host + ":" + port + "/" + database);
-        openConnection();
-      }
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
+    Connection conn = null;
+      if (databaseType == TYPE_MYSQL) {
+        conn = getConn_MySql();
+      } else if (databaseType == TYPE_MSSQL) {
+        conn = getConn_MsSql();
+      } 
     return conn;
+  } 
+    
+  public void openConnection(final boolean persistent) {
+    this.persistent = persistent;
+    openConnection();
   }
-  
+
   /**
    * close the database connection
    */
@@ -152,6 +145,7 @@ public class DatabaseData {
    * can be used for concurrent threading
    * @return
    */
+  @Deprecated
   public Connection getAnotherConnection() {
     if (databaseType == 0) {
       return null;
@@ -165,7 +159,8 @@ public class DatabaseData {
    * @return
    */
   private Connection getConn_MySql() {
-
+    Connection conn = null;
+    
     String url = "jdbc:mysql://" + host + ":" + port + "/";
     String driver = "com.mysql.jdbc.Driver";
     //System.out.println("getConn_MySql: url:" + url + " user: " + username + " driver: " + driver);
@@ -180,10 +175,6 @@ public class DatabaseData {
       System.exit(1);
     }
     
-    if (conn == null) {
-      System.out.println("break");
-    }
-
     return conn;
   }
   
@@ -195,7 +186,8 @@ public class DatabaseData {
    * @return
    */
   private Connection getConn_MsSql() {
-
+    Connection conn = null;
+    
     String url = "jdbc:sqlserver://" + host + ";user=" + username + ";password=" + password + ";databaseName=" + database + ";";
     String driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     //System.out.println("getConn_MsSql: url:" + url + " user: " + username + " driver: " + driver);
