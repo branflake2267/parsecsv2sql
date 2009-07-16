@@ -80,12 +80,10 @@ public class MySqlQueryUtil {
       select = null;
       result.close();
       result = null;
-      dd.closeConnection();
+      conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryBoolean(): " + sql);
       e.printStackTrace();
-    } finally {
-      dd.closeConnection();
     } 
     return b;
   }
@@ -110,13 +108,11 @@ public class MySqlQueryUtil {
       result = null;
       select.close();
       select = null;
-      dd.closeConnection();
+      conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryInteger(): " + sql);
       e.printStackTrace();
-    } finally {
-      dd.closeConnection();
-    }
+    } 
     return i;
   }
 
@@ -140,13 +136,11 @@ public class MySqlQueryUtil {
       select = null;
       result.close();
       result = null;
-      dd.closeConnection();
+      conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryString(): " + sql);
       e.printStackTrace();
-    } finally {
-      dd.closeConnection();
-    }
+    } 
     return s;
   }
 
@@ -170,13 +164,11 @@ public class MySqlQueryUtil {
       result = null;
       select.close();
       select = null;
-      dd.closeConnection();
+      conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryDouble(): " + sql);
       e.printStackTrace();
-    } finally {
-      dd.closeConnection();
-    }
+    } 
     return d;
   }
 
@@ -211,13 +203,11 @@ public class MySqlQueryUtil {
       result = null;
       select.close();
       select = null;
-      dd.closeConnection();
+      conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryIntegersToCsv(): " + sql);
       e.printStackTrace();
-    } finally {
-      dd.closeConnection();
-    }
+    } 
     if (csv == null | csv.length() == 0) {
       csv = "NULL";
     }
@@ -248,13 +238,11 @@ public class MySqlQueryUtil {
       result = null;
       select.close();
       select = null;
-      dd.closeConnection();
+      conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryStringToCsv(): " + sql);
       e.printStackTrace();
-    } finally {
-      dd.closeConnection();
-    }
+    } 
     if (csv == null | csv.length() == 0) {
       csv = "NULL";
     }
@@ -275,13 +263,11 @@ public class MySqlQueryUtil {
       result = null;
       update.close();
       update = null;
-      dd.closeConnection();
+      conn.close();
     } catch (SQLException e) {
       System.err.println("Error: update(): " + sql);
       e.printStackTrace();
-    } finally {
-      dd.closeConnection();
-    }
+    } 
     return id;
   }
   
@@ -298,13 +284,11 @@ public class MySqlQueryUtil {
       select = null;
       result.close();
       result = null;
-      dd.closeConnection();
+      conn.close();
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
-    } finally {
-      dd.closeConnection();
-    }
+    } 
     boolean b = false;
     if ((value != null && value.length() > 0) && 
         value.equals("0") == false | 
