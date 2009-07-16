@@ -289,7 +289,7 @@ public class ColumnData {
 
     table = table.replaceAll("#", "_Num");
     table = table.replaceAll("%", "_per");
-    table = table.replaceAll(".", "_");
+    table = table.replaceAll("\\.", "_");
     table = table.replaceAll(" ", "_");
     
     table = table.replaceAll("[^\\w]", "");

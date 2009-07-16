@@ -94,8 +94,8 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     if (table.length() == 0 | column.getColumnName().length() == 0) {
       return false;
     }
-    String query = "SHOW COLUMNS FROM `" + table + "` FROM `" + dd.getDatabase() + "` LIKE '" + column.getColumnName() + "';";
-    boolean r = queryStringAndConvertToBoolean(dd, query);
+    String sql = "SHOW COLUMNS FROM `" + table + "` FROM `" + dd.getDatabase() + "` LIKE '" + column.getColumnName() + "';";
+    boolean r = queryStringAndConvertToBoolean(dd, sql);
     return r;
   }
   
@@ -195,7 +195,7 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     if (type == null) {
       type = "TEXT DEFAULT NULL";
     }
-    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + table + "` ADD COLUMN `" + column + "`  " + type + ";";
+    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + table + "` ADD COLUMN `" + column.getColumnName() + "`  " + type + ";";
     update(dd, sql);
   }
   
