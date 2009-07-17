@@ -4,6 +4,11 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
 public class DatabaseData {
 
   public static final int TYPE_MYSQL = 1;
@@ -27,8 +32,16 @@ public class DatabaseData {
   // setup a connection and store it in this object for easy reference to
   private Connection conn = null;
   
-  // keep connection persisten
-  private boolean persistent = false;
+  // servlet context - used for connection pooling
+  private Context context = null;
+  
+  // data connection pool resource name
+  // like "jdbc/TestDB" - needs to be in web.xml and server.xml
+  private String contextRefName = null;
+  
+  // server info from servlet thread - getServletContext().getServerInfo();
+  // to use this connection pooling servlet needs to be running on tomcat
+  private String serverInfo = null;
   
   /**
    * set database location and credentials
@@ -73,64 +86,44 @@ public class DatabaseData {
   }
   
   /**
-   * keep connection from closing
-   * @param b
+   * open connection
+   * @return
    */
-  public void setPersistent(boolean b) {
-    persistent = b;
-  }
-
   public Connection openConnection() {
-    Connection conn = null;
-      if (databaseType == TYPE_MYSQL) {
-        conn = getConn_MySql();
-      } else if (databaseType == TYPE_MSSQL) {
-        conn = getConn_MsSql();
-      } 
-    return conn;
-}
   
-  public Connection getConnection() {
     Connection conn = null;
+    
+    if (context != null && contextRefName != null && serverInfo.toLowerCase().contains("tomcat")) {
+      conn = getServletConnetion();
+    } else {
       if (databaseType == TYPE_MYSQL) {
         conn = getConn_MySql();
       } else if (databaseType == TYPE_MSSQL) {
         conn = getConn_MsSql();
       } 
+    }
+
     return conn;
+  }
+  
+  /**
+   * same as open connection
+   * @return
+   */
+  public Connection getConnection() {
+    return openConnection();
   } 
     
-  public void openConnection(final boolean persistent) {
-    this.persistent = persistent;
-    openConnection();
-  }
-
   /**
    * close the database connection
+   *  Don't really need to use this.
+   *  conn.close();
    */
   public void closeConnection() {
-    if (persistent == false) { 
-      if (conn == null) {
-        return;
-      }
-      
-      try {
-        conn.close();
-      } catch (SQLException e) {
-        e.printStackTrace();
-      } finally {
-        conn = null;
-      }
-      
-    } else if (persistent == true) {
-      // close it later
+    if (conn == null) {
+      return;
     }
-  }
-  
-  /**
-   * close the persistent connection
-   */
-  public void closePersistentConnection() {
+    
     try {
       conn.close();
     } catch (SQLException e) {
@@ -138,19 +131,6 @@ public class DatabaseData {
     } finally {
       conn = null;
     }
-  }
-  
-  /**
-   * get a standalone connection for use outside of this object, make sure you close it.
-   * can be used for concurrent threading
-   * @return
-   */
-  @Deprecated
-  public Connection getAnotherConnection() {
-    if (databaseType == 0) {
-      return null;
-    }
-    return getConn_MySql();
   }
   
   /**
@@ -169,9 +149,8 @@ public class DatabaseData {
       Class.forName(driver).newInstance();
       conn = DriverManager.getConnection(url + database, username, password);
     } catch (Exception e) {
-      System.err.println("MySql Connection Error:");
+      System.err.println("ERROR: getConn_MySql(): connection error: " + e.getMessage());
       e.printStackTrace();
-      System.out.println("Fix Connection.");
       System.exit(1);
     }
     
@@ -196,12 +175,88 @@ public class DatabaseData {
       Class.forName(driver);
       conn = DriverManager.getConnection(url);
     } catch (Exception e) {
-      System.err.println("MsSql Connection Error: " + e.getMessage());
+      System.err.println("ERROR: getConn_MsSql(): connection error: " + e.getMessage());
       e.printStackTrace();
       System.exit(1);
     }
     return conn;
   }
   
+  /**
+   * set initial context for serlet connection pooling 
+   * 
+   * @param serverInfo String serverInfo = getServletContext().getServerInfo();
+   * @param context - inital jndi context
+   * @param contextRefName - resource name to connection pool connection like "jdbc/mydbresname"
+   *    this must be in server.xml and web.xml 
+   */
+  public void setServletContext(String serverInfo, Context context, String contextRefName) {
+    this.serverInfo = serverInfo;
+    this.context = context;
+    this.contextRefName = contextRefName;
+  }
+  
+  /**
+   * get servlet connection for tomcat6 connection pooling 
+   * @return
+   */
+  public Connection getServletConnetion() {
+  
+    if (context == null) {
+      System.out.println("ERROR: getServletConnetion(): no context set");
+      return null;
+    }
+  
+    if (contextRefName == null) {
+      System.out.println("ERROR: getServletConnetion(): no contextRefName set");
+      return null;
+    }
+  
+    // first get a datasource
+    DataSource ds = null;
+    try {
+      ds = (DataSource) context.lookup(contextRefName); 
+    } catch (NamingException e) {
+      System.out.println("ERROR: getServletConnetion(): NO datasource");
+      e.printStackTrace();
+    }
+    
+    // use the datasource to get the connection
+    Connection conn = null;
+    try {
+      conn = ds.getConnection();
+    } catch (SQLException e) {
+      System.out.println("ERROR: getServletConnetion(): couldn't get servlet connection");
+      e.printStackTrace();
+    }
+    
+    return conn;
+  }
+  
+  /**
+   * init a context for use with servlet connection - don't do this over and over
+   * 
+   * @return
+   */
+  public static Context initContext() {
 
+    Context initContext = null;
+    try {
+      initContext = new InitialContext();
+    } catch (NamingException e) {
+      System.out.println("ERROR: initContext(): Could not get InitalContext");
+      e.printStackTrace();
+    }
+  
+    Context ctx = null;
+    try {
+      ctx = (Context) initContext.lookup("java:/comp/env");
+    } catch (NamingException e) {
+      System.out.println("ERROR: initContext(): Could not init Context");
+      e.printStackTrace();
+    }
+    
+    return ctx;
+  }
+  
 }
