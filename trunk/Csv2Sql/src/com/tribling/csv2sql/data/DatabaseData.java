@@ -183,7 +183,7 @@ public class DatabaseData {
   }
   
   /**
-   * set initial context for serlet connection pooling 
+   * set initial context for servlet connection pooling 
    * 
    * @param serverInfo String serverInfo = getServletContext().getServerInfo();
    * @param context - inital jndi context
@@ -198,6 +198,9 @@ public class DatabaseData {
   
   /**
    * get servlet connection for tomcat6 connection pooling 
+   * 
+   *  make sure /usr/share/tomcat6/lib has jdbc driver
+   * 
    * @return
    */
   public Connection getServletConnetion() {
@@ -211,7 +214,7 @@ public class DatabaseData {
       System.out.println("ERROR: getServletConnetion(): no contextRefName set");
       return null;
     }
-  
+    
     // first get a datasource
     DataSource ds = null;
     try {
@@ -255,7 +258,7 @@ public class DatabaseData {
       System.out.println("ERROR: initContext(): Could not init Context");
       e.printStackTrace();
     }
-    
+
     return ctx;
   }
   
