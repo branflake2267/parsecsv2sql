@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.csvreader.CsvReader;
 
@@ -258,6 +260,23 @@ public class FileUtil {
     return false;
   }
   
+  public boolean doesFileNameMatch(File file, String regex) {
+    
+    if (regex == null | file.getName() == null) {
+      return false;
+    }
+    
+    boolean b = false;
+    try {
+      Pattern p = Pattern.compile(regex);
+      Matcher m = p.matcher(file.getName());
+      b = m.find();
+    } catch (Exception e) {
+      System.out.println("doesFileNameMatch: regex error");
+    }
+    
+    return b;
+  }
   
   
   

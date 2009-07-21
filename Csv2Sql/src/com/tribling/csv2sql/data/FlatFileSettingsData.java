@@ -124,6 +124,18 @@ public class FlatFileSettingsData {
     settings.add(ffsd);
   }
   
+  /**
+   * Change column into 2009-12-05 00:00:00 datetime string
+   * @param headerField
+   */
+  public void setchangeValueIntoSqlDateTimeFormat(String headerField) {
+    FlatFileSettingsData ffsd = new FlatFileSettingsData();
+    ffsd.action = CHANGEVALUEINTODATETIME;
+    ffsd.headerField = headerField;
+    settings.add(ffsd);
+  }
+  
+  
   public void setchangeValueIntoSqlDateTimeFormat(int row, int column) {
     FlatFileSettingsData ffsd = new FlatFileSettingsData();
     ffsd.action = CHANGEVALUEINTODATETIME;

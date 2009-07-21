@@ -39,9 +39,10 @@ public class MoveFile extends FileUtil {
     Arrays.sort(files);
     
     for (int i=0; i < files.length; i++) {
+      
       System.out.println("processing file: " + files[i].getName());
       if (files[i].isDirectory()) {
-        // skip dir
+        // skip directory
       } else {
         check(files[i]);
       }
@@ -52,15 +53,23 @@ public class MoveFile extends FileUtil {
 
   private void check(File file) {
    
+    // don't work with the partly downloaded files
+    if (file.getName().contains(".part")) {
+      System.out.println("skipping file: " + file.getName());
+      return;
+    }
+    
     for (int i=0; i < moveFileData.size(); i++) {
    
-      String matchHeaderValues = moveFileData.get(i).matchHeaderValues;
-      char delimiter = moveFileData.get(i).delimiter;
-      String toDir = moveFileData.get(i).pathToMoveToDir;
+      boolean match = false;
+      if (moveFileData.get(i).getFileNameRegex() != null && moveFileData.get(i).getFileNameRegex().length() > 0) {
+        match = checkByFileName(i, moveFileData, file);
+        
+      } else {
+        match = checkByHeaders(i, moveFileData, file);
+      }
       
-      if (doesFileHeaderMatchStr(file, matchHeaderValues, delimiter) == true) {
-        System.out.println("\tmoving file:" + file.getName() + " to: " + toDir);
-        moveFile(file, toDir);
+      if (match == true) {
         break;
       }
       
@@ -68,6 +77,35 @@ public class MoveFile extends FileUtil {
     
   }
   
+  private boolean checkByFileName(int i, ArrayList<MoveFileData> moveFileData, File file) {
+    
+    boolean match = false;
+    if (doesFileNameMatch(file, moveFileData.get(i).getFileNameRegex()) == true) {
+      String toDir = moveFileData.get(i).pathToMoveToDir;
+      System.out.println("\tmoving file:" + file.getName() + " to: " + toDir);
+      moveFile(file, toDir);
+      match = true;
+    }
+    
+    return match;
+  }
+  
+  private boolean checkByHeaders(int i, ArrayList<MoveFileData> moveFileData, File file) {
+    
+    String matchHeaderValues = moveFileData.get(i).matchHeaderValues;
+    char delimiter = moveFileData.get(i).delimiter;
+
+    boolean match = false;
+    if (doesFileHeaderMatchStr(file, matchHeaderValues, delimiter) == true) {
+      String toDir = moveFileData.get(i).pathToMoveToDir;
+      System.out.println("\tmoving file:" + file.getName() + " to: " + toDir);
+      moveFile(file, toDir);
+      match = true;
+    }
+    return match;
+  }
+  
+ 
 
   
 }

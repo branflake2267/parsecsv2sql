@@ -98,5 +98,7 @@ public class MoveFileData {
   public String getFileNameRegex() {
     return this.matchFileNameRegex;
   }
+
+
   
 }
