@@ -123,25 +123,32 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
       int i = 0;
       while (result.next()) {
         columns[i] = new ColumnData();
-        columns[i].column = result.getString(1);
+        columns[i].setTable(table);
+        columns[i].setColumnName(result.getString(1));
         columns[i].setType(result.getString(2));
+        //(3) null or not
+        //(4) Key
+        if (result.getString("Key") != null && 
+            result.getString("Key").matches("PRI") == true) {
+          columns[i].setIsPrimaryKey(true);
+        }
         i++;
       }
       result.close();
       result = null;
       select.close();
       select = null;
+      conn.close();
+      conn = null;
     } catch (SQLException e) {
       System.err.println("Error: queryColumns(): " + sql);
       e.printStackTrace();
-    } finally {
-      dd.closeConnection();
     }
     return columns;
   }
   
   public static ColumnData queryPrimaryKey(DatabaseData dd, String table) {
-    String sql = "SHOW COLUMNS FROM `" + table + "` FROM `" + dd.getDatabase() + "` `Key`='PRI';";
+    String sql = "SHOW COLUMNS FROM `" + table + "` FROM `" + dd.getDatabase() + "` WHERE `Key`='PRI';";
     ColumnData column = new ColumnData();
     try {
       Connection conn = dd.getConnection();
@@ -156,12 +163,12 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
       result = null;
       select.close();
       select = null;
+      conn.close();
+      conn = null;
     } catch (SQLException e) {
       System.err.println("Error: queryPrimaryKey(): " + sql);
       e.printStackTrace();
-    } finally {
-      dd.closeConnection();
-    }
+    } 
     return column;
   }
 
@@ -329,9 +336,9 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
    * @param column
    * @return
    */
-  public static int queryColumnCharactersLongestLength(DatabaseData dd, String table, ColumnData column) {
+  public static long queryColumnCharactersLongestLength(DatabaseData dd, String table, ColumnData column) {
     String sql = "SELECT MAX(LENGTH(`" + column.getColumnName() + "`)) FROM " + dd.getDatabase() + "." + table + ";";
-    return queryInteger(dd, sql);
+    return queryLong(dd, sql);
   }
 
 }
