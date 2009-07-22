@@ -240,6 +240,9 @@ public class ColumnData {
    * @return
    */
   public static String getColumnNameOfPrimaryKey(ColumnData[] columnData) {
+    if (columnData == null) {
+      return null;
+    }
     String s = "";
     for (int i=0; i < columnData.length; i++) {
       if (columnData[i].getIsPrimaryKey() == true) {
@@ -265,6 +268,20 @@ public class ColumnData {
       }
     }
     return f;
+  }
+  
+  public static boolean doesColumnNameExist(ColumnData[] columnData, String columnName) {
+    if (columnData == null | columnName == null) {
+      return false;
+    }
+    boolean b = false;
+    for (int i=0; i < columnData.length; i++) {
+      if (columnData[i].getColumnName().equals(columnName)) {
+        b = true;
+        break;
+      }
+    }
+    return b;
   }
   
   /**

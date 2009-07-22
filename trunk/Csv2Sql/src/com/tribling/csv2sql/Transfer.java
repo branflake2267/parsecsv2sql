@@ -11,6 +11,8 @@ import java.util.Iterator;
 import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.FieldData;
+import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
+import com.tribling.csv2sql.lib.sql.MySqlTransformUtil;
 
 /**
  * transfer data from one table to another
@@ -18,7 +20,7 @@ import com.tribling.csv2sql.data.FieldData;
  * @author design
  *
  */
-public class Transfer extends SQLProcessing {
+public class Transfer {
 
   // what kind of transfer process is going on
   public static final int MODE_TRANSFER_ALL = 1;
@@ -65,8 +67,6 @@ public class Transfer extends SQLProcessing {
    * 
    * @param database_src
    * @param database_dest
-   * @param identFields
-   * @param mappedFields
    */
   public Transfer(DatabaseData database_src, DatabaseData database_dest) {
     this.database_src = database_src;
@@ -84,8 +84,6 @@ public class Transfer extends SQLProcessing {
     this.tableFrom = fromTable;
     this.tableTo = toTable;
     
-    // TODO - get all fields here into a mappedFields object
-    
     start();
   }
   
@@ -102,6 +100,7 @@ public class Transfer extends SQLProcessing {
     this.tableTo = toTable;
     this.mappedFields = mappedFields;
     this.oneToMany  = oneToMany;
+    
     start();
   }
   
@@ -113,13 +112,48 @@ public class Transfer extends SQLProcessing {
     database_src.openConnection();
     database_des.openConnection();
 
-    setColumnData();
-
+    if (mode == MODE_TRANSFER_ALL) {
+      setColumnData_All();
+    } else if (mode == MODE_TRANSFER_ONLY) {
+      setColumnData();
+    }
+    
+    createDestTable();
+    
+    createColumns();
+    
     processSrc();
     
     database_src.closeConnection();
     database_des.closeConnection();
     
+  }
+
+  /**
+   * if dest table doesn't exist create it
+   */
+  private void createDestTable() {
+    String primaryKeyName = ColumnData.getColumnNameOfPrimaryKey(columnData_src);
+    MySqlTransformUtil.createTable(database_des, tableTo, primaryKeyName);
+  }
+  
+  private void createColumns() {
+    
+    for (int i=0; i < columnData_src.length; i++) {
+      MySqlTransformUtil.createColumn(database_des, columnData_des[i]);
+    }
+    
+  }
+  
+  private void setColumnData_All() {
+    columnData_src = MySqlTransformUtil.queryColumns(database_src, tableFrom, null);
+    
+    columnData_des = new ColumnData[columnData_src.length];
+    for(int i=0; i < columnData_src.length; i++) {
+      columnData_des[i] = new ColumnData();
+      columnData_des[i] = columnData_src[i];
+      columnData_des[i].setTable(tableTo);
+    }
   }
   
   private void setColumnData() {
@@ -171,16 +205,21 @@ public class Transfer extends SQLProcessing {
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
 
+        // get values 
         for (int i=0; i < columnData_src.length; i++) {
           String value = result.getString(columnData_src[i].getColumnName());
+          // TODO - change the way values are gotten, by the column type
           columnData_src[i].setValue(value);
         }
         
-        for (int i=0; i < columnData_src_oneToMany.length; i++) {
-          String value = result.getString(columnData_src_oneToMany[i].getColumnName());
-          columnData_src_oneToMany[i].setValue(value);
+        // one to many relationships processing
+        if (columnData_src_oneToMany != null && columnData_src_oneToMany.length > 0) {
+          for (int i=0; i < columnData_src_oneToMany.length; i++) {
+            String value = result.getString(columnData_src_oneToMany[i].getColumnName());
+            columnData_src_oneToMany[i].setValue(value);
+          }
         }
-        
+
         process();
       }
       result.close();
@@ -199,15 +238,22 @@ public class Transfer extends SQLProcessing {
     // TODO - what if no values exist on the other end
     getDestinationValuesToCompareWith(columnData_src, columnData_des);
     
-    getDestinationValuesToCompareWith_OneToMany(columnData_src_oneToMany, columnData_des_oneToMany);
+    if (columnData_src_oneToMany != null && columnData_src_oneToMany.length > 0) {
+      getDestinationValuesToCompareWith_OneToMany(columnData_src_oneToMany, columnData_des_oneToMany);
+    }
     
+    // merge src values to destination 
     merge();
     
-    merge_OneToMany();
+    if (columnData_src_oneToMany != null && columnData_src_oneToMany.length > 0) {
+      merge_OneToMany();
+    }
     
     save();
     
-    saveOneToMany();
+    if (columnData_src_oneToMany != null && columnData_src_oneToMany.length > 0) {
+      saveOneToMany();
+    }
   }
   
   private void saveOneToMany() {
@@ -215,7 +261,7 @@ public class Transfer extends SQLProcessing {
    // does the value already exist?
    for (int i=0; i < columnData_des_oneToMany.length; i++) {
      
-     int onetoId = getOneToManyId(columnData_des_oneToMany[i], hardOneToMany.get(i));
+     long onetoId = getOneToManyId(columnData_des_oneToMany[i], hardOneToMany.get(i));
      
      saveOneToMany(onetoId, columnData_des_oneToMany[i], hardOneToMany.get(i));
      
@@ -223,7 +269,7 @@ public class Transfer extends SQLProcessing {
     
   }
   
-  private void saveOneToMany(int onetoId, ColumnData columnData, HashMap<String,String> hardOneToMany) {
+  private void saveOneToMany(long onetoId, ColumnData columnData, HashMap<String,String> hardOneToMany) {
     
     String hardFields = getFields_OneToMany_Hard(hardOneToMany, 1);
     
@@ -246,13 +292,13 @@ public class Transfer extends SQLProcessing {
       
     }
     
-    updateSql_v2(database_des, sql);
+    MySqlQueryUtil.update(database_des, sql);
   }
 
-  private int getOneToManyId(ColumnData columnData, HashMap<String,String> hardOneToMany) {
+  private long getOneToManyId(ColumnData columnData, HashMap<String,String> hardOneToMany) {
     
-    // primary key
-    oneToManyTablePrimaryKey = getPrimaryKey_MySql_v2(database_des, columnData.getTable());
+    // get primary key
+    oneToManyTablePrimaryKey = MySqlTransformUtil.queryPrimaryKey(database_des, columnData.getTable());
     
     String where = getOneToManySqlWhere(columnData, hardOneToMany);
 
@@ -260,7 +306,7 @@ public class Transfer extends SQLProcessing {
     
     System.out.println("checking onetomany: " + sql);
     
-    int id = getQueryInt_v2(database_des, sql);
+    long id = MySqlQueryUtil.queryLong(database_des, sql);
     
     return id;
   }
@@ -273,14 +319,14 @@ public class Transfer extends SQLProcessing {
     }
     
     String where = getWhere() + " AND " +
-        "(`" + columnData.getColumnName()+"`='" +  escapeForSql(columnData.getValue()) + "') " + whereHard;
+        "(`" + columnData.getColumnName()+"`='" +  MySqlQueryUtil.escape(columnData.getValue()) + "') " + whereHard;
  
     return where;
   }
 
   private void save() {
     
-    int id = doIdentsExistAlready(database_des);
+    long id = doIdentsExistAlready(database_des);
     
     String fields = getFields();
     
@@ -288,23 +334,25 @@ public class Transfer extends SQLProcessing {
     
     String sql = "";
     if (id > 0) { // update
-      fields += ",DateUpdated=NOW()";
+      if (ColumnData.doesColumnNameExist(columnData_des, "DateUpdated") == false) {
+        fields += ",DateUpdated=NOW()";
+      }
       sql = "UPDATE " + tableTo + " SET " + fields + " WHERE " + where; 
     } else { // insert
-      fields += ",DateCreated=NOW()";
+      if (ColumnData.doesColumnNameExist(columnData_des, "DateCreated") == false) {
+        fields += ",DateCreated=NOW()";
+      }
       sql = "INSERT INTO " + tableTo + " SET " + fields;
     }
 
-    setDatabaseData(database_des); // just in case for the other methods
-    
-    updateSql_v2(database_des, sql);
+    MySqlQueryUtil.update(database_des, sql);
 
   }
   
   private String getWhere() {
     String srcPrimKeyValue = ColumnData.getValueOfPrimaryKey(columnData_src);
     String desPrimKeyColName = ColumnData.getColumnNameOfPrimaryKey(columnData_des);
-    String where = "(`" + desPrimKeyColName + "`='" +  escapeForSql(srcPrimKeyValue) + "')";
+    String where = "(`" + desPrimKeyColName + "`='" +  MySqlQueryUtil.escape(srcPrimKeyValue) + "')";
     return where;
   }
   
@@ -314,7 +362,7 @@ public class Transfer extends SQLProcessing {
       String column = columnData_des[i].getColumnName();
       String value = columnData_des[i].getValue();
       
-      sql += "`" + column + "`='" +  escapeForSql(value) + "'";
+      sql += "`" + column + "`='" +  MySqlQueryUtil.escape(value) + "'";
       if (i < columnData_des.length -1) {
         sql += ",";
       }
@@ -332,7 +380,7 @@ public class Transfer extends SQLProcessing {
     // data fields
     String column = columnData.getColumnName();
     String value = columnData.getValue();
-    sql += "`" + column + "`='" +  escapeForSql(value) + "'";
+    sql += "`" + column + "`='" +  MySqlQueryUtil.escape(value) + "'";
 
     return sql;
   }
@@ -354,7 +402,7 @@ public class Transfer extends SQLProcessing {
       if (i > 0) {
         sql += sep;
       }
-      sql += "`" + key + "`='" + escapeForSql(value) + "'";
+      sql += "`" + key + "`='" + MySqlQueryUtil.escape(value) + "'";
       i++;
     }// end of while
     return sql;
@@ -369,11 +417,13 @@ public class Transfer extends SQLProcessing {
     String srcPrimKeyValue = ColumnData.getValueOfPrimaryKey(src);
     String desPrimKeyColName = ColumnData.getColumnNameOfPrimaryKey(des);
     
-    String where = "(`" + desPrimKeyColName + "`='" +  escapeForSql(srcPrimKeyValue) + "')";
+    String where = "(`" + desPrimKeyColName + "`='" +  MySqlQueryUtil.escape(srcPrimKeyValue) + "')";
     
-    oneToMany_RelationshipSql = "`" +desPrimKeyColName + "`='" +  escapeForSql(srcPrimKeyValue) + "'"; 
+    oneToMany_RelationshipSql = "`" + desPrimKeyColName + "`='" +  MySqlQueryUtil.escape(srcPrimKeyValue) + "'"; 
     
     String sql = "SELECT * FROM " + tableTo + " WHERE " + where + ";";
+    
+    System.out.println("getDestinationValuesToCompareWith(): " + sql);
     
     try {
       Connection conn = database_des.getConnection();
@@ -400,7 +450,7 @@ public class Transfer extends SQLProcessing {
     // TODO - is the primary different in one to many table?
     String srcPrimKeyValue = ColumnData.getValueOfPrimaryKey(columnData_src);
     String desPrimKeyColName = ColumnData.getColumnNameOfPrimaryKey(columnData_des);
-    String where = "(`" + desPrimKeyColName + "`='" +  escapeForSql(srcPrimKeyValue) + "')";
+    String where = "(`" + desPrimKeyColName + "`='" +  MySqlQueryUtil.escape(srcPrimKeyValue) + "')";
     
     for (int i=0; i < src.length; i++) {
       getDestinationValuesToCompareWith_OneToMany(where, src[i], des[i]);
@@ -431,15 +481,13 @@ public class Transfer extends SQLProcessing {
     
   }
 
-  private int doIdentsExistAlready(DatabaseData databaseData) {
-    
-    setDatabaseData(databaseData);
-    
-    ColumnData primaryKey = getPrimaryKey_MySql_v2(database_des, tableTo);
+  private long doIdentsExistAlready(DatabaseData databaseData) {
+   
+    ColumnData primaryKey = MySqlTransformUtil.queryPrimaryKey(database_des, tableTo);
     
     String sql = "Select `" + primaryKey.getColumnName() + "` FROM " + tableTo + " WHERE "  + getSqlIdent();
     
-    int id = getQueryInt_v2(database_des, sql);
+    long id = MySqlQueryUtil.queryLong(database_des, sql);
     
     return id;
   }
@@ -479,7 +527,6 @@ public class Transfer extends SQLProcessing {
         desValue = "";
       }
       
-      // TODO - is zero always considered a blank, maybe not?
       if ( (onlyOverwriteBlank == true && (desValue.equals("null") | desValue.length() == 0)) | 
           (onlyOverwriteZero == true && (desValue.equals("null") | desValue.length() == 0 | desValue.equals("0"))) ) { // write when blank
         columnData_des[i].setValue(columnData_src[i].getValue());

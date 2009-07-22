@@ -89,12 +89,15 @@ public class MySqlQueryUtil {
   }
 
   /**
-   * query a Integer
+   * query a Integer (datasets are so large now, need to focus on larger numbers)
+   * 
+   *  TODO - use queryLong
    * 
    * @param location
    * @param sql
    * @return
    */
+  @Deprecated 
   public static int queryInteger(DatabaseData dd, String sql) {
     int i = 0;
     try {
@@ -103,6 +106,27 @@ public class MySqlQueryUtil {
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         i = result.getInt(1);
+      }
+      result.close();
+      result = null;
+      select.close();
+      select = null;
+      conn.close();
+    } catch (SQLException e) {
+      System.err.println("Error: queryInteger(): " + sql);
+      e.printStackTrace();
+    } 
+    return i;
+  }
+  
+  public static long queryLong(DatabaseData dd, String sql) {
+    long i = 0;
+    try {
+      Connection conn = dd.getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        i = result.getLong(1);
       }
       result.close();
       result = null;
