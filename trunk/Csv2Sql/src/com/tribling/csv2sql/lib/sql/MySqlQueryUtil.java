@@ -322,6 +322,30 @@ public class MySqlQueryUtil {
     return b;
   }
   
+  public static boolean queryLongAndConvertToBoolean(DatabaseData dd, String sql) {
+  long l = 0;
+  try {
+    Connection conn = dd.getConnection();
+    Statement select = conn.createStatement();
+    ResultSet result = select.executeQuery(sql);
+    while (result.next()) {
+      l = result.getLong(1);
+    }
+    select.close();
+    select = null;
+    result.close();
+    result = null;
+    conn.close();
+  } catch (SQLException e) {
+    System.err.println("Mysql Statement Error:" + sql);
+    e.printStackTrace();
+  } 
+  boolean b = false;
+  if (l > 0) {
+    b = true;
+  }
+  return b;
+}
 
   
 }
