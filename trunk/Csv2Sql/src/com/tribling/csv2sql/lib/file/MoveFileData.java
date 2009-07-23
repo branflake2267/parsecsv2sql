@@ -3,8 +3,10 @@ package com.tribling.csv2sql.lib.file;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 
 import com.csvreader.CsvReader;
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 public class MoveFileData {
 
@@ -24,6 +26,8 @@ public class MoveFileData {
   // regex a file name by this
   private String matchFileNameRegex = null;
   
+  private String[] header = null;
+  
   /**
    * set a sample file to get the matchheaderValues from
    * 
@@ -31,14 +35,9 @@ public class MoveFileData {
    */
   public void setMatchHeaderValues(File fileOrdir) {
     matchHow = MATCH_HEADERS;
-    
-    File file = null;
-    if (fileOrdir.isDirectory()) {
-      file = fileOrdir.listFiles()[0];
-    } else {
-      file = fileOrdir;
-    }
-    
+
+    File file = checkForFile(fileOrdir);
+
     CsvReader reader = null;
     try {     
       reader = new CsvReader(file.toString(), delimiter);
@@ -52,7 +51,7 @@ public class MoveFileData {
       matchHeaderValues = null;
     }
     
-    String[] header = null;
+    header = null;
     try {
       reader.readHeaders();
       header = reader.getHeaders();
@@ -72,6 +71,34 @@ public class MoveFileData {
     }
     
     matchHeaderValues = sheader;
+  }
+  
+  private File checkForFile(File fileOrdir) {
+  
+    File file = null;
+    if (fileOrdir.isDirectory() == true) {
+      file = getFile(fileOrdir);
+      if (file == null) {
+        String newPathToCheck = fileOrdir.getAbsolutePath() + "/done";
+        file = checkForFile(new File(newPathToCheck));
+      }
+      
+    } else {
+      file = fileOrdir;
+    }
+  
+    return file;
+  }
+  
+  private File getFile(File dir) {
+    File[] files = dir.listFiles();
+    File file = null;
+    for (int i=0; i < files.length; i++) {
+      if (files[i].isFile() == true) {
+        file = files[i];
+      }
+    }
+    return file;
   }
   
   public void setMatchByFileName(String regex) {
@@ -99,6 +126,45 @@ public class MoveFileData {
     return this.matchFileNameRegex;
   }
 
+  public boolean compareHeaders(String[] compare) {
+  
+    Arrays.sort(header);
+    Arrays.sort(compare);
+  
+    int totalHeader = header.length;
+    int totalCompare = compare.length;
+    int matched = 0;
+    int notMatched = 0;
+    for (int i=0; i < compare.length; i++) {
+      if (isheaderIn(compare[i]) == true) {
+        matched++;
+      } else {
+        notMatched++;
+      }
+       
+    }
 
+    boolean b = false;
+    if (matched == totalHeader) {
+      b = true;
+    } else if (totalCompare < totalHeader) {
+      b = false;
+    } else if (totalCompare > totalHeader) {
+      // TODO
+      b = false;
+    }
+    
+    return b;
+  }
+  
+  private boolean isheaderIn(String name) {
+    int i = Arrays.binarySearch(header, name);
+    boolean b = false;
+    if (i > -1) {
+      b = true;
+    }
+    return b;
+  }
+  
   
 }

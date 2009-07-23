@@ -60,9 +60,12 @@ public class MoveFile extends FileUtil {
     }
     
     for (int i=0; i < moveFileData.size(); i++) {
-   
+      //System.out.println("\t "+i+". checking agianst moveFileData" + moveFileData.get(i).getMovePath());
+      
       boolean match = false;
+      
       if (moveFileData.get(i).getFileNameRegex() != null && moveFileData.get(i).getFileNameRegex().length() > 0) {
+        
         match = checkByFileName(i, moveFileData, file);
         
       } else {
@@ -91,21 +94,21 @@ public class MoveFile extends FileUtil {
   }
   
   private boolean checkByHeaders(int i, ArrayList<MoveFileData> moveFileData, File file) {
-    
-    String matchHeaderValues = moveFileData.get(i).matchHeaderValues;
-    char delimiter = moveFileData.get(i).delimiter;
 
-    boolean match = false;
-    if (doesFileHeaderMatchStr(file, matchHeaderValues, delimiter) == true) {
+    MoveFileData m = moveFileData.get(i);
+    String[] compareHeader = getHeader(file, m.getDelimiter());
+    boolean match = m.compareHeaders(compareHeader);
+    
+    if (match == true) {
       String toDir = moveFileData.get(i).pathToMoveToDir;
       System.out.println("\tmoving file:" + file.getName() + " to: " + toDir);
       moveFile(file, toDir);
       match = true;
     }
+    
     return match;
   }
-  
- 
+
 
   
 }

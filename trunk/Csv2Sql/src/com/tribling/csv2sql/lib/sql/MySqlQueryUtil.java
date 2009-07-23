@@ -97,7 +97,6 @@ public class MySqlQueryUtil {
    * @param sql
    * @return
    */
-  @Deprecated 
   public static int queryInteger(DatabaseData dd, String sql) {
     int i = 0;
     try {
