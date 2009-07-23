@@ -260,6 +260,43 @@ public class FileUtil {
     return false;
   }
   
+  /**
+   * get csv header fields
+   * 
+   * @param file
+   * @param delimiter
+   * @return
+   */
+  public String[] getHeader(File file, char delimiter) {
+    
+    CsvReader reader = null;
+    try {     
+      reader = new CsvReader(file.toString(), delimiter);
+    } catch (FileNotFoundException e) {
+      System.err.println("doesFileHeaderMatchStr: Could not open CSV Reader");
+      e.printStackTrace();
+    }
+    
+    if (reader == null) {
+      return null;
+    }
+    
+    String[] header = null;
+    try {
+      reader.readHeaders();
+      header = reader.getHeaders();
+    } catch (IOException e) {
+      System.out.println("doesFileHeaderMatchStr: could not read headers");
+      e.printStackTrace();
+    }
+    
+    if (header == null) {
+      return null;
+    }
+    
+    return header;
+  }
+  
   public boolean doesFileNameMatch(File file, String regex) {
     
     if (regex == null | file.getName() == null) {
