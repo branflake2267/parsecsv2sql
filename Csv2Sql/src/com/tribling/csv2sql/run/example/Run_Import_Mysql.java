@@ -1,4 +1,4 @@
-package com.tribling.csv2sql.run;
+package com.tribling.csv2sql.run.example;
 
 import java.io.File;
 
