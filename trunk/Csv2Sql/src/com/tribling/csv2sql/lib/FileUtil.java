@@ -315,6 +315,41 @@ public class FileUtil {
     return b;
   }
   
+  /**
+   * get file size in KB
+   * 
+   * @param file
+   * @return
+   */
+  public static long getFileSize(File file) {
+    if (file == null) {
+      return 0;
+    }
+    long size= file.length() / 1000;
+    return size;
+  }
   
+  /**
+   * change the file name from file.csv to file_1.csv
+   * 
+   * @param file
+   * @param index
+   * @return
+   */
+  public static String getNewFileName(File file, int index) {
+    String fileName = file.getName();
+    String regex = ".*\\.(.*)";
+    String newFileName = null;
+    try {
+      Pattern p = Pattern.compile(regex);
+      Matcher m = p.matcher(fileName);
+      String ext = m.group(1);
+      String newExt = "_" + index + "." + ext;
+      newFileName = m.replaceAll(newExt);
+    } catch (Exception e) {
+      System.out.println("findMatch: regex error");
+    }
+    return newFileName;
+  }
   
 }

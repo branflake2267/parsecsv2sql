@@ -156,6 +156,10 @@ public class Transfer {
     }
   }
   
+  /**
+   * TODO start with columndata instead of field data, b/c there is more overhead here than I need
+   * TODO slim down column data public vars 
+   */
   private void setColumnData() {
     
     columnData_src = new ColumnData[mappedFields.length];
