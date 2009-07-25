@@ -341,4 +341,25 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     return queryLong(dd, sql);
   }
 
+  public static String showCreateTable(DatabaseData dd, String table) {
+    String sql = "SHOW CREATE TABLE `" + dd.getDatabase() + "`.`" + table + "`";
+    String s = null;
+    try {
+      Connection conn = dd.getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        s = result.getString(2);
+      }
+      select.close();
+      select = null;
+      result.close();
+      result = null;
+      conn.close();
+    } catch (SQLException e) {
+      System.err.println("Error: queryString(): " + sql);
+      e.printStackTrace();
+    } 
+    return s;
+  }
 }

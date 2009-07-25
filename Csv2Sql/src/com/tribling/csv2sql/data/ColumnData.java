@@ -1,9 +1,12 @@
 package com.tribling.csv2sql.data;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.tribling.csv2sql.lib.StringUtil;
+import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
 
 public class ColumnData {
 
@@ -314,5 +317,114 @@ public class ColumnData {
     table = table.replaceAll("(\\W)", "");
 
   }
-	
+  
+  /**
+   * get values for columns from resultset (get string values)
+   * 
+   * @param result
+   * @param columns
+   * @return
+   */
+  public static ColumnData[] getResult(ResultSet result, ColumnData[] columns) {
+    
+    for (int i=0; i < columns.length; i++) {
+      String value = null;
+      try {
+        value = result.getString(columns[i].getColumnName());
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+      columns[i].setValue(value);
+    }
+    
+    return columns;
+  }
+  
+  /**
+   * get sql select statement string from columnData like `cola`,`colb`,`colc`
+   * 
+   * @param columnData
+   * @return
+   */
+  public static String getSqlColumnNames(ColumnData[] columnData) {
+    if (columnData == null) {
+      return null;
+    }
+    String sql = "";
+    for (int i=0; i < columnData.length; i++) {
+      sql += "`" + columnData[i].getColumnName() + "`";
+      if (i < columnData.length -1) {
+        sql += ",";
+      }
+    }
+    return sql;
+  }
+  
+  /**
+   * get column names in csv format "a","b","c"
+   * 
+   * @param columnData
+   * @return
+   */
+  public static String getCsvColumnNames(ColumnData[] columnData) {
+    if (columnData == null) {
+      return null;
+    }
+    String sql = "";
+    for (int i=0; i < columnData.length; i++) {
+      sql += "\"" + columnData[i].getColumnName() + "\"";
+      if (i < columnData.length -1) {
+        sql += ",";
+      }
+    }
+    return sql;
+  }
+  
+  /**
+   * get values in csv string
+   * 
+   * @param columnData
+   * @return
+   */
+  public static String getCsvColumnValues(ColumnData[] columnData) {
+    if (columnData == null) {
+      return null;
+    }
+    String sql = "";
+    for (int i=0; i < columnData.length; i++) {
+      String v = columnData[i].getValue();
+      if (v == null) {
+        v = "";
+      }
+      sql += "\"" + v + "\"";
+      if (i < columnData.length -1) {
+        sql += ",";
+      }
+    }
+    return sql;
+  }
+  
+  public static String getColumnsAsSql(ColumnData[] columnData) {
+    String sql = "";
+    for (int i=0; i < columnData.length; i++) {
+      String c = "`" + columnData[i].getColumnName() + "`";
+      String v = "'" + MySqlQueryUtil.escape(columnData[i].getValue()) + "'";
+      if (columnData[i].getValue() == null) {
+        v = "NULL";
+      }
+      sql += c + "=" + v;
+      if (i < columnData.length -1) {
+        sql += ",";
+      }
+    }
+    return sql;
+  }
+  
+  public static String getColumsAsSqlInsert(ColumnData[] columnData) {
+    String table = columnData[0].getTable();
+    String fields = getColumnsAsSql(columnData);
+    String sql = "INSERT INTO `" + table + "` SET " + fields + ";";
+    return sql;
+  }
+  
 }
