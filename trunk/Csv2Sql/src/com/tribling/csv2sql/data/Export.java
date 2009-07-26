@@ -33,7 +33,7 @@ public class Export {
   private int fileIndex = 0;
   
   // columns that will be exported
-  private ColumnData[] columns = null;
+  private ColumnData[] columnData = null;
   
   // table to export data from
   private String table = null;
@@ -52,6 +52,9 @@ public class Export {
 
   // keep files around <= 1GB
   private long maxOutFileSizeKB = 1048576;
+  
+  // skip these columns
+  private ColumnData[] pruneColumnData = null;
   
   public Export(DatabaseData source, File destinationDirectory) {
     this.src = source;
@@ -80,15 +83,25 @@ public class Export {
    * @param columns
    */
   public void setColumns(ColumnData[] columns) {
-    this.columns = columns;
+    this.columnData = columns;
   }
   
   /**
    * if exporting as sql, do you want to create table script in it?
+   * 
    * @param b
    */
   public void setShowCreateTable(boolean b) {
     this.createTable = b;
+  }
+  
+  /**
+   * prune these columns out
+   * 
+   * @param pruneColumnData
+   */
+  public void setPruneColumns(ColumnData[] pruneColumnData) {
+    this.pruneColumnData = pruneColumnData;
   }
   
   /**
@@ -104,8 +117,14 @@ public class Export {
       return;
     }
     
-    if (columns == null) {
-      columns = getColumns();
+    // get all columns?
+    if (columnData == null) {
+      columnData = getColumns();
+    }
+    
+    // prune columns?
+    if (pruneColumnData != null) {
+      columnData = ColumnData.prune(columnData, pruneColumnData);
     }
     
     setFile();
@@ -119,10 +138,13 @@ public class Export {
     System.out.println("Finished!");
   }
   
+  /**
+   * start exporting the data
+   */
   private void loopData() {
     
     String sql = "SELECT ";
-    sql += ColumnData.getSqlColumnNames(columns) + " ";
+    sql += ColumnData.getSql_Names(columnData) + " ";
     sql += "FROM `" + table + "` ";
     
     if (whereSql != null) {
@@ -139,7 +161,7 @@ public class Export {
       ResultSet result = select.executeQuery(sql);
       int i = 0;
       while (result.next()) {
-        columns = ColumnData.getResult(result, columns);
+        columnData = ColumnData.getResult(result, columnData);
         appendToFile(i);
         i++;
       }
@@ -186,7 +208,7 @@ public class Export {
   private String getHeader() {
     String s = "";
     if (exportAs == EXPORTAS_CSV) {
-      s = ColumnData.getCsvColumnNames(columns);
+      s = ColumnData.getCsv_Names(columnData);
     } else if (exportAs == EXPORTAS_SQL) {
       s = showTableCreate() + "\n\n";
     }
@@ -214,9 +236,9 @@ public class Export {
   private String getRows() {
     String s = "";
     if (exportAs == EXPORTAS_CSV) {
-      s = ColumnData.getCsvColumnValues(columns);
+      s = ColumnData.getCsv_Values(columnData);
     } else if (exportAs == EXPORTAS_SQL) {
-      s = ColumnData.getColumsAsSqlInsert(columns);
+      s = ColumnData.getSql_Insert(columnData);
     }
     s += "\n";
     return s;

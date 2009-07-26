@@ -2,20 +2,26 @@ package com.tribling.csv2sql.test;
 
 import java.io.File;
 
+import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.Export;
 
-public class Run_Export_Test {
+public class Run_Export_States {
 
   public static void main(String[] args) {
     
+    // source 
     DatabaseData database_src = new DatabaseData(DatabaseData.TYPE_MYSQL, "192.168.10.79", "3306", "test", "test*7", "system");
-    
-    File desDir = new File("/home/branflake2267/test");
-    
     String table = "states";
     String whereSql = null;
-    String limitSql = "LIMIT 0,10";
+    String limitSql = null;
+    
+    // destination
+    File desDir = new File("/home/branflake2267/workspace/Csv2Sql/data/export");
+    
+    // prune these columns
+    //ColumnData[] pruneColumnData = new ColumnData[1];
+    //pruneColumnData[0] = new ColumnData();
     
     Export export = new Export(database_src, desDir);
     
