@@ -6,6 +6,10 @@
 
 = Whats Built =
 
+= Helper Classes =
+ * query helper classes
+ * transform helper classes
+
 = Import =
  Semi-autonomous import, imports csv data sizes columns. Import by rules.
  * TODO finish the auto type recognition in flat file and sql
