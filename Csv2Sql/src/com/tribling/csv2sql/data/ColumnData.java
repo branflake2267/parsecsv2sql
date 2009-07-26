@@ -2,6 +2,9 @@ package com.tribling.csv2sql.data;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,9 +22,11 @@ public class ColumnData {
   public static final int FIELDTYPE_DECIMAL = 6;
   public static final int FIELDTYPE_DATETIME = 7;
   
+  // type of index
   public static final int INDEXKIND_DEFAULT = 1;
   public static final int INDEXKIND_FULLTEXT = 2;
   
+  // is this column a primary key?
   private boolean isPrimaryKey = false;
   
   // column name
@@ -181,6 +186,10 @@ public class ColumnData {
 		} 
 		
 		// TODO test other types - add them here later
+		// TODO number
+		// TODO boolean
+		// TODO datetime
+		// TODO - decimal is size has to items?
 		
 		return resize;
 	}
@@ -192,7 +201,8 @@ public class ColumnData {
 	 * @return
 	 */
 	public int testText(String value) {
-	  // TODO - add the other types of text
+	  // TODO - add the other types of text (length sizes?)
+	  // TODO - what types of text are there?
 		return 0;
 	}
 	
@@ -203,13 +213,15 @@ public class ColumnData {
 	 * @return
 	 */
 	public int testVarchar(String value) {
-		
 		int resize = 0;
 		if (value.length() > lengthChar) {
 			resize = value.length();
 		}
-		
 		return resize;
+	}
+	
+	public int testDatetime(String value) {
+	  return 0;
 	}
 	
 	/**
@@ -220,7 +232,11 @@ public class ColumnData {
 	 * @param value
 	 * @return
 	 */
-	public int testInt(String value) {
+	public int testNumber(String value) {
+	  
+	  // zero based 0000123434
+	  
+	  // decimal 12341234.13044
 	  
 	  // tiny(127) len=0-2
 	  
@@ -234,15 +250,325 @@ public class ColumnData {
 	  
     return 0;
 	}
-	
-	
+
+  /**
+   * fix the column name < 64 and characters that are SQL friendly
+   */
+  public void fixName() {
+    if (column.length() > 64) {
+      column = column.substring(0, 63);
+    }
+    column = column.trim();
+    table = table.replaceAll("#", "_Num");
+    table = table.replaceAll("%", "_per");
+    table = table.replaceAll("\\.", "_");
+    table = table.replaceAll(" ", "_");
+    table = table.replaceAll("[^\\w]", "");
+    table = table.replaceAll("[\r\n\t]", "");
+    table = table.replaceAll("(\\W)", "");
+  }
+  
+  /**
+   * get column values from sql resultSet
+   * 
+   * @param result
+   * @param columnData
+   * @return
+   */
+  public static ColumnData[] getResult(ResultSet result, ColumnData[] columnData) {
+    return getResult(result, columnData, null);
+  }
+  
+  /**
+   * get column values from sql resultSet 
+   * 
+   * @param result
+   * @param columnData
+   * @param pruneColumnData
+   * @return
+   */
+  public static ColumnData[] getResult(ResultSet result, ColumnData[] columnData, ColumnData[] pruneColumnData) {
+    if (columnData == null | result == null) {
+      return null;
+    }
+    columnData = prune(columnData, pruneColumnData);
+    for (int i=0; i < columnData.length; i++) {
+      String value = null;
+      try {
+        value = result.getString(columnData[i].getColumnName());
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
+      columnData[i].setValue(value);
+    }
+    return columnData;
+  }
+  
+  /**
+   * get sql select statement string from columnData like `cola`,`colb`,`colc`,...
+   * 
+   * @param columnData
+   * @return
+   */
+  public static String getSql_Names(ColumnData[] columnData) {
+    return getSql_Names(columnData, null);
+  }
+  
+  /**
+   * get sql select statement string from columnData like `cola`,`colb`,`colc`
+   *  
+   * @param columnData
+   * @param pruneColumnData
+   * @return
+   */
+  public static String getSql_Names(ColumnData[] columnData, ColumnData[] pruneColumnData) {
+    if (columnData == null) {
+      return null;
+    }
+    columnData = prune(columnData, pruneColumnData);
+    String sql = "";
+    for (int i=0; i < columnData.length; i++) {
+      sql += "`" + columnData[i].getColumnName() + "`";
+      if (i < columnData.length -1) {
+        sql += ",";
+      }
+    }
+    return sql;
+  }
+  
+  /**
+   * get column names in csv format "a","b","c"
+   * 
+   * @param columnData
+   * @return
+   */
+  public static String getCsv_Names(ColumnData[] columnData) {
+    return getCsv_Names(columnData, null);
+  }
+  
+  /**
+   * get column names in csv format "a","b","c"
+   * 
+   * @param columnData
+   * @param pruneColumnData
+   * @return
+   */
+  public static String getCsv_Names(ColumnData[] columnData, ColumnData[] pruneColumnData) {
+    if (columnData == null) {
+      return null;
+    }
+    columnData = prune(columnData, pruneColumnData);
+    String sql = "";
+    for (int i=0; i < columnData.length; i++) {
+      sql += "\"" + columnData[i].getColumnName() + "\"";
+      if (i < columnData.length -1) {
+        sql += ",";
+      }
+    }
+    return sql;
+  }
+  
+  /**
+   * get columnData values as csv, "value1", "value2", "value3",...
+   * 
+   * @param columnData
+   * @return
+   */
+  public static String getCsv_Values(ColumnData[] columnData) {
+    return getCsv_Values(columnData, null);
+  }
+  
+  /**
+   * get columnData values as csv, "value1", "value2", "value3",...
+   * 
+   * @param columnData
+   * @return
+   */
+  public static String getCsv_Values(ColumnData[] columnData, ColumnData[] pruneColumnData) {
+    if (columnData == null) {
+      return null;
+    }
+    columnData = prune(columnData, pruneColumnData);
+    String sql = "";
+    for (int i=0; i < columnData.length; i++) {
+      String v = columnData[i].getValue();
+      if (v == null) {
+        v = "";
+      }
+      sql += "\"" + v + "\"";
+      if (i < columnData.length -1) {
+        sql += ",";
+      }
+    }
+    return sql;
+  }
+  
+  /**
+   * get columns as sql, `column1`='value1', `column2`='value2', `column3`='value3',...
+   * 
+   * @param columnData
+   * @return
+   */
+  public static String getSql(ColumnData[] columnData) {
+    return getSql(columnData, null);
+  }
+  
+  /**
+   * get columns as sql, `column1`='value1', `column2`='value2', `column3`='value3',...
+   * 
+   * @param columnData
+   * @param pruneColumnData
+   * @return
+   */
+  public static String getSql(ColumnData[] columnData, ColumnData[] pruneColumnData) {
+    if (columnData == null) {
+      return "";
+    }
+    String sql = "";
+    for (int i=0; i < columnData.length; i++) {
+      String c = "`" + columnData[i].getColumnName() + "`";
+      String v = "'" + MySqlQueryUtil.escape(columnData[i].getValue()) + "'";
+      if (columnData[i].getValue() == null) {
+        v = "NULL";
+      }
+      sql += c + "=" + v;
+      if (i < columnData.length -1) {
+        sql += ",";
+      }
+    }
+    return sql;
+  }
+  
+  /**
+   * get Columns as Sql Insert Statement
+   * 
+   * @param columnData
+   * @return
+   */
+  public static String getSql_Insert(ColumnData[] columnData) {
+    return getSql_Insert(columnData, null);
+  }
+  
+  /**
+   * get Columns as Sql Insert Statement
+   * 
+   * @param columnData
+   * @param pruneColumnData
+   * @return
+   */
+  public static String getSql_Insert(ColumnData[] columnData, ColumnData[] pruneColumnData) {
+    if (columnData == null) {
+      return "";
+    }
+    columnData = prune(columnData, pruneColumnData);
+    columnData = prunePrimaryKey(columnData);
+    String table = columnData[0].getTable();
+    String fields = getSql(columnData);
+    String sql = "INSERT INTO `" + table + "` SET " + fields + ";";
+    return sql;
+  }
+  
+  /**
+   * prune columns
+   * 
+   * @param columnData
+   * @param pruneColumnData
+   * @return
+   */
+  public static ColumnData[] prune(ColumnData[] columnData, ColumnData[] pruneColumnData) {
+    if (pruneColumnData == null) {
+      return columnData;
+    }
+    ArrayList<ColumnData> newCols = new ArrayList<ColumnData>();
+    for (int i=0; i < columnData.length; i++) {
+      if (doesColumnExist(pruneColumnData, columnData[i]) == false) {
+        newCols.add(columnData[i]);
+      }
+    }
+    ColumnData[] r = (ColumnData[]) newCols.toArray();
+    return r;
+  }
+  
+  /**
+   * prune PrimaryKey from columnData
+   * 
+   * @param columnData
+   * @return
+   */
+  public static ColumnData[] prunePrimaryKey(ColumnData[] columnData) {
+    if (columnData == null) {
+      return null;
+    }
+    ArrayList<ColumnData> newCols = new ArrayList<ColumnData>();
+    for (int i=0; i < columnData.length; i++) {
+      if (columnData[i].getIsPrimaryKey() == false) {
+        newCols.add(columnData[i]);
+      }
+    }
+    ColumnData[] r = new ColumnData[newCols.size()];
+    r = (ColumnData[]) newCols.toArray(r);
+    return r;
+  }
+  
+  /**
+   * does column exist?
+   * 
+   * @param searchColumnData - look in these columns
+   * @param forColumnData - comparing this name to pruneColumnData
+   * 
+   * @return
+   */
+  public static boolean doesColumnExist(ColumnData[] searchColumnData, ColumnData forColumnData) {
+    Comparator<ColumnData> sort = new ColumnDataComparator();
+    Arrays.sort(searchColumnData, sort);
+    int index = Arrays.binarySearch(searchColumnData, forColumnData, sort);
+    boolean b = true;
+    if (index >= 0) {
+      b = false;
+    }
+    return b;
+  }
+ 
+  /**
+   * does column name exist?
+   * 
+   * @param searchColumnData
+   * @param forColumnName
+   * @return
+   */
+  public static boolean doesColumnNameExist(ColumnData[] searchColumnData, String forColumnName) {
+    if (searchColumnData == null | forColumnName == null) {
+      return false;
+    }
+    boolean b = false;
+    for (int i=0; i < searchColumnData.length; i++) {
+      if (searchColumnData[i].getColumnName().equals(forColumnName)) {
+        b = true;
+        break;
+      }
+    }
+    return b;
+  }
+
+  /**
+   * get the value of the primary key
+   * 
+   * @param columnData
+   * @return
+   */
+  public static String getPrimaryKey_Value(ColumnData[] columnData) {
+    int indexPrimKey = getPrimaryKey_Index(columnData);
+    String value = columnData[indexPrimKey].getValue();
+    return value;
+  }
+
   /**
    * find primary key column name
    * 
    * @param columnData
    * @return
    */
-  public static String getColumnNameOfPrimaryKey(ColumnData[] columnData) {
+  public static String getPrimaryKey_Name(ColumnData[] columnData) {
     if (columnData == null) {
       return null;
     }
@@ -262,7 +588,7 @@ public class ColumnData {
    * @param columnData
    * @return
    */
-  public static int getIndexOfPrimaryKey(ColumnData[] columnData) {
+  public static int getPrimaryKey_Index(ColumnData[] columnData) {
     int f = -1;
     for (int i=0; i < columnData.length; i++) {
       if (columnData[i].getIsPrimaryKey() == true) {
@@ -271,160 +597,6 @@ public class ColumnData {
       }
     }
     return f;
-  }
-  
-  public static boolean doesColumnNameExist(ColumnData[] columnData, String columnName) {
-    if (columnData == null | columnName == null) {
-      return false;
-    }
-    boolean b = false;
-    for (int i=0; i < columnData.length; i++) {
-      if (columnData[i].getColumnName().equals(columnName)) {
-        b = true;
-        break;
-      }
-    }
-    return b;
-  }
-  
-  /**
-   * get the value of the primary key
-   * 
-   * @param columnData
-   * @return
-   */
-  public static String getValueOfPrimaryKey(ColumnData[] columnData) {
-    int indexPrimKey = getIndexOfPrimaryKey(columnData);
-    String value = columnData[indexPrimKey].getValue();
-    return value;
-  }
-  
-  public void fixName() {
-
-    // max column name length
-    if (column.length() > 64) {
-      column = column.substring(0, 63);
-    }
-    column = column.trim();
-
-    table = table.replaceAll("#", "_Num");
-    table = table.replaceAll("%", "_per");
-    table = table.replaceAll("\\.", "_");
-    table = table.replaceAll(" ", "_");
-    
-    table = table.replaceAll("[^\\w]", "");
-    table = table.replaceAll("[\r\n\t]", "");
-    table = table.replaceAll("(\\W)", "");
-
-  }
-  
-  /**
-   * get values for columns from resultset (get string values)
-   * 
-   * @param result
-   * @param columns
-   * @return
-   */
-  public static ColumnData[] getResult(ResultSet result, ColumnData[] columns) {
-    
-    for (int i=0; i < columns.length; i++) {
-      String value = null;
-      try {
-        value = result.getString(columns[i].getColumnName());
-      } catch (SQLException e) {
-        e.printStackTrace();
-      }
-      columns[i].setValue(value);
-    }
-    
-    return columns;
-  }
-  
-  /**
-   * get sql select statement string from columnData like `cola`,`colb`,`colc`
-   * 
-   * @param columnData
-   * @return
-   */
-  public static String getSqlColumnNames(ColumnData[] columnData) {
-    if (columnData == null) {
-      return null;
-    }
-    String sql = "";
-    for (int i=0; i < columnData.length; i++) {
-      sql += "`" + columnData[i].getColumnName() + "`";
-      if (i < columnData.length -1) {
-        sql += ",";
-      }
-    }
-    return sql;
-  }
-  
-  /**
-   * get column names in csv format "a","b","c"
-   * 
-   * @param columnData
-   * @return
-   */
-  public static String getCsvColumnNames(ColumnData[] columnData) {
-    if (columnData == null) {
-      return null;
-    }
-    String sql = "";
-    for (int i=0; i < columnData.length; i++) {
-      sql += "\"" + columnData[i].getColumnName() + "\"";
-      if (i < columnData.length -1) {
-        sql += ",";
-      }
-    }
-    return sql;
-  }
-  
-  /**
-   * get values in csv string
-   * 
-   * @param columnData
-   * @return
-   */
-  public static String getCsvColumnValues(ColumnData[] columnData) {
-    if (columnData == null) {
-      return null;
-    }
-    String sql = "";
-    for (int i=0; i < columnData.length; i++) {
-      String v = columnData[i].getValue();
-      if (v == null) {
-        v = "";
-      }
-      sql += "\"" + v + "\"";
-      if (i < columnData.length -1) {
-        sql += ",";
-      }
-    }
-    return sql;
-  }
-  
-  public static String getColumnsAsSql(ColumnData[] columnData) {
-    String sql = "";
-    for (int i=0; i < columnData.length; i++) {
-      String c = "`" + columnData[i].getColumnName() + "`";
-      String v = "'" + MySqlQueryUtil.escape(columnData[i].getValue()) + "'";
-      if (columnData[i].getValue() == null) {
-        v = "NULL";
-      }
-      sql += c + "=" + v;
-      if (i < columnData.length -1) {
-        sql += ",";
-      }
-    }
-    return sql;
-  }
-  
-  public static String getColumsAsSqlInsert(ColumnData[] columnData) {
-    String table = columnData[0].getTable();
-    String fields = getColumnsAsSql(columnData);
-    String sql = "INSERT INTO `" + table + "` SET " + fields + ";";
-    return sql;
   }
   
 }

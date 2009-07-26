@@ -133,7 +133,7 @@ public class Transfer {
    * if dest table doesn't exist create it
    */
   private void createDestTable() {
-    String primaryKeyName = ColumnData.getColumnNameOfPrimaryKey(columnData_src);
+    String primaryKeyName = ColumnData.getPrimaryKey_Name(columnData_src);
     MySqlTransformUtil.createTable(database_des, tableTo, primaryKeyName);
   }
   
@@ -354,8 +354,8 @@ public class Transfer {
   }
   
   private String getWhere() {
-    String srcPrimKeyValue = ColumnData.getValueOfPrimaryKey(columnData_src);
-    String desPrimKeyColName = ColumnData.getColumnNameOfPrimaryKey(columnData_des);
+    String srcPrimKeyValue = ColumnData.getPrimaryKey_Value(columnData_src);
+    String desPrimKeyColName = ColumnData.getPrimaryKey_Name(columnData_des);
     String where = "(`" + desPrimKeyColName + "`='" +  MySqlQueryUtil.escape(srcPrimKeyValue) + "')";
     return where;
   }
@@ -418,8 +418,8 @@ public class Transfer {
   private void getDestinationValuesToCompareWith(ColumnData[] src, ColumnData[] des) {
     
     // TODO asumming that the primary key is the same
-    String srcPrimKeyValue = ColumnData.getValueOfPrimaryKey(src);
-    String desPrimKeyColName = ColumnData.getColumnNameOfPrimaryKey(des);
+    String srcPrimKeyValue = ColumnData.getPrimaryKey_Value(src);
+    String desPrimKeyColName = ColumnData.getPrimaryKey_Name(des);
     
     String where = "(`" + desPrimKeyColName + "`='" +  MySqlQueryUtil.escape(srcPrimKeyValue) + "')";
     
@@ -452,8 +452,8 @@ public class Transfer {
   private void getDestinationValuesToCompareWith_OneToMany(ColumnData[] src, ColumnData[] des) {
     
     // TODO - is the primary different in one to many table?
-    String srcPrimKeyValue = ColumnData.getValueOfPrimaryKey(columnData_src);
-    String desPrimKeyColName = ColumnData.getColumnNameOfPrimaryKey(columnData_des);
+    String srcPrimKeyValue = ColumnData.getPrimaryKey_Value(columnData_src);
+    String desPrimKeyColName = ColumnData.getPrimaryKey_Name(columnData_des);
     String where = "(`" + desPrimKeyColName + "`='" +  MySqlQueryUtil.escape(srcPrimKeyValue) + "')";
     
     for (int i=0; i < src.length; i++) {
