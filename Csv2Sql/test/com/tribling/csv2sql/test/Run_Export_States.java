@@ -25,6 +25,10 @@ public class Run_Export_States {
     
     Export export = new Export(database_src, desDir);
     
+    //export.setPruneColumns(pruneColumnData);
+    //export.setShowCreateTable(false);
+    //export.setSkipPrimaryKey(true); // export the primaryKey
+
     export.setTable(table, whereSql, limitSql);
     export.run(Export.EXPORTAS_CSV);
     

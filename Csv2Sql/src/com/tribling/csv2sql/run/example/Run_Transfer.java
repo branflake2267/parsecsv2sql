@@ -2,9 +2,9 @@ package com.tribling.csv2sql.run.example;
 
 import java.util.HashMap;
 
-import com.tribling.csv2sql.Transfer;
 import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.FieldData;
+import com.tribling.csv2sql.process.Transfer;
 
 public class Run_Transfer {
 

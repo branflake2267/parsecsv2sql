@@ -19,7 +19,7 @@ import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.IdentityData;
 import com.tribling.csv2sql.data.SortDestinationField;
-import com.tribling.csv2sql.data.SortSourceField;
+import com.tribling.csv2sql.data.FieldDataComparator;
 
 /**
  * sql processing
@@ -778,7 +778,7 @@ public class SQLProcessing {
       return column;
     }
 
-    Comparator<FieldData> searchByComparator = new SortSourceField();
+    Comparator<FieldData> searchByComparator = new FieldDataComparator();
 
     FieldData searchFor = new FieldData();
     searchFor.sourceField = column;
