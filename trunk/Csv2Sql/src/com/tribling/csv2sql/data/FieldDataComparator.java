@@ -2,13 +2,11 @@ package com.tribling.csv2sql.data;
 
 import java.util.Comparator;
  
-public class SortSourceField implements Comparator<FieldData> {
+public class FieldDataComparator implements Comparator<FieldData> {
 
-	@Override
+  // sort by sourceField
 	public int compare(FieldData a, FieldData b) {
-		
 		int i = a.sourceField.compareToIgnoreCase(b.sourceField);
-		
 		return i;
 	}
 

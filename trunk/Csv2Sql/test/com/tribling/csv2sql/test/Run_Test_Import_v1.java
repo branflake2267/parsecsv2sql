@@ -11,7 +11,7 @@ import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.FlatFileSettingsData;
 import com.tribling.csv2sql.data.SourceData;
 
-public class Run_Test_Import {
+public class Run_Test_Import_v1 {
 
   private static SourceData sourceData = null;
   
@@ -46,7 +46,7 @@ public class Run_Test_Import {
 
     File executionlocation = null;
     try {
-      executionlocation = new File(Run_Test_Import.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+      executionlocation = new File(Run_Test_Import_v1.class.getProtectionDomain().getCodeSource().getLocation().toURI());
     } catch (URISyntaxException e) {
       e.printStackTrace();
     }

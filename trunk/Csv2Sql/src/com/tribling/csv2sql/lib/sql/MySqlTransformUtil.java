@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
@@ -173,28 +174,43 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
   }
 
   /**
+   * create columns
+   * 
+   * @param dd
+   * @param columnData
+   */
+  public static void createColumn(DatabaseData dd, ColumnData[] columnData) {
+    if (columnData == null) {
+      return;
+    }
+    for (int i=0; i < columnData.length; i++) {
+      createColumn(dd, columnData[i]);
+    }
+  }
+  
+  /**
    * create column
    * 
    * @param dd
    * @param table
-   * @param column - column name and type - varchar(255) or TEXT or TEXT DEFAULT NULL or INTEGER DEFAULT 0
+   * @param columnData - column name and type - varchar(255) or TEXT or TEXT DEFAULT NULL or INTEGER DEFAULT 0
    */
-  public static void createColumn(DatabaseData dd, ColumnData column) {
-    if (column == null | column.getColumnName().length() == 0) {
+  public static void createColumn(DatabaseData dd, ColumnData columnData) {
+    if (columnData == null | columnData.getColumnName().length() == 0) {
       return;
     }
     
-    String type = column.getType();
+    String type = columnData.getType();
     if (type == null | type.length() == 0) {
       type = "TEXT DEFAULT NULL";
     }
     
-    String table = column.getTable();
+    String table = columnData.getTable();
     
     // be sure the column name doesn't have weird characters in it
-    column.fixName();
+    columnData.fixName();
 
-    boolean exist = doesColumnExist(dd, column);    
+    boolean exist = doesColumnExist(dd, columnData);    
     if (exist == true) {
       return;
     }
@@ -202,7 +218,7 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     if (type == null) {
       type = "TEXT DEFAULT NULL";
     }
-    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + table + "` ADD COLUMN `" + column.getColumnName() + "`  " + type + ";";
+    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + table + "` ADD COLUMN `" + columnData.getColumnName() + "`  " + type + ";";
     update(dd, sql);
   }
   
@@ -266,7 +282,7 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
    * @param table
    * @param indexName 
    * @param indexColumns
-   * @param indexKind
+   * @param indexKind 0 for default | ColumnData.INDEXKIND_DEFAULT | ColumnData.INDEXKIND_FULLTEXT
    */
   public static void createIndex(DatabaseData dd, String table, String indexName, String indexColumns, int indexKind) {
 
@@ -280,7 +296,7 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     }
     
     String kind = "";
-    if (indexKind == ColumnData.INDEXKIND_DEFAULT) {
+    if (indexKind == ColumnData.INDEXKIND_DEFAULT | indexKind == 0) {
       kind = ""; // default is nothing stated
     } else if (indexKind == ColumnData.INDEXKIND_FULLTEXT) {
       kind = "FULLTEXT";
@@ -298,14 +314,40 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
   }
   
   /**
+   * create index for identities
+   * @param dd
+   * @param columnData - all the columnData - will get the identities columns from in them
+   */
+  public static void createIndex_forIdentities(DatabaseData dd, ColumnData[] columnData) {
+
+    ColumnData[] identities = ColumnData.getColumns_Identities(columnData);
+
+    String indexes = "";
+    for (int i = 0; i < identities.length; i++) {
+ 
+      indexes += "`" + columnData[i].getColumnName() + "`";
+        
+      if (i < identities.length - 1) {
+        indexes += ", ";
+      }
+    }
+    
+    // create the index
+    String indexName = "auto_identies";
+    String table = columnData[0].getTable();
+    createIndex(dd, table, indexName, indexes, ColumnData.INDEXKIND_DEFAULT);
+  }
+  
+  /**
    * delete column
    * 
    * @param dd
    * @param table
-   * @param column
+   * @param columnData
    */
-  public static void deleteColumn(DatabaseData dd, String table, ColumnData column) {
-    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + table + "` DROP COLUMN `" + column.getColumnName() + "`;";
+  public static void deleteColumn(DatabaseData dd, ColumnData columnData) {
+    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + columnData.getTable() + "` " +
+    		"DROP COLUMN `" + columnData.getColumnName() + "`;";
     update(dd, sql);
   }
   
@@ -314,18 +356,50 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
    * 
    * @param dd
    * @param table
-   * @param columns
+   * @param columnData
    */
-  public static void deleteColumns(DatabaseData dd, String table, ColumnData[] columns) {
-    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + table + "` ";
-    for (int i=0; i < columns.length; i++) {
-      String column = columns[i].getColumnName();
+  public static void deleteColumns(DatabaseData dd, ColumnData[] columnData) {
+    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + columnData[0].getTable() + "` ";
+    for (int i=0; i < columnData.length; i++) {
+      String column = columnData[i].getColumnName();
       sql += "DROP COLUMN `" + column + "`";
-      if (i < columns.length-1) {
+      if (i < columnData.length-1) {
         sql += ", ";
       }
     }
     update(dd, sql);
+  }
+  
+  /**
+   * delete columns with no data
+   *   first check each column, then after that, then go through and delete the columns
+   * @param dd
+   * @param table
+   * @param pruneColumnData - skip these columns
+   */
+  public static void deleteEmptyColumns(DatabaseData dd, String table, ColumnData[] pruneColumnData) {
+    if (table == null) {
+      return;
+    }
+    // get all columns of table
+    ColumnData[] columnData = MySqlTransformUtil.queryColumns(dd, table, null);
+    columnData = ColumnData.prune(columnData, pruneColumnData);
+    ArrayList<ColumnData> deleteCols = new ArrayList<ColumnData>();
+    int i2 = columnData.length - 1; // count down total
+    for (int i = 0; i < columnData.length; i++) {
+
+      System.out.println(i2 + ". checking column is Empty?: " + columnData[i].getColumnName() + " for data.");
+      
+      if (doesColumnContainData(dd, columnData[i]) == false) {
+        deleteCols.add(columnData[i]);
+      }
+
+      // count down
+      i2--;
+    }
+    ColumnData[] odelCols = new ColumnData[deleteCols.size()];
+    deleteCols.toArray(odelCols);
+    deleteColumns(dd, odelCols);
   }
 
   /**
@@ -341,6 +415,13 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     return queryLong(dd, sql);
   }
 
+  /**
+   * show create table script
+   * 
+   * @param dd
+   * @param table
+   * @return
+   */
   public static String showCreateTable(DatabaseData dd, String table) {
     String sql = "SHOW CREATE TABLE `" + dd.getDatabase() + "`.`" + table + "`";
     String s = null;
@@ -362,4 +443,81 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     } 
     return s;
   }
+  
+  /**
+   * drop table, delete it
+   * 
+   * @param dd
+   * @param table
+   */
+  public static void dropTable(DatabaseData dd, String table) {
+    String sql = "DROP TABLE IF EXISTS `" + dd.getDatabase() + "`.`" + table + "`;";
+    update(dd, sql);
+  }
+  
+  /**
+   * does a column contain any data in it?
+   * 
+   * @param dd
+   * @param columnData
+   * @return
+   */
+  public static boolean doesColumnContainData(DatabaseData dd, ColumnData columnData) {
+    String sql = "SELECT COUNT(`" + columnData.getColumnName() + "`) AS Total " +
+    		"FROM `" + dd.getDatabase() + "`.`" + columnData.getTable() + "` " + 
+    		"WHERE (`" + columnData.getColumnName() + "` != '');";
+    int c = MySqlQueryUtil.queryInteger(dd, sql);
+    boolean b = true;
+    if (c == 0) {
+      b = false;
+    }
+    return b;
+  }
+  
+  /**
+   * delete all indexing for a column. find all the indexing that uses this column 
+   *   TODO - return indexes, for recreation
+   * @param dd
+   * @param columnData
+   */
+  public static void deleteIndexForColumn(DatabaseData dd, ColumnData columnData) {
+    if (columnData == null) {
+      return;
+    }
+    String table = columnData.getTable();
+    String sql = "SHOW INDEX FROM `" + columnData.getTable() + "` FROM `" + columnData.getTable() + "` " + 
+      "WHERE (Key_name != 'Primary') AND (Key_name = '" + columnData.getColumnName() + "')";
+      
+    try {
+      Connection conn = dd.getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        String indexName = result.getString(3);
+        deleteIndex(dd, table, indexName);
+      }
+      select.close();
+      select = null;
+      result.close();
+      result = null;
+    } catch (SQLException e) {
+      System.err.println("Error: deleteIndexForColumn(): " + sql);
+      e.printStackTrace();
+    }
+    
+    // TODO return indexes for recreation after the alter is done on column that needed deletion
+  }
+  
+  /**
+   * delete index
+   * 
+   * @param dd
+   * @param table
+   * @param indexName
+   */
+  public static void deleteIndex(DatabaseData dd, String table, String indexName) {
+    String sql = "DROP INDEX `" + indexName + "` ON `" + table + "`;";
+    MySqlQueryUtil.update(dd, sql);
+  }
+  
 }

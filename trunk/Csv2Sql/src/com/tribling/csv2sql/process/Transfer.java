@@ -1,4 +1,4 @@
-package com.tribling.csv2sql;
+package com.tribling.csv2sql.process;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import com.tribling.csv2sql.SQLProcessing;
 import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.FieldData;
@@ -507,7 +508,7 @@ public class Transfer {
           sql += " AND ";
         }
         
-        sql += "(`" + columnData_des[i].getColumnName() + "`='" + SQLProcessing.escapeForSql(columnData_des[i].getValue()) + "')";
+        sql += "(`" + columnData_des[i].getColumnName() + "`='" + MySqlQueryUtil.escape(columnData_des[i].getValue()) + "')";
         
         is++;
       }

@@ -29,6 +29,9 @@ public class ColumnData {
   // is this column a primary key?
   private boolean isPrimaryKey = false;
   
+  // when using multiple columns for identity, for similarity matching
+  private boolean usedForIdentity = false;
+  
   // column name
   // TODO public access to this var is deprecated, changing to method access
   @Deprecated
@@ -136,6 +139,24 @@ public class ColumnData {
 	
 	public String getTable() {
 	  return this.table;
+	}
+	
+	/**
+	 * set this column as use as an identity, like three columns get set for similarity matching
+	 * 
+	 * @param b
+	 */
+	public void setIdentity(boolean b) {
+	  this.usedForIdentity = b;
+	}
+	
+	/**
+	 * is this column used for identity
+	 * 
+	 * @return
+	 */
+	public boolean getIdentityUse() {
+	  return usedForIdentity;
 	}
 	
 	/**
@@ -452,6 +473,8 @@ public class ColumnData {
   /**
    * get Columns as Sql Insert Statement
    * 
+   *   REMEMBER - in most cases primary key will need to be pruned, I decided to keep it out in case i wanted it
+   *   columnData = prunePrimaryKey(columnData); This should be done by earlier method
    * @param columnData
    * @param pruneColumnData
    * @return
@@ -461,10 +484,42 @@ public class ColumnData {
       return "";
     }
     columnData = prune(columnData, pruneColumnData);
-    columnData = prunePrimaryKey(columnData);
     String table = columnData[0].getTable();
     String fields = getSql(columnData);
     String sql = "INSERT INTO `" + table + "` SET " + fields + ";";
+    return sql;
+  }
+  
+  /**
+   * get update sql statement
+   * 
+   * @param columnData
+   * @param primaryKeyId
+   * @return
+   */
+  public static String getSql_Update(ColumnData[] columnData, long primaryKeyId) {
+    return getSql_Update(columnData, primaryKeyId, null );
+  }
+  
+  /**
+   * get update sql statement
+   * 
+   * @param columnData
+   * @param primaryKeyId
+   * @param pruneColumnData
+   * @return
+   */
+  public static String getSql_Update(ColumnData[] columnData, long primaryKeyId, ColumnData[] pruneColumnData) {
+    if (columnData == null) {
+      return null;
+    }
+    String primaryKeyName = getPrimaryKey_Name(columnData);
+    String where = " WHERE `" + primaryKeyName + "`='" + primaryKeyId + "'";
+    
+    String sql = "UPDATE `" + columnData[0].getTable() + "` SET ";
+    sql += getSql(columnData, pruneColumnData);
+    sql += where;
+    
     return sql;
   }
   
@@ -597,6 +652,71 @@ public class ColumnData {
       }
     }
     return f;
+  }
+  
+  /**
+   * add values into the column Data
+   * 
+   * @param columnData
+   * @param values
+   * @return
+   */
+  public static ColumnData[] addValues(ColumnData[] columnData, String[] values) {
+    if (columnData == null) {
+      return null;
+    }
+    for (int i=0; i < columnData.length; i++) {
+      columnData[i].setValue(values[i]);
+    }
+    return columnData;
+  }
+  
+  /**
+   * get Identitys Where statement 
+   * 
+   * @param columnData
+   * @return
+   */
+  public static String getSql_IdentitiesWhere(ColumnData[] columnData) {
+    
+    // get columns used first
+    ArrayList<ColumnData> cols = new ArrayList<ColumnData>();
+    for(int i=0; i < columnData.length; i++) {
+      if (columnData[i].getIdentityUse() == true) {
+        cols.add(columnData[i]);
+      }
+    }
+    
+    // create sql where vars
+    String sql = "";
+    for(int i=0; i < cols.size(); i++) {
+      ColumnData col = cols.get(i);
+      String c = col.getColumnName();
+      String v = col.getValue();
+      sql += "`" + c + "`='" + v + "'";
+      if (i < cols.size() - 1) {
+        sql += " AND ";
+      }
+    }
+
+    return sql;
+  }
+  
+  /**
+   * get just the columns that are identities
+   * @param columnData
+   * @return
+   */
+  public static ColumnData[] getColumns_Identities(ColumnData[] columnData) {
+    ArrayList<ColumnData> cols = new ArrayList<ColumnData>();
+    for(int i=0; i < columnData.length; i++) {
+      if (columnData[i].getIdentityUse() == true) {
+        cols.add(columnData[i]);
+      }
+    }
+    ColumnData[] r = new ColumnData[cols.size()];
+    cols.toArray(r);
+    return r;
   }
   
 }

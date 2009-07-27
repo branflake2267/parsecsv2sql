@@ -48,13 +48,17 @@ public class Export {
   private BufferedWriter out = null;
   
   // if exporting as SQL - do you want to create table script in the export
-  private boolean createTable;
+  private boolean createTable = false;
 
   // keep files around <= 1GB
   private long maxOutFileSizeKB = 1048576;
   
   // skip these columns
   private ColumnData[] pruneColumnData = null;
+  
+  // do not export the primary key (default is false)
+  // set to true if you really want the primary key exported
+  private boolean exportPrimaryKey = false;
   
   public Export(DatabaseData source, File destinationDirectory) {
     this.src = source;
@@ -96,6 +100,15 @@ public class Export {
   }
   
   /**
+   * export the primary key in csv? default is false
+   * 
+   * @param b
+   */
+  public void setSkipPrimaryKey(boolean b) {
+    this.exportPrimaryKey = b;
+  }
+  
+  /**
    * prune these columns out
    * 
    * @param pruneColumnData
@@ -125,6 +138,11 @@ public class Export {
     // prune columns?
     if (pruneColumnData != null) {
       columnData = ColumnData.prune(columnData, pruneColumnData);
+    }
+    
+    // the primary key column
+    if (exportPrimaryKey == false) {
+      columnData = ColumnData.prunePrimaryKey(columnData);
     }
     
     setFile();
