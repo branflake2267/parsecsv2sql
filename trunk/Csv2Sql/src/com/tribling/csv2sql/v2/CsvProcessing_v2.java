@@ -309,10 +309,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     long primaryKeyId = doesDataExist();
      
     String sql = "";
-    if (primaryKeyId == 0) {
-      ColumnData[] i = ColumnData.merge(columnData, defaultColumns[0]); // add insert column
-      sql = ColumnData.getSql_Insert(i);
-    } else { 
+    if (primaryKeyId > 0) {
       ColumnData primaryKeyColumn = new ColumnData();
       primaryKeyColumn.setIsPrimaryKey(true);
       primaryKeyColumn.setColumnName(destinationData.primaryKeyName);
@@ -320,6 +317,9 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
       ColumnData[] u = ColumnData.merge(columnData, defaultColumns[1]); // add update column
       u = ColumnData.merge(u, primaryKeyColumn);
       sql = ColumnData.getSql_Update(u);
+    } else { 
+      ColumnData[] i = ColumnData.merge(columnData, defaultColumns[0]); // add insert column
+      sql = ColumnData.getSql_Insert(i);
     }
     
     System.out.println("SAVE(): " + sql);
@@ -329,6 +329,9 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   }
  
   private long doesDataExist() {
+   if (destinationData.identityColumns == null) {
+     return -1;
+   }
    String where = " WHERE " + ColumnData.getSql_IdentitiesWhere(columnData);
    String sql = "SELECT `" + destinationData.primaryKeyName + "` FROM `" + destinationData.table + "` " + where;
    long primaryKeyId = MySqlQueryUtil.queryLong(destinationData.databaseData, sql); 
