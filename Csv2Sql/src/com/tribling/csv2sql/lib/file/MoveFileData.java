@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import com.csvreader.CsvReader;
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 public class MoveFileData {
 

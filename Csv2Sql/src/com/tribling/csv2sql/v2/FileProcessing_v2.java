@@ -3,9 +3,6 @@ package com.tribling.csv2sql.v2;
 import java.io.File;
 import java.util.Arrays;
 
-import com.tribling.csv2sql.data.DestinationData;
-import com.tribling.csv2sql.data.FieldData;
-import com.tribling.csv2sql.data.FlatFileSettingsData;
 import com.tribling.csv2sql.data.SourceData;
 import com.tribling.csv2sql.lib.FileUtil;
 import com.tribling.csv2sql.lib.sql.MySqlTransformUtil;

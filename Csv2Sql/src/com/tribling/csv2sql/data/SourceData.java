@@ -1,9 +1,6 @@
 package com.tribling.csv2sql.data;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-
-import com.csvreader.CsvReader;
 
 public class SourceData {
  

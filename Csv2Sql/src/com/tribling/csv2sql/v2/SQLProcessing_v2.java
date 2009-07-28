@@ -1,25 +1,5 @@
 package com.tribling.csv2sql.v2;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringEscapeUtils;
-
-import com.tribling.csv2sql.data.ColumnData;
-import com.tribling.csv2sql.data.DatabaseData;
-import com.tribling.csv2sql.data.DestinationData;
-import com.tribling.csv2sql.data.FieldData;
-import com.tribling.csv2sql.data.IdentityData;
-import com.tribling.csv2sql.data.SortDestinationField;
-import com.tribling.csv2sql.data.FieldDataComparator;
 
 /**
  * sql processing

@@ -4,19 +4,12 @@ import java.io.File;
 import java.net.URISyntaxException;
 
 import com.tribling.csv2sql.data.DatabaseData;
-import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.FieldData;
-import com.tribling.csv2sql.data.FlatFileSettingsData;
 import com.tribling.csv2sql.data.SourceData;
-import com.tribling.csv2sql.v1.FileProcessing;
-import com.tribling.csv2sql.v1.Optimise;
-import com.tribling.csv2sql.v1.SQLProcessing;
 import com.tribling.csv2sql.v2.DestinationData_v2;
-import com.tribling.csv2sql.v2.FileProcessing_v2;
-import com.tribling.csv2sql.v2.Optimise_v2;
 import com.tribling.csv2sql.v2.Process;
 
-public class Run_Import_States {
+public class Run_Import_ZipCodes {
 
   // source data point
   private static SourceData sourceData = null;
@@ -39,7 +32,7 @@ public class Run_Import_States {
       e.printStackTrace();
     }
     String execPath = executionlocation.getParent();
-    String pathToFile = execPath + "/data/export/states_0.csv"; 
+    String pathToFile = execPath + "/data/export/zipcodes_0.csv"; 
     
     // source
     sourceData = new SourceData();
@@ -49,25 +42,25 @@ public class Run_Import_States {
     // des identity fields
     FieldData[] identities = new FieldData[1];
     identities[0] = new FieldData();
-    identities[0].sourceField = "Name";
-    identities[0].destinationField = "Name";
+    identities[0].sourceField = "zip_code";
+    identities[0].destinationField = "zip_code";
     
     // des change columns
-    FieldData[] changeColumns = new FieldData[1];
-    changeColumns[0] = new FieldData();
-    changeColumns[0].sourceField = "Ab";
-    changeColumns[0].destinationField = "TwoLetter";
+    FieldData[] changeColumns = null;
+    //changeColumns[0] = new FieldData();
+    //changeColumns[0].sourceField = "Ab";
+    //changeColumns[0].destinationField = "TwoLetter";
     
     // database settings
     DatabaseData databaseData = new DatabaseData(DatabaseData.TYPE_MYSQL, "ark", "3306", "test", "test#", "test");
-    String table = "import_states_test";
+    String table = "import_zipcodes_test";
     
     // destination settings
     destinationData = new DestinationData_v2();
     destinationData.setData(databaseData, changeColumns, identities, table);
     
     // Settings
-    destinationData.dropTable = true;
+    destinationData.dropTable = false;
     destinationData.optimise = true;
     
     Process p = new Process(sourceData, destinationData);
@@ -75,9 +68,4 @@ public class Run_Import_States {
     
   }
   
-
-
-
-  
-
 }

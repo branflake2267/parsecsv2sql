@@ -30,6 +30,11 @@ public class Process {
    */
   public void runImport() {
     fileProcessing.run();
+    
+    if (destinationData.optimise == true) {
+      Optimise_v2 o = new Optimise_v2(destinationData);
+      o.run();
+    }
   }
   
   /**

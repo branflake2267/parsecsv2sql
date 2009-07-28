@@ -75,8 +75,10 @@ public class FieldData implements Comparable<FieldData> {
 	public static int getSourceFieldIndex(FieldData[] fieldData, String sourceField) {
 	  Comparator<FieldData> sort = new FieldDataComparator();
 	  Arrays.sort(fieldData);
+	  
 	  FieldData key = new FieldData();
 	  key.sourceField = sourceField;
+	  
 	  int index = Arrays.binarySearch(fieldData, key, sort);
 	  return index;
 	}

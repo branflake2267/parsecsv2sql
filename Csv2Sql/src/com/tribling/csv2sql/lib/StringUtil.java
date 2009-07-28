@@ -48,6 +48,31 @@ public class StringUtil {
     return value;
   }
   
-  
+  /**
+   * string array to csv using now quotes
+   * @param s
+   * @return
+   */
+  public static String toCsv_NoQuotes(String[] s) {
+    if (s == null) {
+      return null;
+    }
+    int l = s.length;
+    String r = null;
+    if (l == 1) {
+      r = s[0];
+    } else {
+      
+      for (int i=0; i < s.length; i++) {
+        r += s[0];
+        if (i < s.length-1) {
+          r += ",";
+        }
+      }
+      
+    }
+    
+    return r;
+  }
   
 }

@@ -1,4 +1,4 @@
-package com.tribling.csv2sql;
+package com.tribling.csv2sql.v1;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -17,9 +17,9 @@ import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.FieldData;
+import com.tribling.csv2sql.data.FieldDataComparator;
 import com.tribling.csv2sql.data.IdentityData;
 import com.tribling.csv2sql.data.SortDestinationField;
-import com.tribling.csv2sql.data.FieldDataComparator;
 
 /**
  * sql processing
@@ -1894,7 +1894,7 @@ public class SQLProcessing {
         value = values[i];
       } catch (Exception e) {
       }
-      resize = columns[i].testValue(value);
+      resize = columns[i].testSizeOfValue(value);
       if (resize > 0) {
         String type = resizeColumnLength(columns[i].column, columns[i].columnType, resize);
         columns[i].setType(type);

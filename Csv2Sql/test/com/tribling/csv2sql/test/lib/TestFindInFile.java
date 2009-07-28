@@ -2,9 +2,9 @@ package com.tribling.csv2sql.test.lib;
 
 import java.io.File;
 
-import com.tribling.csv2sql.FileProcessing;
 import com.tribling.csv2sql.data.FlatFileSettingsData;
 import com.tribling.csv2sql.data.SourceData;
+import com.tribling.csv2sql.v1.FileProcessing;
 
 public class TestFindInFile {
 

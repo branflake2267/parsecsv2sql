@@ -3,13 +3,13 @@ package com.tribling.csv2sql.test;
 import java.io.File;
 import java.net.URISyntaxException;
 
-import com.tribling.csv2sql.FileProcessing;
-import com.tribling.csv2sql.Optimise;
-import com.tribling.csv2sql.SQLProcessing;
 import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.FlatFileSettingsData;
 import com.tribling.csv2sql.data.SourceData;
+import com.tribling.csv2sql.v1.FileProcessing;
+import com.tribling.csv2sql.v1.Optimise;
+import com.tribling.csv2sql.v1.SQLProcessing;
 
 public class Run_Test_Import_v1 {
 

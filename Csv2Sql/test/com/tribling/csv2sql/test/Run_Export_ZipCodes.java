@@ -7,8 +7,8 @@ import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.Export;
 
-public class Run_Export_States {
-
+public class Run_Export_ZipCodes {
+  
   public static void main(String[] args) {
     File executionlocation = null;
     try {
@@ -20,32 +20,32 @@ public class Run_Export_States {
     
     String dir = execPath + "/data/export";  
   
-  
-  
+    
     // source 
     DatabaseData database_src = new DatabaseData(DatabaseData.TYPE_MYSQL, "ark", "3306", "test", "test#", "system");
-    String table = "states";
+    String table = "zipcodes";
     String whereSql = null;
-    String limitSql = null;
+    String limitSql = "LIMIT 0,1000";
     
     // destination
     File desDir = new File(dir);
     
-    // prune these columns
-    //ColumnData[] pruneColumnData = new ColumnData[1];
-    //pruneColumnData[0] = new ColumnData();
+    ColumnData[] pruneColumnData = new ColumnData[2];
+    pruneColumnData[0] = new ColumnData();
+    pruneColumnData[1] = new ColumnData();
+    pruneColumnData[0].setColumnName("DateCreated");
+    pruneColumnData[1].setColumnName("DateUpdated");
     
     Export export = new Export(database_src, desDir);
     
-    //export.setPruneColumns(pruneColumnData);
+    export.setPruneColumns(pruneColumnData);
     //export.setShowCreateTable(false);
     //export.setSkipPrimaryKey(true); // export the primaryKey
-
+  
     export.setTable(table, whereSql, limitSql);
     export.run(Export.EXPORTAS_CSV);
     
     export.setShowCreateTable(true);
     export.run(Export.EXPORTAS_SQL);
   }
-  
 }

@@ -2,11 +2,11 @@ package com.tribling.csv2sql.run.example;
 
 import java.io.File;
 
-import com.tribling.csv2sql.FileProcessing;
-import com.tribling.csv2sql.Optimise;
 import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.SourceData;
+import com.tribling.csv2sql.v1.FileProcessing;
+import com.tribling.csv2sql.v1.Optimise;
 
 public class Run_Import_MsSql {
 

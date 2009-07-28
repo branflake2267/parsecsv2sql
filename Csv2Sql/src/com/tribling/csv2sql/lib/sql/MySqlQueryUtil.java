@@ -273,6 +273,9 @@ public class MySqlQueryUtil {
   }
 
   public static long update(DatabaseData dd, String sql) {
+    if (sql == null) {
+      return 0;
+    }
     long id = 0;
     try {
       Connection conn = dd.getConnection();

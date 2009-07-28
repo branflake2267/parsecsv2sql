@@ -1,4 +1,4 @@
-package com.tribling.csv2sql;
+package com.tribling.csv2sql.v1;
 
 import java.io.File;
 import java.io.FileNotFoundException;
