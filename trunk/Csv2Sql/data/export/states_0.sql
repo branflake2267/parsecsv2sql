@@ -1,8 +1,8 @@
 CREATE TABLE `states` (
-  `StateId` int(10) unsigned NOT NULL auto_increment,
-  `Name` varchar(45) default NULL,
+  `StateId` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `Name` varchar(45) DEFAULT NULL,
   `Ab` varchar(2) NOT NULL,
-  PRIMARY KEY  (`StateId`),
+  PRIMARY KEY (`StateId`),
   KEY `Name` (`Name`),
   KEY `Ab` (`Ab`)
 ) ENGINE=MyISAM AUTO_INCREMENT=63 DEFAULT CHARSET=latin1

@@ -5,9 +5,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
+import com.tribling.csv2sql.lib.StringUtil;
 
 public class MySqlTransformUtil extends MySqlQueryUtil {
 
@@ -101,11 +104,29 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
   }
   
   /**
+   * query column
+   * 
+   * @param dd
+   * @param table
+   * @param columnName
+   * @return
+   */
+  public static ColumnData queryColumn(DatabaseData dd, String table, String columnName) {
+    String where = "`FIELD`='" + columnName + "'";
+    ColumnData[] columnData = queryColumns(dd, table, where);
+    ColumnData r = null;
+    if (columnData != null && columnData.length > 0) {
+      r = columnData[0];
+    }
+    return r;
+  }
+  
+  /**
    * get columns 
    * 
    * @param dd
    * @param table
-   * @param where - ex: where="like '%myCol%'"; 
+   * @param where - ex: where="`FIELD` LIKE '%myCol%'"; 
    * @return
    */
   public static ColumnData[] queryColumns(DatabaseData dd, String table, String where) {
@@ -179,13 +200,14 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
    * @param dd
    * @param columnData
    */
-  public static void createColumn(DatabaseData dd, ColumnData[] columnData) {
+  public static ColumnData[] createColumn(DatabaseData dd, ColumnData[] columnData) {
     if (columnData == null) {
-      return;
+      return null;
     }
     for (int i=0; i < columnData.length; i++) {
-      createColumn(dd, columnData[i]);
+      columnData[i] = createColumn(dd, columnData[i]);
     }
+    return columnData;
   }
   
   /**
@@ -195,9 +217,9 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
    * @param table
    * @param columnData - column name and type - varchar(255) or TEXT or TEXT DEFAULT NULL or INTEGER DEFAULT 0
    */
-  public static void createColumn(DatabaseData dd, ColumnData columnData) {
+  public static ColumnData createColumn(DatabaseData dd, ColumnData columnData) {
     if (columnData == null | columnData.getColumnName().length() == 0) {
-      return;
+      return null;
     }
     
     String type = columnData.getType();
@@ -212,7 +234,9 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
 
     boolean exist = doesColumnExist(dd, columnData);    
     if (exist == true) {
-      return;
+      ColumnData exCol = queryColumn(dd, table, columnData.getColumnName());
+      columnData.setType(exCol.getType());
+      return columnData;
     }
 
     if (type == null) {
@@ -220,6 +244,8 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     }
     String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + table + "` ADD COLUMN `" + columnData.getColumnName() + "`  " + type + ";";
     update(dd, sql);
+    
+    return columnData;
   }
   
   /**
@@ -271,7 +297,7 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
    * @return
    */
   public static boolean doesIndexExist(DatabaseData dd, String table, String indexName) {
-    String sql = "SHOW INDEX FROM `" + table + "` FROM `" + dd.getDatabase() + "` WHERE (Key_name = '" + indexName + "')";
+    String sql = "SHOW INDEX FROM `" + table + "` FROM `" + dd.getDatabase() + "` WHERE (`Key_name`= '" + indexName + "')";
     return queryStringAndConvertToBoolean(dd, sql);
   }
   
@@ -476,17 +502,21 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
   
   /**
    * delete all indexing for a column. find all the indexing that uses this column 
-   *   TODO - return indexes, for recreation
+   *
    * @param dd
    * @param columnData
+   * @return indexes, for recreation
    */
-  public static void deleteIndexForColumn(DatabaseData dd, ColumnData columnData) {
+  public static String[] deleteIndexForColumn(DatabaseData dd, ColumnData columnData) {
     if (columnData == null) {
-      return;
+      return null;
     }
+    
+    String[] indexesToRestore = showCreateIndex(dd, columnData);
+    
     String table = columnData.getTable();
-    String sql = "SHOW INDEX FROM `" + columnData.getTable() + "` FROM `" + columnData.getTable() + "` " + 
-      "WHERE (Key_name != 'Primary') AND (Key_name = '" + columnData.getColumnName() + "')";
+    String sql = "SHOW INDEX FROM `" + dd.getDatabase() + "`.`" + columnData.getTable() + "` " + 
+      "WHERE (Key_name != 'Primary') AND (Column_name = '" + columnData.getColumnName() + "')";
       
     try {
       Connection conn = dd.getConnection();
@@ -504,8 +534,8 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
       System.err.println("Error: deleteIndexForColumn(): " + sql);
       e.printStackTrace();
     }
-    
-    // TODO return indexes for recreation after the alter is done on column that needed deletion
+
+    return indexesToRestore;
   }
   
   /**
@@ -519,5 +549,59 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     String sql = "DROP INDEX `" + indexName + "` ON `" + table + "`;";
     MySqlQueryUtil.update(dd, sql);
   }
+  
+  /**
+   * alter column
+   *   delete the indexes on the column, then restore them on alter
+   * @param dd
+   * @param columnData
+   */
+  public static void alterColumn(DatabaseData dd, ColumnData columnData) {
+    
+    String[] sqlIndexRestore = deleteIndexForColumn(dd, columnData);
+    String indexSql = StringUtil.toCsv_NoQuotes(sqlIndexRestore);
+    
+    String modifyColumn = "`" + columnData.getColumnName() + "` " + columnData.getTypeNew();
+    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + columnData.getTable() + "` MODIFY COLUMN " + modifyColumn + " ";
+    
+    if (indexSql != null) {
+      sql += ", " + indexSql;
+    }
+    System.out.println("alterColum(): " + sql);
+    MySqlQueryUtil.update(dd, sql);
+  }
+  
+  public static String[] showCreateIndex(DatabaseData dd, ColumnData columnData) {
+
+    String showCreateTable = showCreateTable(dd, columnData.getTable());
+  
+    String regex = "KEY[\040]+`.*?`" + columnData.getColumnName() + "`.*?\n";
+    
+    ArrayList<String> indexes = new ArrayList<String>(); 
+    try {
+      Pattern p = Pattern.compile(regex);
+      Matcher m = p.matcher(showCreateTable);
+      while (m.find()) {
+        indexes.add(m.group());
+      }
+    } catch (Exception e) {
+      System.out.println("findMatch: regex error");
+    }
+  
+    String[] r = new String[indexes.size()];
+    for (int i=0; i < indexes.size(); i++) {
+      String s = indexes.get(i);
+      s = s.replaceAll("\n", "");
+      s = s.replace("KEY", "ADD INDEX");
+      if (s.matches(".*?,") == true) {
+        s = s.substring(0,s.length() - 1);
+        r[i] = s;
+      } else {
+        r[i] = s;
+      }
+    }
+    return r;
+  }
+  
   
 }

@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.tribling.csv2sql.lib.StringUtil;
-import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
+import com.tribling.csv2sql.lib.sql.MySqlTransformUtil;
 
 public class ColumnData {
 
@@ -43,12 +43,15 @@ public class ColumnData {
 	public String columnType = "TEXT";
 	
 	// column field length for the given column type
-  // TODO public access to this var is deprecated, changing to method access
-  @Deprecated
-	public int lengthChar = 0;
+  // when type is set, this is discovered
+	private int lengthChar = 0;
 	
 	// columns associated value
 	private String value = null;
+	
+	// set the value as a function
+	// this will replace value when looking for retreval
+	private String valueIsFunction = null;
 	
 	// true:overwrite any value false:only update on blank
 	private boolean overwriteOnlyWhenBlank = true;
@@ -89,8 +92,32 @@ public class ColumnData {
 	  this.value = value;
 	}
 	
+	public void setValue(Long value) {
+	  this.value = Long.toString(value);
+	}
+	
+	/**
+	 * get value
+	 *   will return valueIsFunction if set, this will overide value
+	 * 
+	 * @return
+	 */
 	public String getValue() {
-	  return value;
+	  String v = null;
+	  if (valueIsFunction != null) {
+	    v = valueIsFunction;
+	  } else {
+	    v = this.value;
+	  }
+	  return v;
+	}
+	
+	public int getValueLength() {
+	  int l = 0;
+	  if (value != null) {
+	    l = value.length();
+	  }
+	  return l;
 	}
 	
 	public String getColumnName() {
@@ -142,6 +169,34 @@ public class ColumnData {
 	}
 	
 	/**
+	 * set the value as function
+	 * 
+	 * @param sqlfunction
+	 */
+	public void setValueAsFunction(String sqlfunction) {
+	  this.valueIsFunction = sqlfunction;
+	}
+	
+	/**
+	 * get the value 
+	 */
+	public String getValueAsFunction() {
+	  return valueIsFunction;
+	}
+	
+	/**
+	 * is the value set as a function
+	 * @return
+	 */
+	public boolean isFunctionSetForValue() {
+	  boolean b = false;
+	  if (valueIsFunction != null) {
+	    b = true;
+	  }
+	  return b;
+	}
+	
+	/**
 	 * set this column as use as an identity, like three columns get set for similarity matching
 	 * 
 	 * @param b
@@ -182,96 +237,145 @@ public class ColumnData {
 		}	
 	}
 	
+	/**
+	 * get type with no changes
+	 * @return
+	 */
 	public String getType() {
 	  return columnType;
 	}
+	
+	/**
+	 * recalculate the type 
+	 *   like for altering, incase i forced charlen change, and or other change 
+	 * @return
+	 */
+	public String getTypeNew() {
+	  if (columnType.toLowerCase().contains("text") == true) {
+	     if (lengthChar <= 255) {
+	       columnType = "VARCHAR(" + lengthChar + ") DEFAULT NULL";
+	     } else {
+	       columnType = "TEXT DEFAULT NULL";
+	     }
+	  } else if (columnType.toLowerCase().contains("varchar")) {
+	    columnType = "VARCHAR(" + lengthChar + ") DEFAULT NULL";
+	  } 
+	  // TODO more logic needed
+	  
+	  return columnType;
+	}
 
+	/**
+	 * get the length of varchar(lengthChar)
+	 * 
+	 * @return
+	 */
 	public int getCharLength() {
 	  return lengthChar;
 	}
 	
 	/**
-	 * test value length to see if it will fit
+	 * change the lengthChar
+	 *   used for altering smaller
+	 * @param resize
+	 */
+	public void setCharLength(int resize) {
+	  this.lengthChar = resize;
+	}
+	
+	/**
+	 * TODO - add all the column types
 	 * 
-	 * @param value
 	 * @return
 	 */
-	public int testValue(String value) {
-		
-		int resize = 0;
-		if (columnType.contains("text")) {
-			resize = testText(value);
-			
-		} else if (columnType.contains("varchar")) {
-			resize = testVarchar(value);
-		} 
-		
-		// TODO test other types - add them here later
-		// TODO number
-		// TODO boolean
-		// TODO datetime
-		// TODO - decimal is size has to items?
-		
-		return resize;
+	public boolean doesValueFitIntoColumn() {
+	  columnType = columnType.toLowerCase();
+
+	  boolean b = false;
+	  if (columnType.contains("text") == true) {
+	    b = doesValueFit_Text();
+	  } else if (columnType.contains("varchar") == true) {
+	    b = doesValueFit_Varchar();
+	  } else if (columnType.contains("int") == true) {
+	    b = doesValueFit_Int();
+	  } else if (columnType.contains("dec") == true) {
+	    b = doesValueFit_Decimal();
+	  } else if (columnType.contains("datetime") == true) {
+	    b = doesValueFit_DateTime();
+	  } else {
+	    b = true;
+	  }
+	  // TODO - add more types
+	  
+	  return b;
+	}
+	
+	private boolean doesValueFit_Text() {
+	  boolean b = false;
+	  if (value == null) {
+	    b = true;
+	  } else if (value.length() <= 65536) { //65536 bytes 2^16
+	    b = true;
+	  }
+	  return b;
+	}
+	
+	private boolean doesValueFit_Varchar() {
+	  boolean b = false;
+	  if (value == null) {
+	    b = true;
+	  } else if (value.length() <= lengthChar) { // 255 bytes
+	    b = true;
+	  }
+	  return b;
+	}
+	
+	private boolean doesValueFit_Int() {
+	  boolean b = true;
+	  // TODO
+	  return b;
 	}
 
-	/**
-	 * test text, nothing to do here
-	 * 
-	 * @param value
-	 * @return
-	 */
-	public int testText(String value) {
-	  // TODO - add the other types of text (length sizes?)
-	  // TODO - what types of text are there?
-		return 0;
+	private boolean doesValueFit_Decimal() {
+	  boolean b = true;
+	  // TODO
+	  return b;
+	}
+	
+	private boolean doesValueFit_DateTime() {
+	  boolean b = true;
+	  // TODO
+	  return b;
 	}
 	
 	/**
-	 * test varchar length
-	 * 
-	 * @param value
-	 * @return
+	 * alter the column size if need be
 	 */
-	public int testVarchar(String value) {
-		int resize = 0;
-		if (value.length() > lengthChar) {
-			resize = value.length();
-		}
-		return resize;
+	public void alterColumnSizeBiggerIfNeedBe(DatabaseData dd) {
+	  if (value == null) {
+	    return;
+	  }
+	  // will the data fit
+	  boolean b = doesValueFitIntoColumn();
+	  if (b == true) {
+	    return;
+	  }
+	  // alter column size
+	  alterColumnToBiggerSize(dd);
 	}
 	
-	public int testDatetime(String value) {
-	  return 0;
+	private void alterColumnToBiggerSize(DatabaseData dd) {
+	  int l = value.getBytes().length;
+	  
+	  if (l >= 255) {
+	    setType("TEXT DEFAULT NULL");
+	  } else if (columnType.contains("varchar") == true) {
+	    setType("VARCHAR(" + l + ") DEFAULT NULL");
+	  }
+	  
+	  MySqlTransformUtil.alterColumn(dd, this);
 	}
 	
-	/**
-	 * figure out the length of an int
-	 * 
-	 * this is goign to be general
-	 * 
-	 * @param value
-	 * @return
-	 */
-	public int testNumber(String value) {
-	  
-	  // zero based 0000123434
-	  
-	  // decimal 12341234.13044
-	  
-	  // tiny(127) len=0-2
-	  
-	  // small(32767) len=3-4
-	  
-	  // medium(8388607) len=4-6
-	  
-	  // int(2147483647) len=7-9
-	  
-	  // big int len=9+
-	  
-    return 0;
-	}
-
   /**
    * fix the column name < 64 and characters that are SQL friendly
    */
@@ -445,10 +549,17 @@ public class ColumnData {
     if (columnData == null) {
       return "";
     }
+    columnData = prune(columnData, pruneColumnData);
     String sql = "";
     for (int i=0; i < columnData.length; i++) {
-      String c = "`" + columnData[i].getColumnName() + "`";
-      String v = "'" + MySqlQueryUtil.escape(columnData[i].getValue()) + "'";
+      String c = "`" + columnData[i].getColumnName() + "`";    
+      String v = null;
+      if (columnData[i].isFunctionSetForValue() == true) {
+        v = columnData[i].getValueAsFunction();
+      } else {
+        v = "'" + columnData[i].getValue() + "'";
+      }
+
       if (columnData[i].getValue() == null) {
         v = "NULL";
       }
@@ -497,8 +608,8 @@ public class ColumnData {
    * @param primaryKeyId
    * @return
    */
-  public static String getSql_Update(ColumnData[] columnData, long primaryKeyId) {
-    return getSql_Update(columnData, primaryKeyId, null );
+  public static String getSql_Update(ColumnData[] columnData) {
+    return getSql_Update(columnData, null );
   }
   
   /**
@@ -509,17 +620,34 @@ public class ColumnData {
    * @param pruneColumnData
    * @return
    */
-  public static String getSql_Update(ColumnData[] columnData, long primaryKeyId, ColumnData[] pruneColumnData) {
+  public static String getSql_Update(ColumnData[] columnData, ColumnData[] pruneColumnData) {
     if (columnData == null) {
       return null;
     }
-    String primaryKeyName = getPrimaryKey_Name(columnData);
-    String where = " WHERE `" + primaryKeyName + "`='" + primaryKeyId + "'";
+    ColumnData priKeyCol = getPrimaryKey_ColumnData(columnData);
+    String where = " WHERE `" + priKeyCol.getColumnName() + "`='" + priKeyCol.getValue() + "'";
     
     String sql = "UPDATE `" + columnData[0].getTable() + "` SET ";
+    pruneColumnData = merge(pruneColumnData, priKeyCol);
     sql += getSql(columnData, pruneColumnData);
     sql += where;
     
+    return sql;
+  }
+  
+  /**
+   * get sql for calculating the max characters length of a column
+   * 
+   * @param dd
+   * @param columnData
+   * @return
+   */
+  public static String getSql_GetMaxCharLength(DatabaseData dd, ColumnData columnData) {
+    if (columnData == null) {
+      return null;
+    }
+    String sql = "SELECT MAX(LENGTH(`" + columnData.getColumnName() + "`)) " +
+    		"FROM `" + dd.getDatabase() + "`.`" + columnData.getTable() + "`" ;
     return sql;
   }
   
@@ -534,13 +662,21 @@ public class ColumnData {
     if (pruneColumnData == null) {
       return columnData;
     }
-    ArrayList<ColumnData> newCols = new ArrayList<ColumnData>();
+    ArrayList<ColumnData> cols = new ArrayList<ColumnData>();
+    
+    // loop through columns
     for (int i=0; i < columnData.length; i++) {
-      if (doesColumnExist(pruneColumnData, columnData[i]) == false) {
-        newCols.add(columnData[i]);
+      
+      if (doesColumnExist(pruneColumnData, columnData[i]) == true) {
+        // don't add it if we find it
+      } else {
+        cols.add(columnData[i]);
       }
+      
     }
-    ColumnData[] r = (ColumnData[]) newCols.toArray();
+    
+    ColumnData[] r = new ColumnData[cols.size()];
+    cols.toArray(r);
     return r;
   }
   
@@ -574,12 +710,12 @@ public class ColumnData {
    * @return
    */
   public static boolean doesColumnExist(ColumnData[] searchColumnData, ColumnData forColumnData) {
-    Comparator<ColumnData> sort = new ColumnDataComparator();
+    Comparator<ColumnData> sort = new ColumnDataComparator(ColumnDataComparator.NAME);
     Arrays.sort(searchColumnData, sort);
     int index = Arrays.binarySearch(searchColumnData, forColumnData, sort);
-    boolean b = true;
+    boolean b = false;
     if (index >= 0) {
-      b = false;
+      b = true;
     }
     return b;
   }
@@ -655,6 +791,21 @@ public class ColumnData {
   }
   
   /**
+   * get the primary column object
+   * 
+   * @param columnData
+   * @return
+   */
+  public static ColumnData getPrimaryKey_ColumnData(ColumnData[] columnData) {
+    int index = getPrimaryKey_Index(columnData);
+    ColumnData r = null;
+    if (index > 0) {
+      r = columnData[index];
+    }
+    return r;
+  }
+  
+  /**
    * add values into the column Data
    * 
    * @param columnData
@@ -703,6 +854,56 @@ public class ColumnData {
   }
   
   /**
+   * get Sql for identities indexing
+   * 
+   * @param dd
+   * @param columnData
+   * @return
+   */
+  public static String getSql_IdentitiesIndex(DatabaseData dd, ColumnData[] columnData) {
+    if (columnData == null) {
+      return null;
+    }
+  
+    String autoIndexName = "auto_identities";
+    
+    boolean exists = MySqlTransformUtil.doesIndexExist(dd, columnData[0].getTable(), autoIndexName);
+    if (exists == true) {
+      return null;
+    }
+    
+    // get columns used first
+    ArrayList<ColumnData> cols = new ArrayList<ColumnData>();
+    for(int i=0; i < columnData.length; i++) {
+      if (columnData[i].getIdentityUse() == true) {
+        cols.add(columnData[i]);
+      }
+    }
+    
+    String columns = "";
+    for(int i=0; i < cols.size(); i++) {
+      ColumnData col = cols.get(i);
+      String c = col.getColumnName();
+      
+      String len = "";
+      if (col.getType().toLowerCase().contains("text") == true) {
+        len = "(990)";
+      }
+      columns += "`" + c + "`" + len;
+      
+      if (i < cols.size() - 1) {
+        columns += ",";
+      }
+      
+    }
+  
+    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + columnData[0].getTable() + "` " +
+      "ADD INDEX `" + autoIndexName + "`(" + columns + ")"; 
+
+    return sql;
+  }
+  
+  /**
    * get just the columns that are identities
    * @param columnData
    * @return
@@ -718,5 +919,145 @@ public class ColumnData {
     cols.toArray(r);
     return r;
   }
+
+  /**
+   * add object arrays
+   * 
+   * @param columnData
+   * @param addColumnData
+   * @return
+   */
+  public static ColumnData[] merge(ColumnData[] columnData, ColumnData[] addColumnData) {
+    ArrayList<ColumnData> cols = new ArrayList<ColumnData>();
+    for(int i=0; i < columnData.length; i++) {
+      cols.add(columnData[i]);
+    }
+    for(int i=0; i < addColumnData.length; i++) {
+      cols.add(addColumnData[i]);
+    }
+    ColumnData[] r = new ColumnData[cols.size()];
+    cols.toArray(r);
+    return r;
+  }
+  
+  /**
+   * add column into object array
+   * @param columnData
+   * @param addColumnData
+   * @return
+   */
+  public static ColumnData[] merge(ColumnData[] columnData, ColumnData addColumnData) {
+    ArrayList<ColumnData> cols = new ArrayList<ColumnData>();
+    if (columnData != null) {
+      for(int i=0; i < columnData.length; i++) {
+        cols.add(columnData[i]);
+      }
+    }
+    cols.add(addColumnData);
+    ColumnData[] r = new ColumnData[cols.size()];
+    cols.toArray(r);
+    return r;
+  }
+  
+  /**
+   * get alter columns sql
+   * 
+   * @param dd
+   * @param columnData
+   * @return
+   */
+  public static String getSql_AlterColumns(DatabaseData dd, ColumnData[] columnData) {
+    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + columnData[0].getTable() + "` ";
+    sql += getSql_ModifyColumns(columnData) + ";";
+    return sql;
+  }
+  
+  /**
+   * get modify column sql
+   *   like MODIFY COLUMN `Name` varchar(100) DEFAULT NULL, MODIFY COLUMN `TwoLetter` varchar(2)  DEFAULT NULL
+   *   
+   * @param columnData
+   * @return
+   */
+  public static String getSql_ModifyColumns(ColumnData[] columnData) {
+    String sql = "";
+    for (int i=0; i < columnData.length; i++) {
+      sql += "MODIFY COLUMN `" + columnData[i].getColumnName() + "` " + columnData[i].getType() + " ";
+      if (i < columnData.length - 1 ) {
+        sql += ",";
+      }
+    }
+    return sql;
+  }
+  
+  
+  
+  
+  /**
+   * test value length to see if it will fit
+   * 
+   * @param value
+   * @return
+   */
+  @Deprecated
+  public int testSizeOfValue(String value) {
+    int resize = 0;
+    if (columnType.contains("text")) {
+      resize = testSize_Text(value);
+      
+    } else if (columnType.contains("varchar")) {
+      resize = testSize_Varchar(value);
+    } 
+    return resize;
+  }
+
+  /**
+   * test text, nothing to do here
+   * 
+   * @param value
+   * @return
+   */
+  @Deprecated
+  public int testSize_Text(String value) {
+    // TODO - add the other types of text (length sizes?)
+    // TODO - what types of text are there?
+    return 0;
+  }
+  
+  /**
+   * test varchar length
+   * 
+   * @param value
+   * @return
+   */
+  @Deprecated
+  public int testSize_Varchar(String value) {
+    int resize = 0;
+    if (value.length() > lengthChar) {
+      resize = value.length();
+    }
+    return resize;
+  }
+
+  /**
+   * figure out the length of an int
+   * 
+   * this is goign to be general
+   * 
+   * @param value
+   * @return
+   */
+  @Deprecated
+  public int testNumber(String value) {
+    // zero based 0000123434
+    // decimal 12341234.13044
+    // tiny(127) len=0-2
+    // small(32767) len=3-4
+    // medium(8388607) len=4-6
+    // int(2147483647) len=7-9
+    // big int len=9+
+    return 0;
+  }
+
   
 }

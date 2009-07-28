@@ -8,6 +8,10 @@ public class ColumnDataComparator implements Comparator<ColumnData> {
   
   // default type is by column name
   public int by = NAME;
+
+  public ColumnDataComparator(int by) {
+    setBy(by);
+  }
   
   public void setBy(int by) {
     this.by = by;
@@ -18,12 +22,12 @@ public class ColumnDataComparator implements Comparator<ColumnData> {
   
   public int compare(ColumnData a, ColumnData b) {
     
-    int c = 0;
+    int c = -1;
     
     if (by == NAME) {
       String ac = a.getColumnName();
-      String bc = a.getColumnName();
-      c = ac.compareTo(bc);
+      String bc = b.getColumnName();
+      c = ac.compareToIgnoreCase(bc);
     }
 
     return c;

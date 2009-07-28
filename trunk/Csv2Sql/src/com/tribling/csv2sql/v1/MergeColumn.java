@@ -1,4 +1,4 @@
-package com.tribling.csv2sql;
+package com.tribling.csv2sql.v1;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

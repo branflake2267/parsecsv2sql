@@ -8,7 +8,6 @@ import java.util.Comparator;
 
 import com.csvreader.CsvReader;
 import com.tribling.csv2sql.data.ColumnData;
-import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.FieldDataComparator;
 import com.tribling.csv2sql.data.SourceData;
@@ -31,6 +30,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
 
   // columns being imported 
   private ColumnData[] columnData = null;
+  
+  private ColumnData[] defaultColumns = null;
   
   /**
    * constructor
@@ -61,14 +62,22 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     // get and create columns
     createColumns();
 
-    // TODO - create identity index
-    // TODO ~~~~~~~~~~~~~~~~~~~~~~~~
+    createIdentitiesIndex();
     
     // loop through data rows
     iterateRowsData(fileIndex);
 
   }
   
+  private void createIdentitiesIndex() {
+    if (destinationData.identityColumns == null) {
+      return;
+    }
+   
+    String sql = ColumnData.getSql_IdentitiesIndex(destinationData.databaseData, columnData);
+    MySqlQueryUtil.update(destinationData.databaseData, sql);
+  }
+
   /**
    * look for match only
    * 
@@ -82,11 +91,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     // open the csv file for reading
     openFileAndRead();
 
-    
-    /* TODO
-    // loop through data rows
-    iterateRowsData(fileIndex);
-    */
+    // TODO - finish
     
     return false;
   }
@@ -127,15 +132,21 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    * create default columns
    */
   private void createDefaultFields() {
-    ColumnData c1 = new ColumnData();
-    c1.setColumnName("DateCreated");
-    c1.setType("DATETIME DEFAULT NULL");
-    MySqlTransformUtil.createColumn(destinationData.databaseData, c1);
+    defaultColumns = new ColumnData[2];
+    defaultColumns[0] = new ColumnData();
+    defaultColumns[1] = new ColumnData();
     
-    ColumnData c2 = new ColumnData();
-    c2.setColumnName("DateCreated");
-    c2.setType("DATETIME DEFAULT NULL");
-    MySqlTransformUtil.createColumn(destinationData.databaseData, c2);
+    defaultColumns[0].setTable(destinationData.table);
+    defaultColumns[0].setColumnName("Auto_DateCreated");
+    defaultColumns[0].setType("DATETIME DEFAULT NULL");
+    defaultColumns[0].setValueAsFunction("NOW()");
+   
+    defaultColumns[1].setTable(destinationData.table);
+    defaultColumns[1].setColumnName("Auto_DateUpdated");
+    defaultColumns[1].setType("DATETIME DEFAULT NULL");
+    defaultColumns[1].setValueAsFunction("NOW()");
+    
+    MySqlTransformUtil.createColumn(destinationData.databaseData, defaultColumns);
   }
 
   /**
@@ -149,7 +160,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
       reader.readHeaders();
       columnData = createColumnsFromCsvHeader(reader.getHeaders());
     } catch (IOException e) {
-      System.out.println("getColumnsInHeader: couln't read columns");
+      System.out.println("couln't read columns");
       e.printStackTrace();
     }
     return columnData;
@@ -168,7 +179,13 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     ColumnData[] columnData = new ColumnData[header.length];
     for(int i=0; i < header.length; i++) {
       columnData[i] = new ColumnData();
+      columnData[i].setTable(destinationData.table);
      
+      // is this column used for identity
+      if (isThisColumnUsedForIdentity(columnData[i], header[i])) {
+        columnData[i].setIdentity(true);
+      }
+      
       // pre-process flat file values
       header[i] = evaluate(0, i, header[i]);
       
@@ -181,11 +198,6 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
         columnData[i].setColumnName(header[i]);
       }
       
-      // is this column used for identity
-      if (isThisColumnUsedForIdentity(columnData[i], header[i])) {
-        columnData[i].setIdentity(true);
-      }
-      
     }
     return columnData;
   }
@@ -193,27 +205,22 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   /**
    * is this Column used for identity
    * 
+   * TODO - deal with no identities being used
+   * 
    * @param columnData
    * @param headerValue
    * @return
    */
   private boolean isThisColumnUsedForIdentity(ColumnData columnData, String headerValue) {
     // find the destination field by comparing source field
-    int index = FieldData.getSourceFieldIndex(destinationData.changeColumn, headerValue);
+    int index = FieldData.getSourceFieldIndex(destinationData.identityColumns, headerValue);
     
     // no matches found in field data
     if (index < 0) {
       return false;
+    } else {
+      return true;
     }
-    
-    // get the destination field
-    String destinationField = destinationData.changeColumn[index].destinationField;
-    
-    boolean b = false;
-    if (columnData.getColumnName().toLowerCase().equals(destinationField.toLowerCase()) ) {
-      b = true;
-    }
-    return b;
   }
   
   /**
@@ -269,7 +276,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   private void process(int index, CsvReader reader) {
     String[] values = null;
     
-    // get values from file
+    // get values from row
     try {
       values = reader.getValues();
     } catch (IOException e) {
@@ -282,14 +289,16 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     // add values to columnData
     columnData = ColumnData.addValues(columnData, values);
     
-    
-    // TODO ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // TODO - test columns length fits into db
-    // TODO ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
+    testColumnValueSizes();
     
     // save Columns/Values to db
     save();
+  }
+  
+  private void testColumnValueSizes() {
+    for (int i=0; i < columnData.length; i++) {
+      columnData[i].alterColumnSizeBiggerIfNeedBe(destinationData.databaseData);
+    }
   }
 
   /**
@@ -298,24 +307,30 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   private void save() {
     
     long primaryKeyId = doesDataExist();
-    
+     
     String sql = "";
-    if (primaryKeyId > 0) {
-      sql = ColumnData.getSql_Insert(columnData);
+    if (primaryKeyId == 0) {
+      ColumnData[] i = ColumnData.merge(columnData, defaultColumns[0]); // add insert column
+      sql = ColumnData.getSql_Insert(i);
     } else { 
-      sql = ColumnData.getSql_Update(columnData, primaryKeyId);
+      ColumnData primaryKeyColumn = new ColumnData();
+      primaryKeyColumn.setIsPrimaryKey(true);
+      primaryKeyColumn.setColumnName(destinationData.primaryKeyName);
+      primaryKeyColumn.setValue(primaryKeyId);
+      ColumnData[] u = ColumnData.merge(columnData, defaultColumns[1]); // add update column
+      u = ColumnData.merge(u, primaryKeyColumn);
+      sql = ColumnData.getSql_Update(u);
     }
     
     System.out.println("SAVE(): " + sql);
     
-    //MySqlQueryUtil.update(destinationData.databaseData, sql);
+    MySqlQueryUtil.update(destinationData.databaseData, sql);
     // TODO - deal with truncation error ~~~~~~~~~~~~~~~~~~~~~~~~~~
   }
-  
+ 
   private long doesDataExist() {
    String where = " WHERE " + ColumnData.getSql_IdentitiesWhere(columnData);
-   String primaryKeyName = ColumnData.getPrimaryKey_Name(columnData);
-   String sql = "SELECT `" + primaryKeyName + "` FROM `" + destinationData.table + "` " + where;
+   String sql = "SELECT `" + destinationData.primaryKeyName + "` FROM `" + destinationData.table + "` " + where;
    long primaryKeyId = MySqlQueryUtil.queryLong(destinationData.databaseData, sql); 
    return primaryKeyId; 
   }

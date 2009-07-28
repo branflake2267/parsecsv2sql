@@ -5,14 +5,8 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 
 import com.tribling.csv2sql.data.DatabaseData;
-import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
-import com.tribling.csv2sql.lib.sql.MySqlTransformUtil;
 
 public class ImportSqlScript {
 

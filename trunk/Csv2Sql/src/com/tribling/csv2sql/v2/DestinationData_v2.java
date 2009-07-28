@@ -24,8 +24,10 @@ public class DestinationData_v2 {
   // db table
   public String table;
   
+  
+  
   // default primary key name on import
-  public String primaryKeyName = "ImportId";
+  public String primaryKeyName = "Auto_ImportId";
   
   // drop the table being added to in the beginning
   public boolean dropTable = false;
@@ -81,6 +83,18 @@ public class DestinationData_v2 {
   // stop at column, don't process any columns over this count. 0 process all
   public int stopAtColumnCount = 0;
   
-
-  
+  /**
+   * set the necessities
+   * 
+   * @param databaseData
+   * @param changeColumns
+   * @param identities
+   * @param table
+   */
+  public void setData(DatabaseData databaseData, FieldData[] changeColumns, FieldData[] identities, String table) {
+    this.databaseData = databaseData;
+    this.changeColumn = changeColumns;
+    this.identityColumns = identities;
+    this.table = table;
+  }
 }
