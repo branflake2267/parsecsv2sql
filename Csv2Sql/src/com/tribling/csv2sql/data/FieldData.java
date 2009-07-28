@@ -73,6 +73,9 @@ public class FieldData implements Comparable<FieldData> {
 	 * @return
 	 */
 	public static int getSourceFieldIndex(FieldData[] fieldData, String sourceField) {
+	  if (fieldData == null) {
+	    return -1;
+	  }
 	  Comparator<FieldData> sort = new FieldDataComparator();
 	  Arrays.sort(fieldData);
 	  
