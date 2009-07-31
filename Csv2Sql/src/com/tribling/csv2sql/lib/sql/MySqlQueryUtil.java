@@ -281,12 +281,15 @@ public class MySqlQueryUtil {
       Connection conn = dd.getConnection();
       Statement update = conn.createStatement();
       update.executeUpdate(sql);
-      ResultSet result = update.getGeneratedKeys();
-      if (result != null && result.next()) { 
-          id = result.getLong(1);
+
+      if (sql.toLowerCase().contains("insert") == true) {
+        ResultSet result = update.getGeneratedKeys();
+        if (result != null && result.next()) { 
+            id = result.getLong(1);
+          }
+          result.close();
+          result = null;
       }
-      result.close();
-      result = null;
       update.close();
       update = null;
       conn.close();
@@ -325,29 +328,29 @@ public class MySqlQueryUtil {
   }
   
   public static boolean queryLongAndConvertToBoolean(DatabaseData dd, String sql) {
-  long l = 0;
-  try {
-    Connection conn = dd.getConnection();
-    Statement select = conn.createStatement();
-    ResultSet result = select.executeQuery(sql);
-    while (result.next()) {
-      l = result.getLong(1);
+    long l = 0;
+    try {
+      Connection conn = dd.getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        l = result.getLong(1);
+      }
+      select.close();
+      select = null;
+      result.close();
+      result = null;
+      conn.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    } 
+    boolean b = false;
+    if (l > 0) {
+      b = true;
     }
-    select.close();
-    select = null;
-    result.close();
-    result = null;
-    conn.close();
-  } catch (SQLException e) {
-    System.err.println("Mysql Statement Error:" + sql);
-    e.printStackTrace();
-  } 
-  boolean b = false;
-  if (l > 0) {
-    b = true;
+    return b;
   }
-  return b;
-}
 
   
 }
