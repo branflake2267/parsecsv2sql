@@ -222,6 +222,10 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
       return null;
     }
     
+    if (columnData.getTable() == null) {
+      System.out.println("createColumn(): ColumnData doesn't have a table set");
+    }
+    
     String type = columnData.getType();
     if (type == null | type.length() == 0) {
       type = "TEXT DEFAULT NULL";

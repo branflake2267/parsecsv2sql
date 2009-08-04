@@ -168,32 +168,36 @@ public class Transfer {
       columnData_src[i] = new ColumnData();
       columnData_des[i] = new ColumnData();
       
+      columnData_src[i].setTable(tableFrom);
       columnData_src[i].setColumnName(mappedFields[i].sourceField);
       columnData_src[i].setIsPrimaryKey(mappedFields[i].isPrimaryKey);
       columnData_src[i].setOverwriteWhenBlank(mappedFields[i].onlyOverwriteBlank);
       columnData_src[i].setOverwriteWhenZero(mappedFields[i].onlyOverwriteZero);
       columnData_src[i].setRegex(mappedFields[i].regexSourceField);
       
+      columnData_des[i].setTable(tableTo);
       columnData_des[i].setColumnName(mappedFields[i].destinationField);
       columnData_des[i].setIsPrimaryKey(mappedFields[i].isPrimaryKey);
       columnData_des[i].setOverwriteWhenBlank(mappedFields[i].onlyOverwriteBlank);
     }
 
-    columnData_src_oneToMany = new ColumnData[oneToMany.length];
-    columnData_des_oneToMany = new ColumnData[oneToMany.length];
-    for (int i=0; i < oneToMany.length; i++) {
-      columnData_src_oneToMany[i] = new ColumnData();
-      columnData_des_oneToMany[i] = new ColumnData();
-      
-      columnData_src_oneToMany[i].setColumnName(oneToMany[i].sourceField);
-      columnData_src_oneToMany[i].setOverwriteWhenBlank(oneToMany[i].onlyOverwriteBlank);
-      columnData_src_oneToMany[i].setRegex(oneToMany[i].regexSourceField);
-      
-      columnData_des_oneToMany[i].setColumnName(oneToMany[i].destinationField);
-      columnData_des_oneToMany[i].setOverwriteWhenBlank(oneToMany[i].onlyOverwriteBlank);
-      columnData_des_oneToMany[i].setRegex(oneToMany[i].regexSourceField);
-      columnData_des_oneToMany[i].setTable(oneToMany[i].differentDestinationTable);
-      hardOneToMany.add(oneToMany[i].hardOneToMany);
+    if (oneToMany != null) {
+      columnData_src_oneToMany = new ColumnData[oneToMany.length];
+      columnData_des_oneToMany = new ColumnData[oneToMany.length];
+      for (int i=0; i < oneToMany.length; i++) {
+        columnData_src_oneToMany[i] = new ColumnData();
+        columnData_des_oneToMany[i] = new ColumnData();
+        
+        columnData_src_oneToMany[i].setColumnName(oneToMany[i].sourceField);
+        columnData_src_oneToMany[i].setOverwriteWhenBlank(oneToMany[i].onlyOverwriteBlank);
+        columnData_src_oneToMany[i].setRegex(oneToMany[i].regexSourceField);
+        
+        columnData_des_oneToMany[i].setColumnName(oneToMany[i].destinationField);
+        columnData_des_oneToMany[i].setOverwriteWhenBlank(oneToMany[i].onlyOverwriteBlank);
+        columnData_des_oneToMany[i].setRegex(oneToMany[i].regexSourceField);
+        columnData_des_oneToMany[i].setTable(oneToMany[i].differentDestinationTable);
+        hardOneToMany.add(oneToMany[i].hardOneToMany);
+      }
     }
     
   }
@@ -295,7 +299,7 @@ public class Transfer {
       sql = "INSERT INTO " + columnData.getTable() + " SET " + datafields;
       
     }
-    
+    System.out.println(sql);
     MySqlQueryUtil.update(database_des, sql);
   }
 
@@ -349,6 +353,8 @@ public class Transfer {
       sql = "INSERT INTO " + tableTo + " SET " + fields;
     }
 
+    System.out.println("SAVE: " + sql);
+    
     MySqlQueryUtil.update(database_des, sql);
 
   }
@@ -427,7 +433,7 @@ public class Transfer {
     
     String sql = "SELECT * FROM " + tableTo + " WHERE " + where + ";";
     
-    System.out.println("getDestinationValuesToCompareWith(): " + sql);
+    //System.out.println("getDestinationValuesToCompareWith(): " + sql);
     
     try {
       Connection conn = database_des.getConnection();
