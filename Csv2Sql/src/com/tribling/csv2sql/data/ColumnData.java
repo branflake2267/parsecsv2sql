@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.tribling.csv2sql.lib.StringUtil;
+import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
 import com.tribling.csv2sql.lib.sql.MySqlTransformUtil;
 
 public class ColumnData {
@@ -557,7 +558,7 @@ public class ColumnData {
       if (columnData[i].isFunctionSetForValue() == true) {
         v = columnData[i].getValueAsFunction();
       } else {
-        v = "'" + columnData[i].getValue() + "'";
+        v = "'" + MySqlQueryUtil.escape(columnData[i].getValue()) + "'";
       }
 
       if (columnData[i].getValue() == null) {
