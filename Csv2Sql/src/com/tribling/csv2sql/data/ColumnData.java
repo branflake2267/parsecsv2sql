@@ -881,6 +881,11 @@ public class ColumnData {
       }
     }
     
+    int size = 990;
+    if (cols.size() > 1) {
+      size = (int) size / cols.size();
+    }
+    
     String columns = "";
     for(int i=0; i < cols.size(); i++) {
       ColumnData col = cols.get(i);
@@ -888,7 +893,7 @@ public class ColumnData {
       
       String len = "";
       if (col.getType().toLowerCase().contains("text") == true) {
-        len = "(990)";
+        len = "(" + size + ")";
       }
       columns += "`" + c + "`" + len;
       
