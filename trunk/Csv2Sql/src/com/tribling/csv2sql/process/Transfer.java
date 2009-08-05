@@ -179,6 +179,7 @@ public class Transfer {
       columnData_des[i].setColumnName(mappedFields[i].destinationField);
       columnData_des[i].setIsPrimaryKey(mappedFields[i].isPrimaryKey);
       columnData_des[i].setOverwriteWhenBlank(mappedFields[i].onlyOverwriteBlank);
+      columnData_des[i].setCase(mappedFields[i].changeCase);
     }
 
     if (oneToMany != null) {
