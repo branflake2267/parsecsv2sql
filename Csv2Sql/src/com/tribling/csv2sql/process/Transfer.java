@@ -282,6 +282,11 @@ public class Transfer {
     String hardFields = getFields_OneToMany_Hard(hardOneToMany, 1);
     
     String datafields = getFields_OneToMany(columnData);
+    if (datafields == null) {
+      System.out.println("saveOneToMany(): no one to many value to insert");
+      return;
+    }
+    
     if (hardFields.length() > 0) {
       datafields += ", " + hardFields;
     }
@@ -392,6 +397,11 @@ public class Transfer {
     String value = columnData.getValue();
     sql += "`" + column + "`='" +  MySqlQueryUtil.escape(value) + "'";
 
+    // don't insert blank data
+    if (value.length() == 0) {
+      sql = null;
+    }
+    
     return sql;
   }
   
