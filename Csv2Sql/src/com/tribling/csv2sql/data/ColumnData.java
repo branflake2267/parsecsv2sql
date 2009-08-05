@@ -8,12 +8,20 @@ import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.WordUtils;
+
 import com.tribling.csv2sql.lib.StringUtil;
 import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
 import com.tribling.csv2sql.lib.sql.MySqlTransformUtil;
 
 public class ColumnData {
 
+  // change value case
+  public final static int CHANGECASE_LOWER = 1;
+  public final static int CHANGECASE_UPPER = 2;
+  public final static int CHANGECASE_SENTENCE = 3;
+  
   // column data types 
   public static final int FIELDTYPE_TEXT = 1;
   public static final int FIELDTYPE_VARCHAR = 2;
@@ -66,6 +74,9 @@ public class ColumnData {
 	// table that the column resides in, optional
 	private String table = null;
 	
+	// set with static constant above
+	private int changeCase = 0;
+	
 	/**
 	 * constructor
 	 */
@@ -85,7 +96,17 @@ public class ColumnData {
 	  setType(columnType);
 	}
 
+	/**
+	 * set value of column
+	 * 
+	 * @param value
+	 */
 	public void setValue(String value) {
+	
+	  if (value != null && changeCase > 0) {
+	    value = changeCase(value);
+	  }
+	
 	  // use regex to get the value
 	  if (regex != null) {
 	    value = StringUtil.getValue(regex, value);
@@ -93,8 +114,24 @@ public class ColumnData {
 	  this.value = value;
 	}
 	
+	/**
+	 * set value of column
+	 * 
+	 * @param value
+	 */
 	public void setValue(Long value) {
 	  this.value = Long.toString(value);
+	}
+	
+	private String changeCase(String value) {
+	  if (changeCase == CHANGECASE_LOWER) {
+	    value = value.toLowerCase();
+	  } else if (changeCase == CHANGECASE_UPPER) {
+	    value = value.toUpperCase();
+	  } else if (changeCase == CHANGECASE_SENTENCE) {
+	    value = WordUtils.capitalizeFully(value);
+	  }
+	  return value;
 	}
 	
 	/**
@@ -167,6 +204,15 @@ public class ColumnData {
 	
 	public String getTable() {
 	  return this.table;
+	}
+	
+	/**
+	 * set with constant
+	 * 
+	 * @param changeCase
+	 */
+	public void setCase(int changeCase) {
+	  this.changeCase = changeCase;
 	}
 	
 	/**

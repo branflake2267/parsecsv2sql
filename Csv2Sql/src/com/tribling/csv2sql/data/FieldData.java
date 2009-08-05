@@ -14,6 +14,10 @@ import java.util.HashMap;
  */
 public class FieldData implements Comparable<FieldData> {
   
+  public final static int CHANGECASE_LOWER = 1;
+  public final static int CHANGECASE_UPPER = 2;
+  public final static int CHANGECASE_SENTENCE = 3;
+  
   // source field name
 	public String sourceField;
 	
@@ -39,6 +43,8 @@ public class FieldData implements Comparable<FieldData> {
 	
 	// Transfer: different destination table for this value
 	public String differentDestinationTable = null;
+	
+	public int changeCase = 0;
 	
 	// Transfer: different destination table hard code column + values - one to many definition
 	public HashMap<String, String> hardOneToMany = null; // new HashMap<String, String>(); 
