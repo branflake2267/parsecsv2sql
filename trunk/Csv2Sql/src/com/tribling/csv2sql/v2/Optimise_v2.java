@@ -1,16 +1,8 @@
 package com.tribling.csv2sql.v2;
 
-import java.io.File;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 
 import com.tribling.csv2sql.data.ColumnData;
-import com.tribling.csv2sql.data.DestinationData;
-import com.tribling.csv2sql.data.SourceData;
-import com.tribling.csv2sql.lib.datetime.DateTimeParser;
 import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
 import com.tribling.csv2sql.lib.sql.MySqlTransformUtil;
 
