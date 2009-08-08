@@ -431,13 +431,13 @@ public class ColumnData {
       column = column.substring(0, 63);
     }
     column = column.trim();
-    table = table.replaceAll("#", "_Num");
-    table = table.replaceAll("%", "_per");
-    table = table.replaceAll("\\.", "_");
-    table = table.replaceAll(" ", "_");
-    table = table.replaceAll("[^\\w]", "");
-    table = table.replaceAll("[\r\n\t]", "");
-    table = table.replaceAll("(\\W)", "");
+    column = column.replaceAll("#", "_Num");
+    column = column.replaceAll("%", "_per");
+    column = column.replaceAll("\\.", "_");
+    column = column.replaceAll(" ", "_");
+    column = column.replaceAll("[^\\w]", "");
+    column = column.replaceAll("[\r\n\t]", "");
+    column = column.replaceAll("(\\W)", "");
   }
   
   /**
