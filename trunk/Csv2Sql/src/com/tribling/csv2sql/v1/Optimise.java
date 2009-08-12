@@ -148,6 +148,9 @@ public class Optimise extends SQLProcessing {
    * @param c - name of the column in array
    */
   public void runIndexing(String[] c) {
+    // work around
+    dd.optimise_TextOnlyColumnTypes = false;
+    
     int indexKind = INDEXKIND_DEFAULT;
     runIndexing(c, indexKind);
   }
