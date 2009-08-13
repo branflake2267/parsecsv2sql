@@ -146,8 +146,10 @@ public class DateTimeParser {
     }  else if (checkforFormat_Intformat() == true) { 
       s = df.format(date);
       
+    } else if (checkforFormat_Intformat_Short() == true) {
+      s = df.format(date); // 20091231
+      
     } else {
-    
       // return orginal if not matched
       s = datetime;
     }
@@ -821,6 +823,45 @@ public class DateTimeParser {
 
     date = cal.getTime();
 
+    return found;
+  }
+  
+  /**
+   * 20091231 yyyymmdd
+   * 
+   * @return
+   */
+  private boolean checkforFormat_Intformat_Short() {
+  
+    String re = "^.*?([0-9]{4})([0-9]{2})([0-9]{2})$";
+    Pattern p = Pattern.compile(re);
+    Matcher m = p.matcher(datetime);
+    boolean found = m.find();
+  
+    int year = 0;
+    int month = 0;
+    int day = 0;
+    if (found == true) {
+      String yy = m.group(1);
+      String mm = m.group(2);
+      String dd = m.group(3);
+
+      if (yy == null | mm == null | dd == null) {
+        return false;
+      }
+      
+      year = getYear(yy);
+      month = getMonth(mm) - 1;
+      day = getDay(dd);
+    } else {
+      return false;
+    }
+  
+    Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.DAY_OF_MONTH, day);
+    cal.set(Calendar.MONTH, month);
+    cal.set(Calendar.YEAR, year);
+    date = cal.getTime();
     return found;
   }
   

@@ -22,6 +22,7 @@ public class DateParserTests {
     parse.test_EngDate("apr 08", "04/01/2008");
     parse.test_EngDate("January 01, 2009", "01/01/2009");
     parse.test_EngDate("20091203000000", "12/03/2009");
+    parse.test_EngDate("20091231", "12/31/2009");
     
     
     parse.test_MySqlDate("jan 2009", "2009-01-01 00:00:00");
