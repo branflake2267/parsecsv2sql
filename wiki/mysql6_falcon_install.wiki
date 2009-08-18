@@ -32,8 +32,9 @@ sudo apt-get install autoconf libtool aclocal
 
 # this can setup the build parameters
 sh ./BUILD/autorun.sh 
-OR
-sh ./BUILD/compile-amd64-max #this is even easier
+
+# OR this is even easier
+sh ./BUILD/compile-amd64-max --prefix=/srv/mysql5_4  
 
 
 # configure options
