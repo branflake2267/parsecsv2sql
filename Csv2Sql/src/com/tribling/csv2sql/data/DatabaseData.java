@@ -151,7 +151,7 @@ public class DatabaseData {
     } catch (Exception e) {
       System.err.println("ERROR: getConn_MySql(): connection error: " + e.getMessage());
       e.printStackTrace();
-      System.exit(1);
+      //System.exit(1);
     }
     
     return conn;
