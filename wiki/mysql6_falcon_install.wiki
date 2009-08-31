@@ -51,7 +51,7 @@ sudo make install
 
 # my.cnf
 sudo cp ./share/mysql/my-large.cnf /etc/mysql/my.cnf 
-sudo ln -s /etc/mysql/my.cnf /etc/my.cnf - just in case
+sudo ln -s /etc/mysql/my.cnf /etc/my.cnf  #just in case
 
 # edit my.cnf
 [mysqld]
