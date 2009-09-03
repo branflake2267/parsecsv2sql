@@ -300,6 +300,34 @@ public class MySqlQueryUtil {
     return id;
   }
   
+  public static long update(DatabaseData dd, String sql, boolean getKey) {
+    if (sql == null) {
+      return 0;
+    }
+    long id = 0;
+    try {
+      Connection conn = dd.getConnection();
+      Statement update = conn.createStatement();
+      update.executeUpdate(sql);
+
+      if (getKey == true) {
+        ResultSet result = update.getGeneratedKeys();
+        if (result != null && result.next()) { 
+            id = result.getLong(1);
+          }
+          result.close();
+          result = null;
+      }
+      update.close();
+      update = null;
+      conn.close();
+    } catch (SQLException e) {
+      System.err.println("Error: update(): " + sql);
+      e.printStackTrace();
+    } 
+    return id;
+  }
+  
   public static boolean queryStringAndConvertToBoolean(DatabaseData dd, String sql) {
     String value = null;
     try {
