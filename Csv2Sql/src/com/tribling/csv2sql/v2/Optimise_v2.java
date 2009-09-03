@@ -2,6 +2,7 @@ package com.tribling.csv2sql.v2;
 
 import java.util.ArrayList;
 
+import com.sun.org.apache.bcel.internal.generic.DDIV;
 import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
 import com.tribling.csv2sql.lib.sql.MySqlTransformUtil;
@@ -55,19 +56,22 @@ public class Optimise_v2 extends SQLProcessing_v2 {
    */
   private void checkColumn(ColumnData columnData) {
     
-    if (columnData.getType().toLowerCase().contains("text")) {
-      int currentSize = columnData.getCharLength();
-      
-      String sql = ColumnData.getSql_GetMaxCharLength(destinationData.databaseData, columnData);
-      int resize = MySqlQueryUtil.queryInteger(destinationData.databaseData, sql);
-      
-      if (currentSize == resize) {
-        return;
-      }
-      
-      columnData.setCharLength(resize);
-      MySqlTransformUtil.alterColumn(destinationData.databaseData, columnData);
+    if (columnData.getType().toLowerCase().contains("text") && destinationData.optimise_TextOnlyColumnTypes == true) {
+      return;
     }
+
+    int currentSize = columnData.getCharLength();
+
+    String sql = ColumnData.getSql_GetMaxCharLength(destinationData.databaseData, columnData);
+    int resize = MySqlQueryUtil.queryInteger(destinationData.databaseData, sql);
+
+    if (currentSize == resize) {
+      return;
+    }
+
+    columnData.setCharLength(resize);
+    MySqlTransformUtil.alterColumn(destinationData.databaseData, columnData);
+
     
   }
   
