@@ -46,7 +46,7 @@ public class ColumnData {
   @Deprecated
 	public String column = "";
 	
-  private String columnAsSql = "";
+  private String columnAsSql = null;
   
 	// column field type - like INTEGER DEFAULT 0
   // TODO public access to this var is deprecated, changing to method access
@@ -169,10 +169,12 @@ public class ColumnData {
 	    return;
 	  }
 	  
+	  // save (select *...) as sql
+	  columnAsSql = column;
+	  
 	  String regex = ".*[\040]as[\040](.*)";
 	  String c = StringUtil.getValue(regex, column.toLowerCase());
-	  if (c != null) {
-	    columnAsSql = column;
+	  if (c != null) {  
 	    column = c.trim();
 	  }
 	  
@@ -530,6 +532,28 @@ public class ColumnData {
     return sql;
   }
   
+  public static String getSql_Names_WSql(ColumnData[] columnData, ColumnData[] pruneColumnData) {
+    if (columnData == null) {
+      return null;
+    }
+    columnData = prune(columnData, pruneColumnData);
+    String sql = "";
+    for (int i=0; i < columnData.length; i++) {
+      String c = "";
+      String cn_sql =  columnData[i].getColumnAsSql();
+      if (cn_sql != null) {
+        c = cn_sql;
+      } else {
+        c = "`" + columnData[i].getColumnName() + "`";
+      }
+      sql += c;
+      if (i < columnData.length -1) {
+        sql += ",";
+      }
+    }
+    return sql;
+  }
+  
   /**
    * get column names in csv format "a","b","c"
    * 
@@ -868,7 +892,7 @@ public class ColumnData {
   public static ColumnData getPrimaryKey_ColumnData(ColumnData[] columnData) {
     int index = getPrimaryKey_Index(columnData);
     ColumnData r = null;
-    if (index > 0) {
+    if (index > -1) {
       r = columnData[index];
     }
     return r;
