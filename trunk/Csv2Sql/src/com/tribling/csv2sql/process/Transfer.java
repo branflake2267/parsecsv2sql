@@ -61,7 +61,9 @@ public class Transfer {
   
   // hard code values in on a one to many records
   private ArrayList<HashMap<String,String>> hardOneToMany = new ArrayList<HashMap<String,String>>();
-   
+  
+  private int index = 0;
+  
   /**
    * Transfer data object setup 
    * 
@@ -87,6 +89,14 @@ public class Transfer {
     start();
   }
   
+  public void transferOnlyMappedFields(String fromTable, String toTable, FieldData[] mappedFields) {
+    this.mode = MODE_TRANSFER_ONLY;
+    this.tableFrom = fromTable;
+    this.tableTo = toTable;
+    this.mappedFields = mappedFields;
+    start();
+  }
+  
   /**
    * set up tables from to and mapped fields to transfer
    * 
@@ -108,6 +118,8 @@ public class Transfer {
    * prep the objects needed
    */
   private void start() {
+    
+    index = 0;
     
     database_src.openConnection();
     database_des.openConnection();
@@ -205,12 +217,17 @@ public class Transfer {
   
   private void processSrc() {
 
+    String columnCsv = ColumnData.getCsv_Names(columnData_src);
+    
     String sql = "";
     sql = "SELECT * FROM " + tableFrom + " ";
     
+    System.out.println("sql: " + sql);
+    
     try {
       Connection conn = database_src.getConnection();
-      Statement select = conn.createStatement();
+      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
+      select.setFetchSize(Integer.MIN_VALUE); // read row by row
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
 
@@ -260,6 +277,7 @@ public class Transfer {
     
     save();
     
+    // save one to many
     if (columnData_src_oneToMany != null && columnData_src_oneToMany.length > 0) {
       saveOneToMany();
     }
@@ -305,7 +323,7 @@ public class Transfer {
       sql = "INSERT INTO " + columnData.getTable() + " SET " + datafields;
       
     }
-    System.out.println(sql);
+    //System.out.println(sql);
     MySqlQueryUtil.update(database_des, sql);
   }
 
@@ -318,7 +336,7 @@ public class Transfer {
 
     String sql = "SELECT " + oneToManyTablePrimaryKey.getColumnName() + " FROM " + columnData.getTable() + " WHERE " + where;
     
-    System.out.println("checking onetomany: " + sql);
+    //System.out.println("checking onetomany: " + sql);
     
     long id = MySqlQueryUtil.queryLong(database_des, sql);
     
@@ -359,10 +377,11 @@ public class Transfer {
       sql = "INSERT INTO " + tableTo + " SET " + fields;
     }
 
-    System.out.println("SAVE: " + sql);
+    System.out.println(index + ". SAVE: " + sql);
     
-    MySqlQueryUtil.update(database_des, sql);
-
+    MySqlQueryUtil.update(database_des, sql, false);
+    
+    index++;
   }
   
   private String getWhere() {
@@ -446,6 +465,7 @@ public class Transfer {
     
     //System.out.println("getDestinationValuesToCompareWith(): " + sql);
     
+    boolean b = false;
     try {
       Connection conn = database_des.getConnection();
       Statement select = conn.createStatement();
@@ -455,6 +475,7 @@ public class Transfer {
         for (int i=0; i < des.length; i++) {
           String value = result.getString(des[i].getColumnName());
           des[i].setValue(value);
+          b = true;
         }
         
       }
@@ -463,6 +484,13 @@ public class Transfer {
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
+    }
+    
+    if (b == false) {
+      for (int i=0; i < des.length; i++) {
+        des[i].setValue("");
+        b = true;
+      }
     }
   }
   
@@ -483,6 +511,7 @@ public class Transfer {
   
     String sql = "SELECT * FROM " + des.getTable() + " WHERE " + where + ";";
     
+    boolean b = false;
     try {
       Connection conn = database_des.getConnection();
       Statement select = conn.createStatement();
@@ -491,13 +520,17 @@ public class Transfer {
         
         String value = result.getString(des.getColumnName());
         des.setValue(value);
-        
+        b = true;
       }
       result.close();
       select.close();
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
+    }
+    
+    if (b == false) {
+      des.setValue("");
     }
     
   }
@@ -507,6 +540,8 @@ public class Transfer {
     ColumnData primaryKey = MySqlTransformUtil.queryPrimaryKey(database_des, tableTo);
     
     String sql = "Select `" + primaryKey.getColumnName() + "` FROM " + tableTo + " WHERE "  + getSqlIdent();
+    
+   //System.out.println("\texist: " + sql);
     
     long id = MySqlQueryUtil.queryLong(database_des, sql);
     
@@ -551,7 +586,9 @@ public class Transfer {
       if ( (onlyOverwriteBlank == true && (desValue.equals("null") | desValue.length() == 0)) | 
           (onlyOverwriteZero == true && (desValue.equals("null") | desValue.length() == 0 | desValue.equals("0"))) ) { // write when blank
         columnData_des[i].setValue(columnData_src[i].getValue());
-      } 
+      } else if (onlyOverwriteBlank == false | onlyOverwriteZero == false) {
+        columnData_des[i].setValue(columnData_src[i].getValue());
+      }
       
     }
    

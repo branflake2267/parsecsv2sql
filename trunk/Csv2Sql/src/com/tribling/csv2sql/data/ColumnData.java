@@ -46,6 +46,8 @@ public class ColumnData {
   @Deprecated
 	public String column = "";
 	
+  private String columnAsSql = "";
+  
 	// column field type - like INTEGER DEFAULT 0
   // TODO public access to this var is deprecated, changing to method access
   @Deprecated
@@ -162,8 +164,28 @@ public class ColumnData {
 	  return column;
 	}
 	
+	public void setColumnAsSql() {
+	  if (column.matches(".*[\040]as[\040].*") == false) {
+	    return;
+	  }
+	  
+	  String regex = ".*[\040]as[\040](.*)";
+	  String c = StringUtil.getValue(regex, column.toLowerCase());
+	  if (c != null) {
+	    columnAsSql = column;
+	    column = c.trim();
+	  }
+	  
+	}
+	
+	private String getColumnAsSql() {
+	  return columnAsSql;
+	}
+	
+	
 	public void setColumnName(String column) {
 	  this.column = column;
+	  setColumnAsSql(); // in case it has sql AS in it
 	}
 
 	public void setIsPrimaryKey(boolean b) {
