@@ -13,6 +13,8 @@ import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
 import com.tribling.csv2sql.lib.sql.MySqlTransformUtil;
+import com.tribling.csv2sql.v2.DestinationData_v2;
+import com.tribling.csv2sql.v2.Optimise_v2;
 
 /**
  * transfer data from one table to another
@@ -25,6 +27,7 @@ public class Transfer {
   // what kind of transfer process is going on
   public static final int MODE_TRANSFER_ALL = 1;
   public static final int MODE_TRANSFER_ONLY = 2;
+  public static final int MODE_MASH = 3; // mash to it self
   private int mode = 0;
   
   // source database settings
@@ -85,7 +88,6 @@ public class Transfer {
     this.mode = MODE_TRANSFER_ALL;
     this.tableFrom = fromTable;
     this.tableTo = toTable;
-    
     start();
   }
   
@@ -96,6 +98,15 @@ public class Transfer {
     this.mappedFields = mappedFields;
     start();
   }
+  
+  public void mashSrc(String fromTable, String toTable, FieldData[] mappedFields) {
+    this.mode = MODE_MASH;
+    this.tableFrom = fromTable;
+    this.tableTo = toTable;
+    this.mappedFields = mappedFields;
+    start();
+  }
+  
   
   /**
    * set up tables from to and mapped fields to transfer
@@ -110,7 +121,6 @@ public class Transfer {
     this.tableTo = toTable;
     this.mappedFields = mappedFields;
     this.oneToMany  = oneToMany;
-    
     start();
   }
   
@@ -128,13 +138,21 @@ public class Transfer {
       setColumnData_All();
     } else if (mode == MODE_TRANSFER_ONLY) {
       setColumnData();
+    } else if (mode == MODE_MASH) {
+      setColumnData();
     }
     
     createDestTable();
     
     createColumns();
     
-    processSrc();
+    if (mode == MODE_TRANSFER_ALL) {
+      processSrc();
+    } else if (mode == MODE_TRANSFER_ONLY) {
+      processSrc();
+    } else if (mode == MODE_MASH) {
+      processSrc_Mash();
+    }
     
     database_src.closeConnection();
     database_des.closeConnection();
@@ -217,10 +235,83 @@ public class Transfer {
   
   private void processSrc() {
 
-    String columnCsv = ColumnData.getCsv_Names(columnData_src);
+    String columnCsv = ColumnData.getSql_Names_WSql(columnData_src, null);
     
     String sql = "";
-    sql = "SELECT * FROM " + tableFrom + " ";
+    sql = "SELECT " + columnCsv + " FROM " + tableFrom + " ";
+    
+    System.out.println("sql: " + sql);
+    
+    try {
+      Connection conn = database_src.getConnection();
+      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
+      select.setFetchSize(Integer.MIN_VALUE); // read row by row
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+
+        // get values 
+        for (int i=0; i < columnData_src.length; i++) {
+          String value = result.getString(columnData_src[i].getColumnName());
+          // TODO - change the way values are gotten, by the column type
+          columnData_src[i].setValue(value);
+        }
+        
+        // one to many relationships processing
+        if (columnData_src_oneToMany != null && columnData_src_oneToMany.length > 0) {
+          for (int i=0; i < columnData_src_oneToMany.length; i++) {
+            String value = result.getString(columnData_src_oneToMany[i].getColumnName());
+            columnData_src_oneToMany[i].setValue(value);
+          }
+        }
+
+        process();
+      }
+      result.close();
+      select.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    }
+  }
+  
+  private void processSrc_Mash() {
+
+    ColumnData keyDes = ColumnData.getPrimaryKey_ColumnData(columnData_des);
+    
+    String sql = "";
+    sql = "SELECT " + keyDes.getColumnName() + " FROM " + tableTo + " ";
+
+    System.out.println("sql: " + sql);
+    
+    try {
+      Connection conn = database_des.getConnection();
+      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
+      select.setFetchSize(Integer.MIN_VALUE); // read row by row
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+
+        String getKeyValue = result.getString(1);
+
+        processSrc_Mash(getKeyValue);
+      }
+      result.close();
+      select.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    }
+  }
+  
+  private void processSrc_Mash(String keyValueDes) {
+
+    String columnCsv = ColumnData.getSql_Names_WSql(columnData_src, null);
+    
+    ColumnData keySrc = ColumnData.getPrimaryKey_ColumnData(columnData_src);
+    ColumnData keyDes = ColumnData.getPrimaryKey_ColumnData(columnData_des);
+    
+    String sql = "";
+    sql = "SELECT " + columnCsv + " FROM " + tableFrom + " ";
+    sql += "WHERE " + keySrc.getColumnName() + " = '" + keyValueDes + "' ";
     
     System.out.println("sql: " + sql);
     
@@ -367,21 +458,29 @@ public class Transfer {
     String sql = "";
     if (id > 0) { // update
       if (ColumnData.doesColumnNameExist(columnData_des, "DateUpdated") == false) {
-        fields += ",DateUpdated=NOW()";
+        //fields += ",DateUpdated=NOW()";
       }
       sql = "UPDATE " + tableTo + " SET " + fields + " WHERE " + where; 
     } else { // insert
       if (ColumnData.doesColumnNameExist(columnData_des, "DateCreated") == false) {
-        fields += ",DateCreated=NOW()";
+        //fields += ",DateCreated=NOW()";
       }
       sql = "INSERT INTO " + tableTo + " SET " + fields;
     }
 
     System.out.println(index + ". SAVE: " + sql);
     
+    testColumnValueSizes(columnData_des);
+    
     MySqlQueryUtil.update(database_des, sql, false);
     
     index++;
+  }
+  
+  private void testColumnValueSizes(ColumnData[] columnData) {
+    for (int i=0; i < columnData.length; i++) {
+      columnData[i].alterColumnSizeBiggerIfNeedBe(database_des);
+    }
   }
   
   private String getWhere() {

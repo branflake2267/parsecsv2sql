@@ -84,6 +84,17 @@ public class DestinationData_v2 {
   public int stopAtColumnCount = 0;
   
   /**
+   * optimize table settings basics
+   * 
+   * @param databaseData
+   * @param table
+   */
+  public void setData(DatabaseData databaseData, String table) {
+    this.databaseData = databaseData;
+    this.table = table;
+  }
+  
+  /**
    * set the necessities
    * 
    * @param databaseData
