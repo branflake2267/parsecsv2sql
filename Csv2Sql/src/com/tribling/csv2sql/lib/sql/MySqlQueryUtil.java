@@ -280,16 +280,13 @@ public class MySqlQueryUtil {
     try {
       Connection conn = dd.getConnection();
       Statement update = conn.createStatement();
-      update.executeUpdate(sql);
-
-      if (sql.toLowerCase().contains("insert") == true) {
-        ResultSet result = update.getGeneratedKeys();
-        if (result != null && result.next()) { 
-            id = result.getLong(1);
-          }
-          result.close();
-          result = null;
+      update.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
+      ResultSet result = update.getGeneratedKeys();
+      if (result != null && result.next()) { 
+        id = result.getLong(1);
       }
+      result.close();
+      result = null;
       update.close();
       update = null;
       conn.close();
