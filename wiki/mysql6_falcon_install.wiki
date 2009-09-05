@@ -34,7 +34,7 @@ sudo apt-get install autoconf libtool aclocal
 sh ./BUILD/autorun.sh 
 
 # OR this is even easier
-sh ./BUILD/compile-amd64-max --prefix=/srv/mysql5_4 --with-plugins=innodb --with-federated-storage-engine
+sh ./BUILD/compile-amd64-max --prefix=/srv/mysql5_4 --with-plugins=innodb --with-federated-storage-engine --with-partition
 
 
 # configure options
