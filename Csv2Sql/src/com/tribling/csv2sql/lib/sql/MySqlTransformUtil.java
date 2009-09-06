@@ -274,12 +274,8 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
       type = "TEXT DEFAULT NULL";
     } else if (columnType == ColumnData.FIELDTYPE_VARCHAR) {
       type = "VARCHAR(" + length + ") DEFAULT NULL";
-    } else if (columnType == ColumnData.FIELDTYPE_SMALLINT) {
-      type = "SMALLINT DEFAULT 0";
     } else if (columnType == ColumnData.FIELDTYPE_INT) {
       type = "INT DEFAULT 0";
-    } else if (columnType == ColumnData.FIELDTYPE_BITINT) {
-      type = "BIGINT DEFAULT 0";
     } else if (columnType == ColumnData.FIELDTYPE_DECIMAL) {
       type = "DECIMAL(" + length + ") DEFAULT 0.0";
     } else if (columnType == ColumnData.FIELDTYPE_DATETIME) {
@@ -565,7 +561,7 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     String[] sqlIndexRestore = deleteIndexForColumn(dd, columnData);
     String indexSql = StringUtil.toCsv_NoQuotes(sqlIndexRestore);
     
-    String modifyColumn = "`" + columnData.getColumnName() + "` " + columnData.getTypeNew();
+    String modifyColumn = "`" + columnData.getColumnName() + "` " + columnData.getType();
     String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + columnData.getTable() + "` MODIFY COLUMN " + modifyColumn + " ";
     
     if (indexSql != null) {
