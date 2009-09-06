@@ -41,17 +41,39 @@ public class DateTimeParser {
   // return type yyyy-MM-dd HH:MM:SS
   public final static int TYPE_MYSQL_DATETIME = 2;
 
+  // did it match to one of the formats?
+  public boolean isDate = false;
+  
   /**
    * constructor
    */
   public DateTimeParser() {
   }
 
+  /**
+   * parse the date time into Date
+   *   this will return original value if nothing is matched
+   *   
+   * @param dt
+   * @return
+   */
   public Date getDate(String dt) {
     this.datetime = dt;
-    // type doesn't matter, b/c returning date
     getDate(TYPE_ENG_DATE);
     return date;
+  }
+  
+  /**
+   * does one of the date formats match the value, can this value be parsed as a datetime?
+   * 
+   * @param dt
+   * @return
+   */
+  public boolean getIsDate(String dt) {
+    isDate = false;
+    this.datetime = dt;
+    getDate(TYPE_ENG_DATE);
+    return isDate;
   }
   
   /**
@@ -106,52 +128,53 @@ public class DateTimeParser {
     String s = "";
     if (checkforFormat_monthYearTogether() == true) {  // keep letter type first - like matching jan or Janurary
       s = df.format(date);
-
+      isDate = true;
     } else if (checkforFormat_monthYear() == true) {  // keep letter type first - like matching jan or Janurary
       s = df.format(date);
-
+      isDate = true;
     } else if (checkforFormat_monthDayYear() == true) { // keep letter type first - like matching jan or Janurary
       s = df.format(date);
-      
+      isDate = true;
     } else if (checkforFormat_weird1() == true) { // 3-apr-09
       s = df.format(date);
-      
+      isDate = true;
     } else if (checkforFormat_datetime12hr() == true ) { // month first
       s = df.format(date);
-      
+      isDate = true;
     } else if (checkforFormat_datetime12hra() == true ) { // month first
       s = df.format(date);
-      
+      isDate = true;
     } else if (checkforFormat_datetime12hr2() == true ) { // year first
       s = df.format(date);
-      
+      isDate = true;
     } else if (checkforFormat_datetime24hr() == true ) { // month first
       s = df.format(date);
-      
+      isDate = true;
     } else if (checkforFormat_datetime24hra() == true ) { // month first
       s = df.format(date);
-      
+      isDate = true;
     } else if (checkforFormat_datetime24hr2() == true ) { // year first
       s = df.format(date);
-      
+      isDate = true;
     } else if (checkforFormat_datetime24hr3() == true ) { // `yyyy-mm-dd` only
       s = df.format(date);
-      
+      isDate = true;
     } else if (checkforFormat_engDateString() == true ) {
       s = df.format(date);
-      
+      isDate = true;
     } else if (checkforFormat_engDateStringNoDay() == true ) {
       s = df.format(date);
-      
+      isDate = true;
     }  else if (checkforFormat_Intformat() == true) { 
       s = df.format(date);
-      
+      isDate = true;
     } else if (checkforFormat_Intformat_Short() == true) {
       s = df.format(date); // 20091231
-      
+      isDate = true;
     } else {
       // return orginal if not matched
       s = datetime;
+      isDate = false;
     }
     
     return s;
