@@ -6,7 +6,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-import com.sun.net.ssl.internal.ssl.Debug;
 import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.lib.StringUtil;
 import com.tribling.csv2sql.lib.datetime.DateTimeParser;
