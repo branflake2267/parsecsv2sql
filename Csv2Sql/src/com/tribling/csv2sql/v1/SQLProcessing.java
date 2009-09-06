@@ -749,11 +749,7 @@ public class SQLProcessing {
       t = "TEXT DEFAULT NULL";
     } else if (type == ColumnData.FIELDTYPE_VARCHAR) {
       t = "VARCHAR(255) DEFAULT NULL";
-    } else if (type == ColumnData.FIELDTYPE_SMALLINT) {
-      
     } else if (type == ColumnData.FIELDTYPE_INT) {
-      
-    } else if (type == ColumnData.FIELDTYPE_BITINT) {
       
     } else if (type == ColumnData.FIELDTYPE_DECIMAL) {
       
