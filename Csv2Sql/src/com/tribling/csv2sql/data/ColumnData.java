@@ -23,13 +23,14 @@ public class ColumnData {
   public final static int CHANGECASE_SENTENCE = 3;
   
   // column data types 
-  public static final int FIELDTYPE_TEXT = 1;
+  public static final int FIELDTYPE_DATETIME = 1;
   public static final int FIELDTYPE_VARCHAR = 2;
-  public static final int FIELDTYPE_SMALLINT = 3;
+  public static final int FIELDTYPE_INT_ZEROFILL = 3;
   public static final int FIELDTYPE_INT = 4;
-  public static final int FIELDTYPE_BITINT = 5;
-  public static final int FIELDTYPE_DECIMAL = 6;
-  public static final int FIELDTYPE_DATETIME = 7;
+  public static final int FIELDTYPE_DECIMAL = 5;
+  public static final int FIELDTYPE_EMPTY = 6;
+  public static final int FIELDTYPE_TEXT = 7;
+   
   
   // type of index
   public static final int INDEXKIND_DEFAULT = 1;
@@ -43,15 +44,15 @@ public class ColumnData {
   
   // column name
   // TODO public access to this var is deprecated, changing to method access
-  @Deprecated
 	public String column = "";
 	
   private String columnAsSql = null;
   
 	// column field type - like INTEGER DEFAULT 0
   // TODO public access to this var is deprecated, changing to method access
-  @Deprecated
 	public String columnType = "TEXT";
+  // new var to show what type of column it is
+  public int fieldType = FIELDTYPE_TEXT;
 	
 	// column field length for the given column type
   // when type is set, this is discovered
@@ -78,6 +79,13 @@ public class ColumnData {
 	
 	// set with static constant above
 	private int changeCase = 0;
+	
+	// for int type, zerofill??
+	private boolean zeroFill = false;
+	
+	// for decimal
+	private int length_left = 0;
+	private int length_right = 0;
 	
 	/**
 	 * constructor
@@ -306,6 +314,15 @@ public class ColumnData {
 		if (len.length() > 0) {
 			lengthChar = Integer.parseInt(len);
 		}	
+		
+		if (columnType.contains(",")) {
+		  setDecimalLengths(columnType);
+		}
+	}
+	
+	public void setType(String columnType, boolean zeroFill) {
+	  this.zeroFill = zeroFill;
+	  setType(columnType);
 	}
 	
 	/**
@@ -319,8 +336,11 @@ public class ColumnData {
 	/**
 	 * recalculate the type 
 	 *   like for altering, incase i forced charlen change, and or other change 
+	 *   
+	 *   I am defining column type in optimize
 	 * @return
 	 */
+	@Deprecated
 	public String getTypeNew() {
 	  if (columnType.toLowerCase().contains("text") == true) {
 	     if (lengthChar <= 255) {
@@ -462,6 +482,34 @@ public class ColumnData {
     column = column.replaceAll("[^\\w]", "");
     column = column.replaceAll("[\r\n\t]", "");
     column = column.replaceAll("(\\W)", "");
+  }
+  
+  /**
+   * TODO - finish this
+   * 
+   * @param columnType
+   * @return
+   */
+  public int getFieldType(String columnType) {
+
+    String type = columnType.toLowerCase();
+
+    int fieldType = 0;
+    if (type.contains("text")) {
+      fieldType = ColumnData.FIELDTYPE_VARCHAR;
+    } else if (type.contains("date")) {
+      fieldType = ColumnData.FIELDTYPE_DATETIME;
+    } else if (type.contains("varchar")) {
+      fieldType = ColumnData.FIELDTYPE_VARCHAR;
+    } else if (type.contains("int")) {
+      fieldType = ColumnData.FIELDTYPE_INT;
+    } else if (type.contains("double") | type.contains("decimal")) {
+      fieldType = ColumnData.FIELDTYPE_DECIMAL;
+    } else if (type.length() == 0) {
+      fieldType = ColumnData.FIELDTYPE_EMPTY;
+    }
+
+    return fieldType;
   }
   
   /**
@@ -1088,7 +1136,19 @@ public class ColumnData {
     return sql;
   }
   
-  
+  private void setDecimalLengths(String s) {
+    int l = 0;
+    int r = 0;
+    if (s.contains(",")) {
+      String[] a = s.split(",");
+      l = a[0].trim().length();
+      r = a[1].trim().length();
+    } else {
+      l = s.length();
+    }
+    length_left = l;
+    length_right = r;
+  }
   
   
   /**
@@ -1137,25 +1197,7 @@ public class ColumnData {
     return resize;
   }
 
-  /**
-   * figure out the length of an int
-   * 
-   * this is goign to be general
-   * 
-   * @param value
-   * @return
-   */
-  @Deprecated
-  public int testNumber(String value) {
-    // zero based 0000123434
-    // decimal 12341234.13044
-    // tiny(127) len=0-2
-    // small(32767) len=3-4
-    // medium(8388607) len=4-6
-    // int(2147483647) len=7-9
-    // big int len=9+
-    return 0;
-  }
+
 
   
 }
