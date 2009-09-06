@@ -45,13 +45,6 @@ public class DestinationData_v2 {
   // when Examing the data, ignore null values, this will slow things down in huge record sets
   public boolean optimise_ignoreNullFieldsWhenExamining = true;
 
-  // optimise lengths into varchar and text only
-  // this will have to be done first every time, so that
-  // one can go from varchar->date, varchar->int (instead of text>date=will not work)
-  // TO much confusion over this var, needs to get rid of it
-  @Deprecated
-  public boolean optimise_TextOnly = true;
-
   // use this if you need to repeat optimisation and want to skip all but TEXT columns
   public boolean optimise_TextOnlyColumnTypes = false;
   
