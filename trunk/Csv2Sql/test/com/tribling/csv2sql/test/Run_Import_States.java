@@ -4,16 +4,9 @@ import java.io.File;
 import java.net.URISyntaxException;
 
 import com.tribling.csv2sql.data.DatabaseData;
-import com.tribling.csv2sql.data.DestinationData;
 import com.tribling.csv2sql.data.FieldData;
-import com.tribling.csv2sql.data.FlatFileSettingsData;
 import com.tribling.csv2sql.data.SourceData;
-import com.tribling.csv2sql.v1.FileProcessing;
-import com.tribling.csv2sql.v1.Optimise;
-import com.tribling.csv2sql.v1.SQLProcessing;
 import com.tribling.csv2sql.v2.DestinationData_v2;
-import com.tribling.csv2sql.v2.FileProcessing_v2;
-import com.tribling.csv2sql.v2.Optimise_v2;
 import com.tribling.csv2sql.v2.Process;
 
 public class Run_Import_States {

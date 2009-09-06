@@ -3,7 +3,6 @@ package com.tribling.csv2sql.test;
 import java.io.File;
 import java.net.URISyntaxException;
 
-import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.Export;
 

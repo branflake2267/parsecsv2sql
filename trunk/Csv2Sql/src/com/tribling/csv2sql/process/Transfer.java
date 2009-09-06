@@ -13,8 +13,6 @@ import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
 import com.tribling.csv2sql.lib.sql.MySqlTransformUtil;
-import com.tribling.csv2sql.v2.DestinationData_v2;
-import com.tribling.csv2sql.v2.Optimise_v2;
 
 /**
  * transfer data from one table to another
