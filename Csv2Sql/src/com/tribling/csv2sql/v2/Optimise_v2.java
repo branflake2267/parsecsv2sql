@@ -6,7 +6,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 import com.tribling.csv2sql.data.ColumnData;
+import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.lib.StringUtil;
 import com.tribling.csv2sql.lib.datetime.DateTimeParser;
 import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
@@ -108,10 +110,21 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     // TODO - if changing to a datetime, need to transform all values in the column to datetime
     
     if (changed == true) {
-      columnData.setType(newColumnType);
-      MySqlTransformUtil.alterColumn(destinationData.databaseData, columnData);
+      alter(columnData, newColumnType);
     }
      
+  }
+  
+  private void alter(ColumnData columnData, String columnType) {
+    
+    // when altering dates, make sure every value is transformed to
+    if (columnType.toLowerCase().contains("datetime") == true) {
+      formatColumn_ToDateTime(columnData);
+    }
+    
+    columnData.setType(columnType);
+    MySqlTransformUtil.alterColumn(destinationData.databaseData, columnData);
+    
   }
 
   private boolean didItChange(ColumnData columnData, String newColumnType) {
@@ -429,4 +442,49 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     System.out.println("decimal: left: " + deca + " right: " + decb + " value: " + s);
   }
   
+  private void formatColumn_ToDateTime(ColumnData columnData) {
+
+    ColumnData cpriKey = MySqlTransformUtil.queryPrimaryKey(destinationData.databaseData, columnData.getTable());
+    
+    String sql = "SELECT " + cpriKey.getColumnName() + ", `" + columnData.getColumnName() + "` " +
+    		"FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "`;"; 
+
+    try {
+      Connection conn = destinationData.databaseData.getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        cpriKey.setValue(Integer.toString(result.getInt(1)));
+        columnData.setValue(result.getString(2));
+        updateColumn_Date(cpriKey, columnData);
+      }
+      select.close();
+      result.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    }
+    
+  }
+  
+  private void updateColumn_Date(ColumnData cpriKey, ColumnData columnData) {
+
+    String datetime = columnData.getValue();
+    
+    String tranformed = dtp.getDateMysql(datetime);
+
+    columnData.setValue(tranformed);
+    
+    System.out.println("before: " + datetime + " after: " + tranformed);
+
+    // is there room for the transformation values
+    columnData.alterColumnSizeBiggerIfNeedBe(destinationData.databaseData);
+    
+    ColumnData[] c = new ColumnData[2];
+    c[0] = cpriKey;
+    c[1] = columnData;
+
+    String sql = ColumnData.getSql_Update(c);
+    MySqlQueryUtil.update(destinationData.databaseData, sql);
+  }
 }

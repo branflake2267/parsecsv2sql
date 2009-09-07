@@ -419,21 +419,27 @@ public class ColumnData {
 
 	// TODO - this needs adjustment of the left value, and total values are different
 	private boolean doesValueFit_Decimal() {
+	  //System.out.println("current left: " + lengthChar_left + " right: " + lengthChar_right);
 	  boolean b = true;
 	  char per = ".".charAt(0);
 	  if (value.contains(Character.toString(per))) {
       String[] a = value.split("\\.");
       int l = a[0].trim().length();
       int r = a[1].trim().length();
-      l = l + r;
-      if (l > lengthChar_left) {
-        lengthChar_left = l;
-        b = false;
-      }
+      
+      //System.out.println("l: " + l + " r: " + r);
       if (r > lengthChar_right) {
         lengthChar_right = r;
         b = false;
       }
+      
+      l = l + lengthChar_right;
+      
+      if (l > lengthChar_left) {
+        lengthChar_left = l;
+        b = false;
+      }
+      //System.out.println("new left: " + lengthChar_left + " right: " + lengthChar_right);
     }
 	  return b;
 	}
@@ -769,7 +775,7 @@ public class ColumnData {
    * @return
    */
   public static String getSql_Update(ColumnData[] columnData) {
-    return getSql_Update(columnData, null );
+    return getSql_Update(columnData, null);
   }
   
   /**
@@ -1038,6 +1044,11 @@ public class ColumnData {
       if (columnData[i].getIdentityUse() == true) {
         cols.add(columnData[i]);
       }
+    }
+    
+    if (cols.size() == 0) {
+      System.out.println("the identity column name given doesn't exist");
+      return null;
     }
     
     int size = 990;
