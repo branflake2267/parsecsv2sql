@@ -76,6 +76,13 @@ public class DateTimeParser {
     return isDate;
   }
   
+  public boolean getIsDateExplicit(String dt) {
+    isDate = false;
+    this.datetime = dt;
+    getDateExplicit(TYPE_MYSQL_DATETIME      );
+    return isDate;
+  }
+  
   /**
    * after parsing get the date object
    * @return
@@ -97,6 +104,12 @@ public class DateTimeParser {
   public String getDateMysql(String datetime) {
     this.datetime = datetime;
     String s = getDate(TYPE_MYSQL_DATETIME);
+    return s;
+  }
+  
+  public String getDateMysqlExplicit(String datetime) {
+    this.datetime = datetime;
+    String s = getDateExplicit(TYPE_MYSQL_DATETIME);
     return s;
   }
   
@@ -125,6 +138,36 @@ public class DateTimeParser {
       df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     }
     
+    String s = checkAll(df);
+    
+    return s;
+  }
+
+  private String getDateExplicit(int type) {
+    
+    if (datetime == null) {
+      return "";
+    }
+    
+    datetime = datetime.trim().toLowerCase();
+    
+    // reset it just in case
+    date = null;
+    
+    DateFormat df = null;
+    if (type == TYPE_ENG_DATE) {
+      df = new SimpleDateFormat("MM/dd/yyyy");
+      
+    } else if (type == TYPE_MYSQL_DATETIME) {
+      df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    }
+    
+    String s = checkExplicit(df);
+    
+    return s;
+  }
+  
+  private String checkAll(DateFormat df) {
     String s = "";
     if (checkforFormat_monthYearTogether() == true) {  // keep letter type first - like matching jan or Janurary
       s = df.format(date);
@@ -176,10 +219,64 @@ public class DateTimeParser {
       s = datetime;
       isDate = false;
     }
-    
     return s;
   }
-
+  
+  /**
+   * match date explicitly, that is take out the int formats, that could be other things
+   * 
+   * @param df
+   * @return
+   */
+  private String checkExplicit(DateFormat df) {
+    String s = "";
+    if (checkforFormat_monthYearTogether() == true) {  // keep letter type first - like matching jan or Janurary
+      s = df.format(date);
+      isDate = true;
+    } else if (checkforFormat_monthYear() == true) {  // keep letter type first - like matching jan or Janurary
+      s = df.format(date);
+      isDate = true;
+    } else if (checkforFormat_monthDayYear() == true) { // keep letter type first - like matching jan or Janurary
+      s = df.format(date);
+      isDate = true;
+    } else if (checkforFormat_weird1() == true) { // 3-apr-09
+      s = df.format(date);
+      isDate = true;
+    } else if (checkforFormat_datetime12hr() == true ) { // month first
+      s = df.format(date);
+      isDate = true;
+    } else if (checkforFormat_datetime12hra() == true ) { // month first
+      s = df.format(date);
+      isDate = true;
+    } else if (checkforFormat_datetime12hr2() == true ) { // year first
+      s = df.format(date);
+      isDate = true;
+    } else if (checkforFormat_datetime24hr() == true ) { // month first
+      s = df.format(date);
+      isDate = true;
+    } else if (checkforFormat_datetime24hra() == true ) { // month first
+      s = df.format(date);
+      isDate = true;
+    } else if (checkforFormat_datetime24hr2() == true ) { // year first
+      s = df.format(date);
+      isDate = true;
+    } else if (checkforFormat_datetime24hr3() == true ) { // `yyyy-mm-dd` only
+      s = df.format(date);
+      isDate = true;
+    } else if (checkforFormat_engDateString() == true ) {
+      s = df.format(date);
+      isDate = true;
+    } else if (checkforFormat_engDateStringNoDay() == true ) {
+      s = df.format(date);
+      isDate = true;
+    } else {
+      // return orginal if not matched
+      s = datetime;
+      isDate = false;
+    }
+    return s;
+  }
+  
   /**
    * match jan09 orJan2009 
    * 
@@ -762,7 +859,7 @@ public class DateTimeParser {
    */
   private boolean checkforFormat_engDateStringNoDay() {
 
-    String re = "^([0-9]+)[/\\-\040\\.]+([0-9]+)$";
+    String re = "^([0-9]+)[/\\-\040]+([0-9]+)$"; // got rid of period separation
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
     boolean found = m.find();

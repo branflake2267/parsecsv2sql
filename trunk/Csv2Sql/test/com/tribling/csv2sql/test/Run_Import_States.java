@@ -66,6 +66,18 @@ public class Run_Import_States {
     Process p = new Process(sourceData, destinationData);
     p.runImport();
     
+    // repeat the process to update
+    destinationData.dropTable = false;
+    
+    
+    
+    
+    // try it agian
+    pathToFile = execPath + "/data/export/states_0_testalter.csv"; 
+    sourceData.file = new File(pathToFile);
+    Process p2 = new Process(sourceData, destinationData);
+    p2.runImport();
+    
   }
   
 
