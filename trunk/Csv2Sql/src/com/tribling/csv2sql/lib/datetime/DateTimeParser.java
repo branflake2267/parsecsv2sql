@@ -284,6 +284,10 @@ public class DateTimeParser {
    */
   private boolean checkforFormat_monthYearTogether() {
 
+    if (isMonthSpelledOut(datetime) == false) {
+      return false;
+    }
+    
     // jan09 or jan2009
     String re = "^([a-zA-Z]+)([0-9]+)$";
     Pattern p = Pattern.compile(re);
@@ -326,6 +330,10 @@ public class DateTimeParser {
    */
   private boolean checkforFormat_monthYear() {
 
+    if (isMonthSpelledOut(datetime) == false) {
+      return false;
+    }
+    
     // jan-09 or january-09 or jan 09 or jan 2009  or jan, 2009
     String re = "^([a-zA-Z]+)[.,\\-\040]+?([0-9]+)$";
     Pattern p = Pattern.compile(re);
@@ -368,6 +376,10 @@ public class DateTimeParser {
    */
   private boolean checkforFormat_monthDayYear() {
 
+    if (isMonthSpelledOut(datetime) == false) {
+      return false;
+    }
+    
     String re = "^([a-zA-Z]+)[.,\\-\040/]+([0-9]+)[,\\-\040/]+([0-9]+)$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
@@ -992,6 +1004,10 @@ public class DateTimeParser {
    */
   private boolean checkforFormat_weird1() {
 
+    if (isMonthSpelledOut(datetime) == false) {
+      return false;
+    }
+    
     // dd mm yy
     String re = "^([0-9]+)[\040-\\.]+([a-zA-Z]+)[\040-\\.]+([0-9]+)$";
     Pattern p = Pattern.compile(re);
@@ -1208,4 +1224,42 @@ public class DateTimeParser {
     return b;
   }
 
+  /**
+   * does the value have jan.* or feb.*...
+   * 
+   * @param s
+   * @return
+   */
+  public boolean isMonthSpelledOut(String s) {
+    boolean b = false;
+    if (s.contains("jan")) {
+      b = true;
+    } else if (s.contains("feb")) {
+      b = true;
+    } else if (s.contains("feb")) {
+      b = true;
+    } else if (s.contains("mar")) {
+      b = true;
+    } else if (s.contains("apr")) {
+      b = true;
+    } else if (s.contains("may")) {
+      b = true;
+    } else if (s.contains("jun")) {
+      b = true;
+    } else if (s.contains("jul")) {
+      b = true;
+    } else if (s.contains("aug")) {
+      b = true;
+    } else if (s.contains("sep")) {
+      b = true;
+    } else if (s.contains("oct")) {
+      b = true;
+    } else if (s.contains("nov")) {
+      b = true;
+    } else if (s.contains("dec")) {
+      b = true;
+    }
+    return b;
+  }
+  
 }

@@ -84,7 +84,7 @@ public class DatabaseData {
   public String getDatabase() {
     return database;
   }
-  
+    
   /**
    * open connection
    * @return

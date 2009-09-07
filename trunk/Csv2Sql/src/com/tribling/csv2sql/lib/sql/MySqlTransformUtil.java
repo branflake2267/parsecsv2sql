@@ -180,6 +180,7 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
         column.setIsPrimaryKey(true);
         column.setColumnName(result.getString(1));
         column.setType(result.getString(2));
+        column.setTable(table);
       }
       result.close();
       result = null;

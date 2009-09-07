@@ -75,6 +75,10 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     }
    
     String sql = ColumnData.getSql_IdentitiesIndex(destinationData.databaseData, columnData);
+    if (sql == null) {
+      System.out.println("ERROR: createIdentitiesIndex(): Fix the identities.");
+      System.exit(1);
+    }
     MySqlQueryUtil.update(destinationData.databaseData, sql);
   }
 
