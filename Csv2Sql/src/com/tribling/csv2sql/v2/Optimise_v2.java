@@ -40,24 +40,33 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     this.destinationData = destinationData;
   }
   
+  /**
+   * optimize all the columns
+   */
   public void run() {
-    process();
-  }
-
-  private void process() {
- 
-    // get columns
     String where = null; // all columns
     columnData = MySqlTransformUtil.queryColumns(destinationData.databaseData, destinationData.table, where);
     
-    analyzeColumns();
-    
+    process();
   }
   
   /**
+   * optimise only these columns
+   * 
+   * @param columnData
+   */
+  public void run(ColumnData[] columnData) {
+    if (columnData == null) {
+      return;
+    }
+    this.columnData = columnData; 
+    process();
+  }
+
+  /**
    * analyze columns to go smaller
    */
-  private void analyzeColumns() {
+  private void process() {
     for (int i=0; i < columnData.length; i++) {
       checkColumn(columnData[i]);
     }
@@ -69,6 +78,15 @@ public class Optimise_v2 extends SQLProcessing_v2 {
    * @param columnData
    */
   private void checkColumn(ColumnData columnData) {
+    
+    // skip auto_ and primary key
+    if (columnData.getColumnName().matches("Auto_.*") == true) {
+      return;
+    }
+    
+    if (columnData.getIsPrimaryKey() == true) {
+      return;
+    }
     
     // only analyze text columns
     if (destinationData.optimise_TextOnlyColumnTypes == true && columnData.getType().toLowerCase().contains("text") == false) {
@@ -82,48 +100,40 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     String sql = ColumnData.getSql_GetMaxCharLength(destinationData.databaseData, columnData);
     int maxCharLength = MySqlQueryUtil.queryInteger(destinationData.databaseData, sql);
     
-    String newColumnType = getColumnType(columnData);
+    String newColumnType = getColumnType(columnData, maxCharLength);
     
     // did type change, then alter
     boolean changed = didItChange(columnData, newColumnType);
     
+    // TODO - if changing to a datetime, need to transform all values in the column to datetime
+    
     if (changed == true) {
-      alter(columnData, maxCharLength);
+      columnData.setType(newColumnType);
+      MySqlTransformUtil.alterColumn(destinationData.databaseData, columnData);
     }
      
   }
 
   private boolean didItChange(ColumnData columnData, String newColumnType) {
-    boolean b = false;
+    boolean b = true;
     
     String orgColumnType = columnData.getType();
-    String orgType = StringUtil.getValue("(.*?)\\)", orgColumnType);
-    String newType = StringUtil.getValue("(.*?)\\)", newColumnType);
+    String orgType = StringUtil.getValue("(.*?\\))", orgColumnType);
+    String newType = StringUtil.getValue("(.*?\\))", newColumnType);
+    
+    if (orgType == null) {
+      orgType = orgColumnType;
+    }
+    
+    if (newType == null) {
+      newType = newColumnType;
+    }
     
     if (orgType.toLowerCase().equals(newType.toLowerCase()) == true) {
-      b = true;
+      b = false;
     }
     
     return b;
-  }
-  
-  private void alter(ColumnData columnData, int maxCharLength) {
-    
-
-
-    
-    // the original size, "adsfasdfasdf         "
-    int currentSize = columnData.getCharLength();
-    
-    // if the original size is larger than the size of actual storage needed, then resize
-    if (currentSize == maxCharLength) {
-      return;
-    }
-    
-    // set the size to resize to.
-    columnData.setCharLength(maxCharLength);
-    
-    MySqlTransformUtil.alterColumn(destinationData.databaseData, columnData);
   }
   
   /**
@@ -278,10 +288,8 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     return sql;
   }
   
-  private String getColumnType(ColumnData columnData) {
+  private String getColumnType(ColumnData columnData, int charLength) {
 
-    int charLength = columnData.getCharLength();
-    
     String columnType = null;
     switch (fieldType) {
     case ColumnData.FIELDTYPE_DATETIME: 
@@ -291,7 +299,7 @@ public class Optimise_v2 extends SQLProcessing_v2 {
       if (charLength > 255) {
         columnType = "TEXT DEFAULT NULL";
       } else {
-        columnType = "VARCHAR(" + columnData.getCharLength() + ") DEFAULT NULL";
+        columnType = "VARCHAR(" + charLength + ") DEFAULT NULL";
       }
       break;
     case ColumnData.FIELDTYPE_INT_ZEROFILL:
@@ -311,7 +319,7 @@ public class Optimise_v2 extends SQLProcessing_v2 {
       }
       break;
     case ColumnData.FIELDTYPE_DECIMAL:
-      columnType = "DECIMAL(" + deca + "," + decb + ") DEFAULT 0.0";
+      columnType = "DECIMAL(" + charLength + "," + decb + ") DEFAULT 0.0";
       break;
     case ColumnData.FIELDTYPE_EMPTY:
       columnType = "CHAR(0)";
@@ -320,14 +328,14 @@ public class Optimise_v2 extends SQLProcessing_v2 {
       if (charLength > 255) {
         columnType = "TEXT DEFAULT NULL";
       } else {
-        columnType = "VARCHAR(" + columnData.getCharLength() + ") DEFAULT NULL";
+        columnType = "VARCHAR(" + charLength + ") DEFAULT NULL";
       }
       break;
     default:
       if (charLength > 255) {
         columnType = "TEXT DEFAULT NULL";
       } else {
-        columnType = "VARCHAR(" + columnData.getCharLength() + ") DEFAULT NULL";
+        columnType = "VARCHAR(" + charLength + ") DEFAULT NULL";
       }
       break;
     }
@@ -390,7 +398,7 @@ public class Optimise_v2 extends SQLProcessing_v2 {
 
   private boolean isDate(String s) {
     boolean b = false;
-    b = dtp.getIsDate(s);
+    b = dtp.getIsDateExplicit(s);
     return b;
   }
   
@@ -398,9 +406,14 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     int l = 0;
     int r = 0;
     if (s.contains(".")) {
-      String[] a = s.split(".");
+      String[] a = s.split("\\.");
       l = a[0].length();
-      r = a[1].length();
+      try {
+        r = a[1].length();
+      } catch (Exception e) {
+        r = 0;
+      }
+      l = l + r;
     } else {
       l = s.length();
     }
@@ -412,6 +425,8 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     if (r > decb) {
       decb = r;
     }
+    
+    System.out.println("decimal: left: " + deca + " right: " + decb + " value: " + s);
   }
   
 }

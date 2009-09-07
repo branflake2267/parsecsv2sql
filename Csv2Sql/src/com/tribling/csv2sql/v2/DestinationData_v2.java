@@ -46,7 +46,7 @@ public class DestinationData_v2 {
   public boolean optimise_ignoreNullFieldsWhenExamining = true;
 
   // use this if you need to repeat optimisation and want to skip all but TEXT columns
-  public boolean optimise_TextOnlyColumnTypes = false;
+  public boolean optimise_TextOnlyColumnTypes = true;
   
   // this will delete indexes, then optimise
   // a column can't have a index on it if it needs altering
@@ -75,6 +75,8 @@ public class DestinationData_v2 {
   
   // stop at column, don't process any columns over this count. 0 process all
   public int stopAtColumnCount = 0;
+  
+  public int stopAtRow = -1;
   
   /**
    * optimize table settings basics

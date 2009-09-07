@@ -34,18 +34,19 @@ public class StringUtil {
       return null;
     }
     
+    String v = null;
     try {
       Pattern p = Pattern.compile(regex);
       Matcher m = p.matcher(value);
       boolean found = m.find();
       if (found == true) {
-        value = m.group(1);
+        v = m.group(1);
       }
     } catch (Exception e) {
       System.out.println("findMatch: regex error");
     }
     
-    return value;
+    return v;
   }
   
   /**

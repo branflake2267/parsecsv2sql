@@ -57,6 +57,10 @@ public class ColumnData {
   // when type is set, this is discovered
 	private int lengthChar = 0;
 	
+	 // for decimal(left,right)
+  private int lengthChar_left = 0;
+  private int lengthChar_right = 0;
+	
 	// columns associated value
 	private String value = null;
 	
@@ -78,14 +82,7 @@ public class ColumnData {
 	
 	// set with static constant above
 	private int changeCase = 0;
-	
-	// for int type, zerofill??
-	private boolean zeroFill = false;
-	
-	// for decimal
-	private int length_left = 0;
-	private int length_right = 0;
-	
+
 	/**
 	 * constructor
 	 */
@@ -93,7 +90,7 @@ public class ColumnData {
 	}
 	
 	/**
-	 * create a column object 
+	 * constructor - create a column object 
 	 * 
 	 * @param columnTable table name
 	 * @param columnName column name
@@ -299,30 +296,45 @@ public class ColumnData {
 	 */
 	public void setType(String columnType) {
 		this.columnType = columnType.toLowerCase();
-		
-		String regex = "([0-9]+)";
-		Pattern p = Pattern.compile(regex);
-		Matcher m = p.matcher(columnType);
-		boolean found = m.find();
-
-		String len = "";
-		if (found == true) {
-			len = m.group(1);
-		}
-		
-		if (len.length() > 0) {
-			lengthChar = Integer.parseInt(len);
-		}	
-		
-		if (columnType.contains(",")) {
-		  setDecimalLengths(columnType);
-		}
+		setCharLength(columnType);
 	}
 	
-	public void setType(String columnType, boolean zeroFill) {
-	  this.zeroFill = zeroFill;
-	  setType(columnType);
+	/**
+	 * set the lengths INT(10) or decimal(10,2)
+	 * @param columnType
+	 */
+	public void setCharLength(String columnType) {
+	  
+    if (columnType.contains(",")) { // decimal column type
+      lengthChar_left = 0;
+      lengthChar_right = 0;
+      setDecimalLengths(columnType);
+    } else {
+      String len = StringUtil.getValue("([0-9]+)", columnType);
+      if (len != null && len.length() > 0) {
+        lengthChar = Integer.parseInt(len);
+      } else {
+        lengthChar = 0;
+      }
+    }
+	
 	}
+	
+  private void setDecimalLengths(String s) {
+    int l = 0;
+    int r = 0;
+    if (s.contains(",")) {
+      String sv = StringUtil.getValue("([0-9]+,[0-9]+)", s);
+      String[] a = sv.split(",");
+      l = Integer.parseInt(a[0]);
+      r = Integer.parseInt(a[1]);
+    } else {
+      l = s.length();
+    }
+    lengthChar = 0;
+    lengthChar_left = l;
+    lengthChar_right = r;
+  }
 	
 	/**
 	 * get type with no changes
@@ -332,29 +344,6 @@ public class ColumnData {
 	  return columnType;
 	}
 	
-	/**
-	 * recalculate the type 
-	 *   like for altering, incase i forced charlen change, and or other change 
-	 *   
-	 *   I am defining column type in optimize
-	 * @return
-	 */
-	@Deprecated
-	public String getTypeNew() {
-	  if (columnType.toLowerCase().contains("text") == true) {
-	     if (lengthChar <= 255) {
-	       columnType = "VARCHAR(" + lengthChar + ") DEFAULT NULL";
-	     } else {
-	       columnType = "TEXT DEFAULT NULL";
-	     }
-	  } else if (columnType.toLowerCase().contains("varchar")) {
-	    columnType = "VARCHAR(" + lengthChar + ") DEFAULT NULL";
-	  } 
-	  // TODO more logic needed
-	  
-	  return columnType;
-	}
-
 	/**
 	 * get the length of varchar(lengthChar)
 	 * 
@@ -391,7 +380,7 @@ public class ColumnData {
 	  } else if (columnType.contains("dec") == true) {
 	    b = doesValueFit_Decimal();
 	  } else if (columnType.contains("datetime") == true) {
-	    b = doesValueFit_DateTime();
+	    b = true; // date doesn't change
 	  } else {
 	    b = true;
 	  }
@@ -422,19 +411,30 @@ public class ColumnData {
 	
 	private boolean doesValueFit_Int() {
 	  boolean b = true;
-	  // TODO
+	  if (value.length() >= 8) {
+	    b = false;
+	  }
 	  return b;
 	}
 
+	// TODO - this needs adjustment of the left value, and total values are different
 	private boolean doesValueFit_Decimal() {
 	  boolean b = true;
-	  // TODO
-	  return b;
-	}
-	
-	private boolean doesValueFit_DateTime() {
-	  boolean b = true;
-	  // TODO
+	  char per = ".".charAt(0);
+	  if (value.contains(Character.toString(per))) {
+      String[] a = value.split("\\.");
+      int l = a[0].trim().length();
+      int r = a[1].trim().length();
+      l = l + r;
+      if (l > lengthChar_left) {
+        lengthChar_left = l;
+        b = false;
+      }
+      if (r > lengthChar_right) {
+        lengthChar_right = r;
+        b = false;
+      }
+    }
 	  return b;
 	}
 	
@@ -457,10 +457,30 @@ public class ColumnData {
 	private void alterColumnToBiggerSize(DatabaseData dd) {
 	  int l = value.getBytes().length;
 	  
-	  if (l >= 255) {
-	    setType("TEXT DEFAULT NULL");
+	  if (columnType.contains("text") == true) {
+	    if (l >= 255) {
+	      setType("TEXT DEFAULT NULL");
+	    } else if (columnType.contains("varchar") == true) {
+	      setType("VARCHAR(" + l + ") DEFAULT NULL");
+	    }
 	  } else if (columnType.contains("varchar") == true) {
-	    setType("VARCHAR(" + l + ") DEFAULT NULL");
+	    if (l >= 255) {
+	      setType("TEXT DEFAULT NULL");
+	    } else if (columnType.contains("varchar") == true) {
+	      setType("VARCHAR(" + l + ") DEFAULT NULL");
+	    }
+	  } else if (columnType.contains("int") == true) {
+	    if (value.length() >= 8) {
+	      setType("BIGINT DEFAULT 0");
+	    } 
+	  } else if (columnType.contains("dec") == true) {
+	    setType("DECIMAL(" + lengthChar_left + "," + lengthChar_right + ") DEFAULT 0.0");
+	    
+	  } else if (columnType.contains("datetime") == true) {
+	    // never needed
+	  } else {
+	    System.out.println("skipping alterColumnToBiggerSize()");
+	    return;
 	  }
 	  
 	  MySqlTransformUtil.alterColumn(dd, this);
@@ -1135,19 +1155,7 @@ public class ColumnData {
     return sql;
   }
   
-  private void setDecimalLengths(String s) {
-    int l = 0;
-    int r = 0;
-    if (s.contains(",")) {
-      String[] a = s.split(",");
-      l = a[0].trim().length();
-      r = a[1].trim().length();
-    } else {
-      l = s.length();
-    }
-    length_left = l;
-    length_right = r;
-  }
+
   
   
   /**

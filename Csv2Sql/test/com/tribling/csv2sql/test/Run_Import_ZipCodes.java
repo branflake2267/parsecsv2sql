@@ -3,10 +3,14 @@ package com.tribling.csv2sql.test;
 import java.io.File;
 import java.net.URISyntaxException;
 
+import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.SourceData;
+import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
+import com.tribling.csv2sql.lib.sql.MySqlTransformAlterUtil;
 import com.tribling.csv2sql.v2.DestinationData_v2;
+import com.tribling.csv2sql.v2.Optimise_v2;
 import com.tribling.csv2sql.v2.Process;
 
 public class Run_Import_ZipCodes {
@@ -47,10 +51,7 @@ public class Run_Import_ZipCodes {
     
     // des change columns
     FieldData[] changeColumns = null;
-    //changeColumns[0] = new FieldData();
-    //changeColumns[0].sourceField = "Ab";
-    //changeColumns[0].destinationField = "TwoLetter";
-    
+
     // database settings
     DatabaseData databaseData = new DatabaseData(DatabaseData.TYPE_MYSQL, "ark", "3306", "test", "test#", "test");
     String table = "import_zipcodes_test";
@@ -60,12 +61,35 @@ public class Run_Import_ZipCodes {
     destinationData.setData(databaseData, changeColumns, identities, table);
     
     // Settings
-    destinationData.dropTable = false;
-    destinationData.optimise = true;
+    destinationData.dropTable = true;
+    destinationData.optimise = false;
+    destinationData.stopAtRow = 10; // lets only import a 100 rows for testing
+    
     
     Process p = new Process(sourceData, destinationData);
     p.runImport();
     
+    
+    ColumnData[] columnData = MySqlTransformAlterUtil.queryColumns(destinationData.databaseData, table, "`FIELD`='latitude'");
+    Optimise_v2 o = new Optimise_v2(destinationData);
+    o.run(columnData);
+    
+    
+    destinationData.dropTable = false;
+    pathToFile = execPath + "/data/export/zipcodes_0_testalter1.csv"; 
+    sourceData.file = new File(pathToFile);
+    Process p2 = new Process(sourceData, destinationData);
+    p2.runImport();
+    
+    o.run(columnData);
+    
+    destinationData.dropTable = false;
+    pathToFile = execPath + "/data/export/zipcodes_0_testalter2.csv"; 
+    sourceData.file = new File(pathToFile);
+    Process p3 = new Process(sourceData, destinationData);
+    p3.runImport();
+    
+    o.run(columnData);
   }
   
 }

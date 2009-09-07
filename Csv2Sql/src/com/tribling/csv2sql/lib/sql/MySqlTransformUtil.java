@@ -537,7 +537,7 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
 
     return indexesToRestore;
   }
-  
+    
   /**
    * delete index
    * 
@@ -557,6 +557,8 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
    * @param columnData
    */
   public static void alterColumn(DatabaseData dd, ColumnData columnData) {
+    
+    // TODO when altering a column from text to varchar and it has an index length on it
     
     String[] sqlIndexRestore = deleteIndexForColumn(dd, columnData);
     String indexSql = StringUtil.toCsv_NoQuotes(sqlIndexRestore);
@@ -582,7 +584,12 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
       Pattern p = Pattern.compile(regex);
       Matcher m = p.matcher(showCreateTable);
       while (m.find()) {
-        indexes.add(m.group());
+        String index = m.group();
+        
+        // if the index was a text and
+        index = changeIndexFromTextToVarchar(columnData, index);
+        
+        indexes.add(index);
       }
     } catch (Exception e) {
       System.out.println("findMatch: regex error");
@@ -601,6 +608,21 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
       }
     }
     return r;
+  }
+  
+  private static String changeIndexFromTextToVarchar(ColumnData columnData, String index) {
+    
+    boolean change = false;
+    if (columnData.getType().toLowerCase().contains("text") == false) {
+      change = true;
+    }
+    
+    // does the index have a index length?
+    if (change == true && index.matches(".*([0-9]+).*\n") == true) {
+      index = index.replaceFirst("(\\([0-9]+\\)", "");
+    } 
+    
+    return index;
   }
   
   

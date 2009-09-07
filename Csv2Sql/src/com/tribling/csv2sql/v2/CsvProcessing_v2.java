@@ -259,6 +259,11 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     try {
       while (reader.readRecord()) {
         process(index, reader);
+        
+        // stop early
+        if (destinationData != null && destinationData.stopAtRow == index) {
+          return;
+        }
         index++;
       }
     } catch (IOException e) {
