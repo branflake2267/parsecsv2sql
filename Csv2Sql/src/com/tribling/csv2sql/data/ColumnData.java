@@ -167,7 +167,7 @@ public class ColumnData {
 	}
 	
 	public void setColumnAsSql() {
-	  if (column.matches(".*[\040]as[\040].*") == false) {
+	  if (column.toLowerCase().matches(".*[\040]as[\040].*") == false) {
 	    return;
 	  }
 	  
@@ -620,6 +620,7 @@ public class ColumnData {
       return null;
     }
     columnData = prune(columnData, pruneColumnData);
+    
     String sql = "";
     for (int i=0; i < columnData.length; i++) {
       String c = "";
@@ -1190,7 +1191,28 @@ public class ColumnData {
     return sql;
   }
   
-
+  // not working
+  @Deprecated
+  public static ColumnData[] pruneDuplicates_ByColumnName(ColumnData[] columnData) {
+    ArrayList<ColumnData> a = new ArrayList<ColumnData>();
+    final ColumnData[] c2 = columnData;
+    Comparator<ColumnData> sort = new ColumnDataComparator(ColumnDataComparator.NAME);
+    Arrays.sort(c2, sort);
+    
+    for (int i=0; i < c2.length; i++) {
+      int index = Arrays.binarySearch(columnData, c2[i], sort);
+      if (index > -1) {
+        a.add(c2[i]);
+      }
+    }
+    
+    ColumnData[] pruneColumnData = new ColumnData[a.size()];
+    a.toArray(pruneColumnData);
+    
+    columnData = prune(columnData, pruneColumnData);
+    
+    return columnData;
+  }
   
   
   /**

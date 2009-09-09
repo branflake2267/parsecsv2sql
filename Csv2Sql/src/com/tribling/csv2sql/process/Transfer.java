@@ -237,9 +237,14 @@ public class Transfer {
     String where = "WHERE " + primKey.getColumnName() + " != '' AND " + primKey.getColumnName() + " IS NOT NULL";
     
     String columnCsv = ColumnData.getSql_Names_WSql(columnData_src, null);
-   
+    String columnCsv2 = ColumnData.getSql_Names_WSql(columnData_src_oneToMany, null);
+    
+    if (columnCsv2.length() > 0) {
+      columnCsv2 = "," + columnCsv2;
+    }
+    
     String sql = "";
-    sql = "SELECT " + columnCsv + " FROM " + tableFrom + " " + where;
+    sql = "SELECT " + columnCsv + " " + columnCsv2 + " FROM " + tableFrom + " " + where;
     
     System.out.println("sql: " + sql);
     
@@ -419,7 +424,7 @@ public class Transfer {
       sql = "INSERT INTO " + columnData.getTable() + " SET " + datafields;
       
     }
-    //System.out.println(sql);
+    System.out.println("\t\t" + sql);
     MySqlQueryUtil.update(database_des, sql);
   }
 
