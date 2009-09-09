@@ -8,6 +8,8 @@ import java.util.Comparator;
 
 import com.csvreader.CsvReader;
 import com.tribling.csv2sql.data.ColumnData;
+import com.tribling.csv2sql.data.ColumnDataComparator;
+import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.FieldDataComparator;
 import com.tribling.csv2sql.data.SourceData;
@@ -33,12 +35,19 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   
   private ColumnData[] defaultColumns = null;
   
+  private int rowIndex = 0;
+  
   /**
    * constructor
    */
   public CsvProcessing_v2(SourceData sourceData, DestinationData_v2 destinationData) {
     this.sourceData = sourceData;
     this.destinationData = destinationData;
+    
+    // preprocess these settings
+    if (destinationData.ffsd != null) {
+      setData(destinationData.ffsd);  
+    }
   }
   
   /**
@@ -76,8 +85,10 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    
     String sql = ColumnData.getSql_IdentitiesIndex(destinationData.databaseData, columnData);
     if (sql == null) {
-      System.out.println("ERROR: createIdentitiesIndex(): Fix the identities.");
-      System.exit(1);
+      //System.out.println("ERROR: createIdentitiesIndex(): Fix the identities.");
+      //System.exit(1);
+      System.out.println("skipping identities indexing, probably already created. createIdentitiesIndex()");
+      return;
     }
     MySqlQueryUtil.update(destinationData.databaseData, sql);
   }
@@ -253,22 +264,22 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    * @param indexFile
    */
   private void iterateRowsData(int indexFile) {
-    int index = 0;
+    rowIndex = 0;
     
     // when the first row is data, need to move up one row to start
     if (destinationData != null && destinationData.firstRowHasNoFieldNames == true) {
-      index--;
+      rowIndex--;
     }
     
     try {
       while (reader.readRecord()) {
-        process(index, reader);
+        process(rowIndex, reader);
         
         // stop early
-        if (destinationData != null && destinationData.stopAtRow == index) {
+        if (destinationData != null && destinationData.stopAtRow == rowIndex) {
           return;
         }
-        index++;
+        rowIndex++;
       }
     } catch (IOException e) {
       System.out.println("Error: Can't loop through data!");
@@ -298,11 +309,36 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     // add values to columnData
     columnData = ColumnData.addValues(columnData, values);
     
+    testColumnValueTypes();
     testColumnValueSizes();
     
     // save Columns/Values to db
     save();
   }
+  
+  private void testColumnValueTypes() {
+    for (int i=0; i < columnData.length; i++) {
+      String columnType = columnData[i].getType();
+      String v = columnData[i].getValue();
+      if (columnType.toLowerCase().contains("int") == true) {
+        long n = 0;
+        if (v == null) {
+          columnData[i].setValue(n);
+        } else if (v.trim().length() == 0) {
+          columnData[i].setValue(n);
+        } else {
+          try {
+            Integer.parseInt(v);
+          } catch (NumberFormatException e) {
+            // alter back to text
+            columnData[i].setType("TEXT DEFAULT NULL");
+            MySqlTransformUtil.alterColumn(destinationData.databaseData, columnData[i]);
+          }
+        }
+      }
+    }
+  }
+
   
   private void testColumnValueSizes() {
     for (int i=0; i < columnData.length; i++) {
@@ -320,9 +356,16 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     String sql = "";
     if (primaryKeyId > 0) {
       ColumnData primaryKeyColumn = new ColumnData();
+      primaryKeyColumn.setTable(destinationData.table);
       primaryKeyColumn.setIsPrimaryKey(true);
       primaryKeyColumn.setColumnName(destinationData.primaryKeyName);
       primaryKeyColumn.setValue(primaryKeyId);
+      
+      boolean skip = compareBefore(columnData, primaryKeyColumn);
+      if (skip == true) {
+        System.out.println("skipping b/c of compare.!!!!!!!!!!!!!!!!!!");
+        return;
+      }
       ColumnData[] u = ColumnData.merge(columnData, defaultColumns[1]); // add update column
       u = ColumnData.merge(u, primaryKeyColumn);
       sql = ColumnData.getSql_Update(u);
@@ -331,12 +374,40 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
       sql = ColumnData.getSql_Insert(i);
     }
     
-    System.out.println("SAVE(): " + sql);
+    System.out.println(rowIndex + ". SAVE(): " + sql);
     
     MySqlQueryUtil.update(destinationData.databaseData, sql);
     // TODO - deal with truncation error ~~~~~~~~~~~~~~~~~~~~~~~~~~
   }
  
+  private boolean compareBefore(ColumnData[] columnData, ColumnData primKeyColumn) {
+    
+    if (destinationData.compareBeforeUpdate == null) {
+      return false;
+    }
+    boolean b = false;
+    
+    String where = " WHERE `" + primKeyColumn.getColumnName() + "`='" + primKeyColumn.getValue() + "'";
+    
+    FieldData[] c = destinationData.compareBeforeUpdate;
+    for (int i=0; i < c.length; i++) {
+      ColumnData forColumnData = new ColumnData(primKeyColumn.getTable(), c[i].destinationField, "TEXT");
+      int index = ColumnData.getColumnByName_NonComp(columnData, forColumnData);
+      if (index > -1) {
+        String sql = "SELECT " + c[i].destinationField + " FROM " + primKeyColumn.getTable() + " " + where;
+        String beforeValue = columnData[index].getValue();
+        String inTableValue = MySqlQueryUtil.queryString(destinationData.databaseData, sql);
+        
+        if (Integer.parseInt(beforeValue) < Integer.parseInt(inTableValue)) {
+          b = true;
+        }
+        System.out.println("before: " + beforeValue + " < inTable: " + inTableValue + " result: " + b);
+      }
+    }
+    
+    return b;
+  }
+  
   private long doesDataExist() {
    if (destinationData.identityColumns == null) {
      return -1;
