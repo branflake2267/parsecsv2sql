@@ -1,7 +1,9 @@
 package com.tribling.csv2sql.v2;
 
+import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.FieldData;
+import com.tribling.csv2sql.data.FlatFileSettingsData;
 
 /**
  * Destination values - controls insert/update methods
@@ -24,6 +26,8 @@ public class DestinationData_v2 {
   // db table
   public String table;
   
+  // flat file settings - preprocessing before sql processing
+  public FlatFileSettingsData ffsd = null;
   
   
   // default primary key name on import
@@ -77,6 +81,8 @@ public class DestinationData_v2 {
   public int stopAtColumnCount = 0;
   
   public int stopAtRow = -1;
+  
+  public FieldData[] compareBeforeUpdate = null;
   
   /**
    * optimize table settings basics

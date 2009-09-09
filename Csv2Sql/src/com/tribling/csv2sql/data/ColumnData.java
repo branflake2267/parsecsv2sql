@@ -5,8 +5,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang.WordUtils;
 
@@ -375,9 +373,11 @@ public class ColumnData {
 	    b = doesValueFit_Text();
 	  } else if (columnType.contains("varchar") == true) {
 	    b = doesValueFit_Varchar();
-	  } else if (columnType.contains("int") == true) {
+	  } else if (columnType.contains("bigint") == true) {
+      b = doesValueFit_BigInt();
+    } else if (columnType.contains("int") == true) {
 	    b = doesValueFit_Int();
-	  } else if (columnType.contains("dec") == true) {
+	  }  else if (columnType.contains("dec") == true) {
 	    b = doesValueFit_Decimal();
 	  } else if (columnType.contains("datetime") == true) {
 	    b = true; // date doesn't change
@@ -410,12 +410,20 @@ public class ColumnData {
 	}
 	
 	private boolean doesValueFit_Int() {
-	  boolean b = true;
-	  if (value.length() >= 8) {
-	    b = false;
+	  boolean b = false;
+	  if (value.length() <= 9) {
+	    b = true;
 	  }
 	  return b;
 	}
+	
+	 private boolean doesValueFit_BigInt() {
+	    boolean b = false;
+	    if (value.length() < 20) {
+	      b = true;
+	    }
+	    return b;
+	  }
 
 	// TODO - this needs adjustment of the left value, and total values are different
 	private boolean doesValueFit_Decimal() {
@@ -476,7 +484,9 @@ public class ColumnData {
 	      setType("VARCHAR(" + l + ") DEFAULT NULL");
 	    }
 	  } else if (columnType.contains("int") == true) {
-	    if (value.length() >= 8) {
+	    if (value.length() < 8) {
+	      setType("INT DEFAULT 0");
+	    } else if (value.length() >= 8) {
 	      setType("BIGINT DEFAULT 0");
 	    } 
 	  } else if (columnType.contains("dec") == true) {
@@ -723,7 +733,8 @@ public class ColumnData {
       if (columnData[i].isFunctionSetForValue() == true) {
         v = columnData[i].getValueAsFunction();
       } else {
-        v = "'" + MySqlQueryUtil.escape(columnData[i].getValue()) + "'";
+        String s = MySqlQueryUtil.escape(columnData[i].getValue());
+        v = "'" + s + "'";
       }
 
       if (columnData[i].getValue() == null) {
@@ -886,6 +897,19 @@ public class ColumnData {
     return b;
   }
  
+  public static int getColumnByName_NonComp(ColumnData[] searchColumnData, ColumnData forColumnData) {
+    
+    int index = -1;
+    for (int i=0; i < searchColumnData.length; i++) {
+      if (searchColumnData[i].getColumnName().toLowerCase().equals(forColumnData.getColumnName().toLowerCase()) == true) {
+        index = i;
+        break;
+      }
+    }
+    
+    return index;
+  }
+  
   /**
    * does column name exist?
    * 

@@ -2,7 +2,7 @@ package com.tribling.csv2sql.v2;
 
 import com.tribling.csv2sql.data.SourceData;
 
-public class Process {
+public class ProcessImport {
 
   // data start point
   private SourceData sourceData = null;
@@ -19,7 +19,7 @@ public class Process {
    * @param sourceData
    * @param destinationData
    */
-  public Process(SourceData sourceData, DestinationData_v2 destinationData) {
+  public ProcessImport(SourceData sourceData, DestinationData_v2 destinationData) {
     this.sourceData = sourceData;
     this.destinationData = destinationData;
     fileProcessing = new FileProcessing_v2(sourceData, destinationData);

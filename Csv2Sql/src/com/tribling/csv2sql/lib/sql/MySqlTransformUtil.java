@@ -570,7 +570,7 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     if (indexSql != null) {
       sql += ", " + indexSql;
     }
-    System.out.println("alterColum(): " + sql);
+    System.out.println("Transform: alterColum(): " + sql);
     MySqlQueryUtil.update(dd, sql);
   }
   

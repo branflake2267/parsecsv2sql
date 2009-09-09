@@ -49,6 +49,8 @@ public class FieldData implements Comparable<FieldData> {
 	// Transfer: different destination table hard code column + values - one to many definition
 	public HashMap<String, String> hardOneToMany = null; // new HashMap<String, String>(); 
 	
+	public boolean updateOnlyWhenBigger = false;
+	
 	/**
 	 * constructor
 	 */

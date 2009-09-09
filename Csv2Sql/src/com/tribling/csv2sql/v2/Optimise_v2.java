@@ -6,9 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-import com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource;
 import com.tribling.csv2sql.data.ColumnData;
-import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.lib.StringUtil;
 import com.tribling.csv2sql.lib.datetime.DateTimeParser;
 import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
@@ -209,21 +207,16 @@ public class Optimise_v2 extends SQLProcessing_v2 {
 
     // skip when empty
     if (s == null) {
-      fieldType = ColumnData.FIELDTYPE_EMPTY;
+      // don't even analyze field type when nothing
       return;
     }
 
-    boolean isEmpty = isEmpty(s);
-    if (isEmpty == true) {
-      fieldType = ColumnData.FIELDTYPE_EMPTY;
-      return;
-    }
-    
     boolean isInt = false;
     boolean isZero = false;
     boolean isDecimal = false;
     boolean isDate = false;
     boolean isText = false;
+    boolean isEmpty = false;
     
     isDate = isDate(s);
 
@@ -242,6 +235,8 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     if (isText == false && isDate == false) {
       isDecimal = isDecimal(s);
     }
+    
+    //isEmpty(s); // this overides the types, need better logic, later...
 
     if (isDate == true) { // date is first b/c it has text in it
       fieldType = ColumnData.FIELDTYPE_DATETIME; 
@@ -327,6 +322,8 @@ public class Optimise_v2 extends SQLProcessing_v2 {
         columnType = "TINYINT DEFAULT 0";
       } else if (charLength <= 8) {
         columnType = "INTEGER DEFAULT 0";
+      } else if (charLength >= 20) { // why am I getting truncation error for 20 bytes?
+        columnType = "VARCHAR(" + charLength + ") DEFAULT NULL";
       } else {
         columnType = "BIGINT DEFAULT 0";
       }
