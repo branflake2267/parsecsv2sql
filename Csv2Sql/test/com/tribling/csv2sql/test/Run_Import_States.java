@@ -7,7 +7,7 @@ import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.SourceData;
 import com.tribling.csv2sql.v2.DestinationData_v2;
-import com.tribling.csv2sql.v2.Process;
+import com.tribling.csv2sql.v2.ProcessImport;
 
 public class Run_Import_States {
 
@@ -63,7 +63,7 @@ public class Run_Import_States {
     destinationData.dropTable = true;
     destinationData.optimise = true;
     
-    Process p = new Process(sourceData, destinationData);
+    ProcessImport p = new ProcessImport(sourceData, destinationData);
     p.runImport();
     
     // repeat the process to update
@@ -75,7 +75,7 @@ public class Run_Import_States {
     // try it agian
     pathToFile = execPath + "/data/export/states_0_testalter.csv"; 
     sourceData.file = new File(pathToFile);
-    Process p2 = new Process(sourceData, destinationData);
+    ProcessImport p2 = new ProcessImport(sourceData, destinationData);
     p2.runImport();
     
   }

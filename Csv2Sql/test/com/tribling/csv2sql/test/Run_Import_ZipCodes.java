@@ -11,7 +11,7 @@ import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
 import com.tribling.csv2sql.lib.sql.MySqlTransformAlterUtil;
 import com.tribling.csv2sql.v2.DestinationData_v2;
 import com.tribling.csv2sql.v2.Optimise_v2;
-import com.tribling.csv2sql.v2.Process;
+import com.tribling.csv2sql.v2.ProcessImport;
 
 public class Run_Import_ZipCodes {
 
@@ -66,7 +66,7 @@ public class Run_Import_ZipCodes {
     destinationData.stopAtRow = 10; // lets only import a 100 rows for testing
     
     
-    Process p = new Process(sourceData, destinationData);
+    ProcessImport p = new ProcessImport(sourceData, destinationData);
     p.runImport();
     
     
@@ -78,7 +78,7 @@ public class Run_Import_ZipCodes {
     destinationData.dropTable = false;
     pathToFile = execPath + "/data/export/zipcodes_0_testalter1.csv"; 
     sourceData.file = new File(pathToFile);
-    Process p2 = new Process(sourceData, destinationData);
+    ProcessImport p2 = new ProcessImport(sourceData, destinationData);
     p2.runImport();
     
     o.run(columnData);
@@ -86,7 +86,7 @@ public class Run_Import_ZipCodes {
     destinationData.dropTable = false;
     pathToFile = execPath + "/data/export/zipcodes_0_testalter2.csv"; 
     sourceData.file = new File(pathToFile);
-    Process p3 = new Process(sourceData, destinationData);
+    ProcessImport p3 = new ProcessImport(sourceData, destinationData);
     p3.runImport();
     
     o.run(columnData);

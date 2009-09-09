@@ -7,7 +7,7 @@ import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.SourceData;
 import com.tribling.csv2sql.v2.DestinationData_v2;
-import com.tribling.csv2sql.v2.Process;
+import com.tribling.csv2sql.v2.ProcessImport;
 
 public class Run_Import_Tests {
 
@@ -75,14 +75,14 @@ public class Run_Import_Tests {
     
     // insert
     destinationData.dropTable = true;
-    Process p = new Process(sourceData, destinationData);
+    ProcessImport p = new ProcessImport(sourceData, destinationData);
     p.runImport();
     
     
     
     // repeat - update
     destinationData.dropTable = false;
-    Process p2 = new Process(sourceData, destinationData);
+    ProcessImport p2 = new ProcessImport(sourceData, destinationData);
     p2.runImport();
     
     
@@ -99,11 +99,11 @@ public class Run_Import_Tests {
     destinationData.identityColumns = i2;
     
     destinationData.dropTable = true;
-    Process p3 = new Process(sourceData, destinationData);
+    ProcessImport p3 = new ProcessImport(sourceData, destinationData);
     p3.runImport();
     
     destinationData.dropTable = false;
-    Process p4 = new Process(sourceData, destinationData);
+    ProcessImport p4 = new ProcessImport(sourceData, destinationData);
     p4.runImport();
 
     
