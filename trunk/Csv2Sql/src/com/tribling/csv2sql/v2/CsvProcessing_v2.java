@@ -249,10 +249,11 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
       return columnName;
     }
     Comparator<FieldData> searchByComparator = new FieldDataComparator();
+    Arrays.sort(destinationData.changeColumn);
     FieldData searchFor = new FieldData();
     searchFor.sourceField = columnName;
     int index = Arrays.binarySearch(destinationData.changeColumn, searchFor, searchByComparator);
-    if (index >= 0) {
+    if (index > -1) {
       columnName = destinationData.changeColumn[index].destinationField;
     }
     return columnName;

@@ -46,7 +46,10 @@ public class Optimise_v2 extends SQLProcessing_v2 {
   public void run() {
     String where = null; // all columns
     columnData = MySqlTransformUtil.queryColumns(destinationData.databaseData, destinationData.table, where);
-    
+    if (columnData == null) {
+      System.out.println("no columns to optimise");
+      System.exit(1);
+    }
     process();
   }
   

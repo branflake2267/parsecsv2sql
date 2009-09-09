@@ -40,7 +40,7 @@ public class FileProcessing_v2 {
       files = new File[1];
       files[0] = sourceData.file;
       if (sourceData.file.isFile() == false) {
-        System.err.println("File is not a file; It has to be a valid directory or file.");
+        System.err.println("File is not a file; It has to be a valid directory or file. File:" + files[0].getName());
         System.exit(1);
       }
     }
