@@ -233,10 +233,13 @@ public class Transfer {
   
   private void processSrc() {
 
-    String columnCsv = ColumnData.getSql_Names_WSql(columnData_src, null);
+    ColumnData primKey = ColumnData.getPrimaryKey_ColumnData(columnData_src);
+    String where = "WHERE " + primKey.getColumnName() + " != '' AND " + primKey.getColumnName() + " IS NOT NULL";
     
+    String columnCsv = ColumnData.getSql_Names_WSql(columnData_src, null);
+   
     String sql = "";
-    sql = "SELECT " + columnCsv + " FROM " + tableFrom + " ";
+    sql = "SELECT " + columnCsv + " FROM " + tableFrom + " " + where;
     
     System.out.println("sql: " + sql);
     
@@ -274,10 +277,14 @@ public class Transfer {
   
   private void processSrc_Mash() {
 
+    ColumnData primKey = ColumnData.getPrimaryKey_ColumnData(columnData_des);
+    String where = "WHERE " + primKey.getColumnName() + " != '' AND " + primKey.getColumnName() + " IS NOT NULL";
+    
+    
     ColumnData keyDes = ColumnData.getPrimaryKey_ColumnData(columnData_des);
     
     String sql = "";
-    sql = "SELECT " + keyDes.getColumnName() + " FROM " + tableTo + " ";
+    sql = "SELECT " + keyDes.getColumnName() + " FROM " + tableTo + " " + where;
 
     System.out.println("sql: " + sql);
     
