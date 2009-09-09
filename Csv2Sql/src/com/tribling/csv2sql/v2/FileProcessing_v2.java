@@ -63,7 +63,10 @@ public class FileProcessing_v2 {
 
       System.out.println("File: " + files[i].getName());
 
-      if (files[i].isFile() == true) {
+      if (skipFile(files[i]) == true) {
+        // skip file
+        System.out.println("skipping this file: " + files[i].getName());
+      } else if (files[i].isFile() == true) {
         
         // drop table, only on first file, if it is set
         if (i == 0) {
@@ -79,6 +82,24 @@ public class FileProcessing_v2 {
 
   }
   
+  /**
+   * skip these files
+   * 
+   * @param file
+   * @return
+   */
+  private boolean skipFile(File file) {
+    boolean b = false;
+    if (file == null) {
+      b = true;
+      
+    // open office hidden file, which happens while looking at the csv file
+    } else if (file.getName().toLowerCase().contains("~lock") == true) {
+      b = true;
+    }
+    return b;
+  }
+
   /**
    * move file when done processing
    * 
