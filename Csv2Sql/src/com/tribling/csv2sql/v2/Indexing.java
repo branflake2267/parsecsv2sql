@@ -30,9 +30,13 @@ public class Indexing {
   
   private void indexColumns() {
     for (int i=0; i < columns.length; i++) {
-      String in = getIndex(i, columns[i]);
-      if (in != null) {
-        index.add(in);
+      if (columns[i].getColumnName().matches("Auto_.*") == true) {
+        // skip
+      } else {
+        String in = getIndex(i, columns[i]);
+        if (in != null) {
+          index.add(in);
+        }
       }
     }
   }

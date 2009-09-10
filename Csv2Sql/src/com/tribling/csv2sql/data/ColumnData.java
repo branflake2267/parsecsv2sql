@@ -116,6 +116,11 @@ public class ColumnData {
 	    value = StringUtil.getValue(regex, value);
 	  }
 	  this.value = value;
+	  
+	  if (value != null) {
+	    value.trim();
+	  }
+	  
 	}
 	
 	/**
@@ -146,12 +151,41 @@ public class ColumnData {
 	 */
 	public String getValue() {
 	  String v = null;
+	  
 	  if (valueIsFunction != null) {
 	    v = valueIsFunction;
 	  } else {
 	    v = this.value;
 	  }
+	  
+	  // if type is int, check to be sure its an int
+	  v = getValueAsInt(value);
+	  
 	  return v;
+	}
+	
+	/**
+	 * when column type is int - be sure to check the value is really an int
+	 * @param value
+	 * @return
+	 */
+	public String getValueAsInt(String value) {
+	   
+    if (columnType.toLowerCase().contains("int") == true) {
+      if (value == null) {
+        value = "0";
+      } else if (value.trim().length() == 0) {
+        value = "0";
+      } else {
+        try {
+          Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+          value = "0";
+        }
+      }
+    }
+    
+    return value;
 	}
 	
 	public int getValueLength() {

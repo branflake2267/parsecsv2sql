@@ -34,6 +34,8 @@ public class DestinationData_v2 {
   
   // default primary key name on import
   public String primaryKeyName = "Auto_ImportId";
+  public String dateCreated = "Auto_DateCreated";
+  public String dateUpdated = "Auto_DateUpdated";
   
   // drop the table being added to in the beginning
   public boolean dropTable = false;
@@ -119,6 +121,10 @@ public class DestinationData_v2 {
     this.changeColumn = changeColumns;
     this.identityColumns = identities;
     this.table = table;
+    
+    //for (int i=0; i < identityColumns.length; i++) {
+      //identityColumns[i].isPrimaryKey = true;
+    //}
   }
   
   public void debug(String s) {
