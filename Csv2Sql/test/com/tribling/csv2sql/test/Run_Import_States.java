@@ -66,11 +66,10 @@ public class Run_Import_States {
     ProcessImport p = new ProcessImport(sourceData, destinationData);
     p.runImport();
     
+    
+    
     // repeat the process to update
     destinationData.dropTable = false;
-    
-    
-    
     
     // try it agian
     pathToFile = execPath + "/data/export/states_0_testalter.csv"; 

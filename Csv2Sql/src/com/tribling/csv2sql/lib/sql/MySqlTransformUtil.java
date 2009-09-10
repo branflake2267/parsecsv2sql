@@ -538,6 +538,30 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
 
     return indexesToRestore;
   }
+  
+  public static String[] deleteIndexForColumn(DatabaseData dd, ColumnData[] columnData) {
+    
+    ArrayList<String[]> index = new ArrayList<String[]>();
+    for(int i=0; i < columnData.length; i++) {
+      String[] inToRestore = deleteIndexForColumn(dd, columnData[i]);
+      if (inToRestore.length > 0) {
+        index.add(inToRestore);
+      }
+    }
+    
+    ArrayList<String> in = new ArrayList<String>();
+    for (int i=0; i < index.size(); i++) {
+      String[] rr = index.get(i);
+      for (int b=0; b < rr.length; b++) {
+        in.add(rr[i]);
+      }
+    }
+    
+    String[] r = new String[in.size()];
+    in.toArray(r);
+    
+    return r;
+  }
     
   /**
    * delete index
@@ -558,14 +582,34 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
    * @param columnData
    */
   public static void alterColumn(DatabaseData dd, ColumnData columnData) {
-    
-    // TODO when altering a column from text to varchar and it has an index length on it
-    
     String[] sqlIndexRestore = deleteIndexForColumn(dd, columnData);
     String indexSql = StringUtil.toCsv_NoQuotes(sqlIndexRestore);
     
     String modifyColumn = "`" + columnData.getColumnName() + "` " + columnData.getType();
     String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + columnData.getTable() + "` MODIFY COLUMN " + modifyColumn + " ";
+    
+    if (indexSql != null) {
+      sql += ", " + indexSql;
+    }
+    System.out.println("Transform: alterColum(): " + sql);
+    MySqlQueryUtil.update(dd, sql);
+  }
+  
+  public static void alterColumn(DatabaseData dd, ColumnData[] columnData) {
+    if (columnData == null && columnData.length == 0) {
+      return;
+    }
+    String[] sqlIndexRestore = deleteIndexForColumn(dd, columnData);
+    String indexSql = StringUtil.toCsv_NoQuotes(sqlIndexRestore);
+    
+    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + columnData[0].getTable() + "` ";
+    for (int i=0; i < columnData.length; i++) {
+      String modifyColumn = "MODIFY COLUMN `" + columnData[i].getColumnName() + "` " + columnData[i].getType();
+      sql += " " + modifyColumn + " ";
+      if (i < columnData.length - 1) {
+        sql += ",";
+      }
+    }
     
     if (indexSql != null) {
       sql += ", " + indexSql;
@@ -611,6 +655,12 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     return r;
   }
   
+  /**
+   * when going from text to varchar, take out the index byte length
+   * @param columnData
+   * @param index
+   * @return
+   */
   private static String changeIndexFromTextToVarchar(ColumnData columnData, String index) {
     
     boolean change = false;

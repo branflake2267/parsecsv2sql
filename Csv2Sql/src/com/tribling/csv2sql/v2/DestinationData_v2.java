@@ -41,7 +41,7 @@ public class DestinationData_v2 {
 
   // how many records to examine for optimisation of the column data
   // records are examine randomly over this many records
-  public int optimise_RecordsToExamine = 1000;
+  public int optimise_RecordsToExamine = 10000;
 
   // when Examining the data, examine the recores in the column it randomly
   public boolean optimise_skipRandomExamine = false;
@@ -108,5 +108,9 @@ public class DestinationData_v2 {
     this.changeColumn = changeColumns;
     this.identityColumns = identities;
     this.table = table;
+  }
+  
+  public void debug(String s) {
+    System.out.println("DEBUG: " + s);
   }
 }

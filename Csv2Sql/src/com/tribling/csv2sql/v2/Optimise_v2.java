@@ -27,7 +27,7 @@ public class Optimise_v2 extends SQLProcessing_v2 {
   private ColumnData[] columnData = null;
 
   // resize these columns
-  private ArrayList<ColumnData> resize = new ArrayList<ColumnData>();
+  private ArrayList<ColumnData> alterColumns = new ArrayList<ColumnData>();
   
   // when examining the column values, watch the values types
   public int fieldType = ColumnData.FIELDTYPE_TEXT;
@@ -51,6 +51,8 @@ public class Optimise_v2 extends SQLProcessing_v2 {
       System.exit(1);
     }
     process();
+    
+    alterColumns();
   }
   
   /**
@@ -64,8 +66,10 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     }
     this.columnData = columnData; 
     process();
+    
+    alterColumns();
   }
-
+  
   /**
    * analyze columns to go smaller
    */
@@ -74,7 +78,7 @@ public class Optimise_v2 extends SQLProcessing_v2 {
       checkColumn(columnData[i]);
     }
   }
-
+  
   /**
    * check column
    * 
@@ -124,8 +128,9 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     }
     
     columnData.setType(columnType);
-    MySqlTransformUtil.alterColumn(destinationData.databaseData, columnData);
     
+    // store it
+    alterColumns.add(columnData);
   }
 
   private boolean didItChange(ColumnData columnData, String newColumnType) {
@@ -195,9 +200,6 @@ public class Optimise_v2 extends SQLProcessing_v2 {
       System.err.println("SQL Statement Error:" + sql);
       e.printStackTrace();
     }
-    
-    // TODO what was the prognosis of the examine of this column
-    //columnData.setType(columnType)
     
   }
   
@@ -486,5 +488,16 @@ public class Optimise_v2 extends SQLProcessing_v2 {
 
     String sql = ColumnData.getSql_Update(c);
     MySqlQueryUtil.update(destinationData.databaseData, sql);
+  }
+  
+  private void alterColumns() {
+    if (alterColumns.size() == 0) {
+      return;
+    }
+    
+    ColumnData[] columns = new ColumnData[alterColumns.size()];
+    alterColumns.toArray(columns);
+    
+    MySqlTransformUtil.alterColumn(destinationData.databaseData, columnData);
   }
 }
