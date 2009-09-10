@@ -67,7 +67,7 @@ public class Run_Import_ZipCodes {
     destinationData.optimise = false;
     destinationData.stopAtRow = 100; // lets only import a 100 rows for testing
     
-    destinationData.debug = 1;
+    destinationData.debug = 0;
     
     ProcessImport p = new ProcessImport(sourceData, destinationData);
     p.runImport();
