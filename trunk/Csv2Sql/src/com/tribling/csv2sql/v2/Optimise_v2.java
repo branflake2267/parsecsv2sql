@@ -92,6 +92,10 @@ public class Optimise_v2 extends SQLProcessing_v2 {
    */
   private void checkColumn(ColumnData columnData) {
     
+    if (columnData == null) {
+      return;
+    }
+    
     // skip auto_ and primary key
     if (columnData.getColumnName().matches("Auto_.*") == true) {
       return;
@@ -128,9 +132,17 @@ public class Optimise_v2 extends SQLProcessing_v2 {
   
   private void alter(ColumnData columnData, String columnType) {
     
+    boolean isPrimKey = MySqlTransformUtil.queryIsColumnPrimarykey(destinationData.databaseData, columnData);
+    if (isPrimKey == true) {
+      destinationData.debug("alter(): skipping altering primary key: " + columnData.getColumnName());
+      return;
+    }
+    
     // when altering dates, make sure every value is transformed to
     if (columnType.toLowerCase().contains("datetime") == true) {
       formatColumn_ToDateTime(columnData);
+    } else if (columnType.toLowerCase().contains("int") == true) {
+      formatColumn_ToInt(columnData);
     }
     
     columnData.setType(columnType);
@@ -252,25 +264,27 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     if (isDate == true) { // date is first b/c it has text in it
       fieldType = ColumnData.FIELDTYPE_DATETIME; 
 
-    } else if (isText == true && fieldType != ColumnData.FIELDTYPE_DATETIME) {
-      fieldType = ColumnData.FIELDTYPE_VARCHAR; 
+    } else if (isText == true && 
+        fieldType != ColumnData.FIELDTYPE_DATETIME) {
+        fieldType = ColumnData.FIELDTYPE_VARCHAR; 
 
     } else if (isInt == true && isZero == true && 
         fieldType != ColumnData.FIELDTYPE_DATETIME && 
         fieldType != ColumnData.FIELDTYPE_VARCHAR && 
         fieldType != ColumnData.FIELDTYPE_DECIMAL) { // not date, text, decimal
-      fieldType = ColumnData.FIELDTYPE_INT_ZEROFILL; // int with zeros infront 0000123
+        fieldType = ColumnData.FIELDTYPE_INT_ZEROFILL; // int with zeros infront 0000123
 
     } else if (isInt == true && 
         fieldType != ColumnData.FIELDTYPE_VARCHAR && 
         fieldType != ColumnData.FIELDTYPE_TEXT && 
-        fieldType != ColumnData.FIELDTYPE_DECIMAL) { // not date,text,decimal
-      fieldType = ColumnData.FIELDTYPE_INT;
+        fieldType != ColumnData.FIELDTYPE_DECIMAL &&
+        fieldType != ColumnData.FIELDTYPE_INT_ZEROFILL) { // not date,text,decimal
+        fieldType = ColumnData.FIELDTYPE_INT;
 
     } else if (isDecimal == true && 
         fieldType != ColumnData.FIELDTYPE_DATETIME && 
         fieldType != ColumnData.FIELDTYPE_VARCHAR) {
-      fieldType = ColumnData.FIELDTYPE_DECIMAL; 
+        fieldType = ColumnData.FIELDTYPE_DECIMAL; 
 
     } else if (isEmpty == true && 
         fieldType != ColumnData.FIELDTYPE_DATETIME && 
@@ -278,14 +292,14 @@ public class Optimise_v2 extends SQLProcessing_v2 {
         fieldType != ColumnData.FIELDTYPE_INT_ZEROFILL && 
         fieldType != ColumnData.FIELDTYPE_INT && 
         fieldType != ColumnData.FIELDTYPE_DECIMAL) { // has nothing
-      fieldType = ColumnData.FIELDTYPE_EMPTY;
+        fieldType = ColumnData.FIELDTYPE_EMPTY;
       
     } else {
-      fieldType = ColumnData.FIELDTYPE_TEXT;
+      //fieldType = ColumnData.FIELDTYPE_TEXT;
     }
 
     // debug chain logic
-    System.out.println("ThefieldType: " + fieldType + " ForTheValue::: " + s);
+    System.out.println("ThefieldType: " + fieldType + " ForTheValue::: " + s + " isText:"+ isText + " isInt:" + isInt + " isZeroInt:"+isZero + " isDecimal:"+isDecimal);
   }
 
   private String getLimitQuery() {
@@ -328,24 +342,24 @@ public class Optimise_v2 extends SQLProcessing_v2 {
       break;
     case ColumnData.FIELDTYPE_INT_ZEROFILL:
       if (charLength <= 8) {
-        columnType = "INTEGER(" + charLength + ") ZEROFILL DEFAULT 0";
+        columnType = "INTEGER(" + charLength + ") ZEROFILL  DEFAULT 0"; 
       } else {
-        columnType = "BIGINT(" + charLength + ") ZEROFILL DEFAULT 0";
+        columnType = "BIGINT(" + charLength + ") ZEROFILL DEFAULT 0"; 
       }      
       break;
     case ColumnData.FIELDTYPE_INT:
       if (charLength <= 2) {
-        columnType = "TINYINT DEFAULT 0";
+        columnType = "TINYINT"; // DEFAULT 0
       } else if (charLength <= 8) {
-        columnType = "INTEGER DEFAULT 0";
+        columnType = "INTEGER"; // DEFAULT 0
       } else if (charLength >= 20) { // why am I getting truncation error for 20 bytes?
         columnType = "VARCHAR(" + charLength + ") DEFAULT NULL";
       } else {
-        columnType = "BIGINT DEFAULT 0";
+        columnType = "BIGINT"; // DEFAULT 0
       }
       break;
     case ColumnData.FIELDTYPE_DECIMAL:
-      columnType = "DECIMAL(" + charLength + "," + decb + ") DEFAULT 0.0";
+      columnType = "DECIMAL(" + charLength + "," + decb + ")"; // not doing this b/c it errors DEFAULT 0.0 when nothing exists ''
       break;
     case ColumnData.FIELDTYPE_EMPTY:
       columnType = "CHAR(0)";
@@ -489,6 +503,64 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     columnData.setValue(tranformed);
     
     System.out.println("before: " + datetime + " after: " + tranformed);
+
+    // is there room for the transformation values
+    columnData.alterColumnSizeBiggerIfNeedBe(destinationData.databaseData);
+    
+    ColumnData[] c = new ColumnData[2];
+    c[0] = cpriKey;
+    c[1] = columnData;
+
+    String sql = ColumnData.getSql_Update(c);
+    MySqlQueryUtil.update(destinationData.databaseData, sql);
+  }
+  
+  
+  private void formatColumn_ToInt(ColumnData columnData) {
+
+    ColumnData cpriKey = MySqlTransformUtil.queryPrimaryKey(destinationData.databaseData, columnData.getTable());
+    
+    String sql = "SELECT " + cpriKey.getColumnName() + ", `" + columnData.getColumnName() + "` " +
+        "FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "`;"; 
+
+    try {
+      Connection conn = destinationData.databaseData.getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        cpriKey.setValue(Integer.toString(result.getInt(1)));
+        columnData.setValue(result.getString(2));
+        updateColumn_Int(cpriKey, columnData);
+      }
+      select.close();
+      result.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    }
+    
+  }
+  
+  private void updateColumn_Int(ColumnData cpriKey, ColumnData columnData) {
+
+    String intvalue = columnData.getValue();
+    
+    String tranformed = columnData.getValue();
+    if (intvalue == null) {
+      tranformed = "0";
+    } else if (intvalue.trim().length() == 0) {
+      tranformed = "0";
+    } else {
+      try {
+        Integer.parseInt(tranformed);
+      } catch (NumberFormatException e) {
+        tranformed = "0";
+      } 
+    }
+
+    columnData.setValue(tranformed);
+    
+    destinationData.debug("before: " + intvalue + " after: " + tranformed);
 
     // is there room for the transformation values
     columnData.alterColumnSizeBiggerIfNeedBe(destinationData.databaseData);

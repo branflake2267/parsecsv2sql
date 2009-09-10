@@ -152,12 +152,12 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     defaultColumns[1] = new ColumnData();
     
     defaultColumns[0].setTable(destinationData.table);
-    defaultColumns[0].setColumnName("Auto_DateCreated");
+    defaultColumns[0].setColumnName(destinationData.dateCreated);
     defaultColumns[0].setType("DATETIME DEFAULT NULL");
     defaultColumns[0].setValueAsFunction("NOW()");
    
     defaultColumns[1].setTable(destinationData.table);
-    defaultColumns[1].setColumnName("Auto_DateUpdated");
+    defaultColumns[1].setColumnName(destinationData.dateUpdated);
     defaultColumns[1].setType("DATETIME DEFAULT NULL");
     defaultColumns[1].setValueAsFunction("NOW()");
     
@@ -413,7 +413,12 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    if (destinationData.identityColumns == null) {
      return -1;
    }
-   String where = " WHERE " + ColumnData.getSql_IdentitiesWhere(columnData);
+   String idents = ColumnData.getSql_IdentitiesWhere(columnData);
+   if (idents == null || idents.trim().length() == 0) {
+     System.out.println("ERROR: doesDataExist(): Can't figure out the identies");
+     System.exit(1);
+   }
+   String where = " WHERE " + idents;
    String sql = "SELECT `" + destinationData.primaryKeyName + "` FROM `" + destinationData.table + "` " + where;
    long primaryKeyId = MySqlQueryUtil.queryLong(destinationData.databaseData, sql); 
    return primaryKeyId; 

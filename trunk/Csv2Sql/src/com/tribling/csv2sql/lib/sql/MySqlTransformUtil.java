@@ -63,8 +63,9 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     }
     String sql = "CREATE TABLE `" + dd.getDatabase() + "`.`" + table + "` " +
     	"(" + 
-        "`" + primaryKeyName + "` INT NOT NULL AUTO_INCREMENT, PRIMARY KEY (`" + primaryKeyName + "`) " + 
+        "`" + primaryKeyName + "` BIGINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (`" + primaryKeyName + "`) " + 
       ") ENGINE = MyISAM;";
+    System.out.println("createTable: " + sql);
     update(dd, sql);
   }
   
@@ -193,6 +194,30 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
       e.printStackTrace();
     } 
     return column;
+  }
+  
+  public static boolean queryIsColumnPrimarykey(DatabaseData dd, ColumnData columnData) {
+    String sql = "SHOW COLUMNS FROM `" + columnData.getTable() + "` FROM `" + dd.getDatabase() + "` " +
+    		"WHERE `Key`='PRI' AND `Field`='" + columnData.getColumnName() + "';";
+    boolean b = false;
+    try {
+      Connection conn = dd.getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        b = true;
+      }
+      result.close();
+      result = null;
+      select.close();
+      select = null;
+      conn.close();
+      conn = null;
+    } catch (SQLException e) {
+      System.err.println("Error: queryPrimaryKey(): " + sql);
+      e.printStackTrace();
+    } 
+    return b;
   }
 
   /**
