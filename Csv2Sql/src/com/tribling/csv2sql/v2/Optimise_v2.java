@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 import com.tribling.csv2sql.data.ColumnData;
+import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.lib.StringUtil;
 import com.tribling.csv2sql.lib.datetime.DateTimeParser;
 import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
@@ -27,7 +28,7 @@ public class Optimise_v2 extends SQLProcessing_v2 {
   private ColumnData[] columnData = null;
 
   // resize these columns
-  private ArrayList<ColumnData> alterColumns = new ArrayList<ColumnData>();
+  private ArrayList<ColumnData> alterColumns = null;
   
   // when examining the column values, watch the values types
   public int fieldType = ColumnData.FIELDTYPE_TEXT;
@@ -44,6 +45,9 @@ public class Optimise_v2 extends SQLProcessing_v2 {
    * optimize all the columns
    */
   public void run() {
+    
+    alterColumns = new ArrayList<ColumnData>();
+    
     String where = null; // all columns
     columnData = MySqlTransformUtil.queryColumns(destinationData.databaseData, destinationData.table, where);
     if (columnData == null) {
@@ -61,6 +65,8 @@ public class Optimise_v2 extends SQLProcessing_v2 {
    * @param columnData
    */
   public void run(ColumnData[] columnData) {
+    alterColumns = new ArrayList<ColumnData>();
+    
     if (columnData == null) {
       return;
     }
@@ -303,6 +309,11 @@ public class Optimise_v2 extends SQLProcessing_v2 {
   
   private String getColumnType(ColumnData columnData, int charLength) {
 
+    // can skip discovery of other types
+    if (destinationData.skipOptimisingIntDateTimeDecTypeColumns == true) {
+      fieldType = 2;
+    }
+    
     String columnType = null;
     switch (fieldType) {
     case ColumnData.FIELDTYPE_DATETIME: 

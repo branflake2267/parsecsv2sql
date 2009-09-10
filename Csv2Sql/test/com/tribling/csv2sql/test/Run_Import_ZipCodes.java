@@ -10,6 +10,7 @@ import com.tribling.csv2sql.data.SourceData;
 import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
 import com.tribling.csv2sql.lib.sql.MySqlTransformAlterUtil;
 import com.tribling.csv2sql.v2.DestinationData_v2;
+import com.tribling.csv2sql.v2.Indexing;
 import com.tribling.csv2sql.v2.Optimise_v2;
 import com.tribling.csv2sql.v2.ProcessImport;
 
@@ -58,22 +59,27 @@ public class Run_Import_ZipCodes {
     
     // destination settings
     destinationData = new DestinationData_v2();
+    destinationData.getElapsedTime();
     destinationData.setData(databaseData, changeColumns, identities, table);
     
     // Settings
     destinationData.dropTable = true;
     destinationData.optimise = false;
-    destinationData.stopAtRow = 10; // lets only import a 100 rows for testing
+    destinationData.stopAtRow = 100; // lets only import a 100 rows for testing
     
+    destinationData.debug = 1;
     
     ProcessImport p = new ProcessImport(sourceData, destinationData);
     p.runImport();
+    destinationData.getElapsedTime();
+    
     
     
     ColumnData[] columnData = MySqlTransformAlterUtil.queryColumns(destinationData.databaseData, table, "`FIELD`='latitude'");
     Optimise_v2 o = new Optimise_v2(destinationData);
     o.run(columnData);
     
+    destinationData.getElapsedTime();
     
     destinationData.dropTable = false;
     pathToFile = execPath + "/data/export/zipcodes_0_testalter1.csv"; 
@@ -81,7 +87,10 @@ public class Run_Import_ZipCodes {
     ProcessImport p2 = new ProcessImport(sourceData, destinationData);
     p2.runImport();
     
+    // optimise
     o.run(columnData);
+    
+    destinationData.getElapsedTime();
     
     destinationData.dropTable = false;
     pathToFile = execPath + "/data/export/zipcodes_0_testalter2.csv"; 
@@ -89,7 +98,25 @@ public class Run_Import_ZipCodes {
     ProcessImport p3 = new ProcessImport(sourceData, destinationData);
     p3.runImport();
     
+    // optomise
     o.run(columnData);
+    
+    destinationData.getElapsedTime();
+    
+    // index
+    ColumnData[] indexColumns = new ColumnData[3];
+    indexColumns[0] = new ColumnData();
+    indexColumns[1] = new ColumnData();
+    indexColumns[2] = new ColumnData();
+    
+    indexColumns[0] = MySqlTransformAlterUtil.queryColumn(destinationData.databaseData, table, "zip_code");
+    indexColumns[1] = MySqlTransformAlterUtil.queryColumn(destinationData.databaseData, table, "state_abbreviation");
+    indexColumns[2] = MySqlTransformAlterUtil.queryColumn(destinationData.databaseData, table, "latitude");
+    
+    Indexing index = new Indexing(destinationData);
+    index.runIndexColumns(indexColumns);
+    
+    destinationData.getElapsedTime();
   }
   
 }

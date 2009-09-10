@@ -375,7 +375,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
       sql = ColumnData.getSql_Insert(i);
     }
     
-    System.out.println(rowIndex + ". SAVE(): " + sql);
+    destinationData.debug(rowIndex + ". SAVE(): " + sql);
     
     MySqlQueryUtil.update(destinationData.databaseData, sql);
     // TODO - deal with truncation error ~~~~~~~~~~~~~~~~~~~~~~~~~~
