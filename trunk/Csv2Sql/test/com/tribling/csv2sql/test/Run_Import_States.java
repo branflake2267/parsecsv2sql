@@ -3,10 +3,14 @@ package com.tribling.csv2sql.test;
 import java.io.File;
 import java.net.URISyntaxException;
 
+import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.SourceData;
+import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
+import com.tribling.csv2sql.lib.sql.MySqlTransformAlterUtil;
 import com.tribling.csv2sql.v2.DestinationData_v2;
+import com.tribling.csv2sql.v2.Indexing;
 import com.tribling.csv2sql.v2.ProcessImport;
 
 public class Run_Import_States {
@@ -77,6 +81,16 @@ public class Run_Import_States {
     ProcessImport p2 = new ProcessImport(sourceData, destinationData);
     p2.runImport();
     
+    
+    ColumnData[] indexColumns = new ColumnData[2];
+    indexColumns[0] = new ColumnData();
+    indexColumns[1] = new ColumnData();
+    
+    indexColumns[0] = MySqlTransformAlterUtil.queryColumn(destinationData.databaseData, table, "Name");
+    indexColumns[1] = MySqlTransformAlterUtil.queryColumn(destinationData.databaseData, table, "TwoLetter");
+    
+    Indexing index = new Indexing(destinationData);
+    index.runIndexColumns(indexColumns);
   }
   
 

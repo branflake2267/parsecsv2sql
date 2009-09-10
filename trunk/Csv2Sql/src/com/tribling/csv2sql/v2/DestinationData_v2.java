@@ -13,6 +13,8 @@ import com.tribling.csv2sql.data.FlatFileSettingsData;
  */
 public class DestinationData_v2 {
 
+  public int debug = 0;
+  
   // database connection
   public DatabaseData databaseData = null;
 
@@ -52,6 +54,9 @@ public class DestinationData_v2 {
   // use this if you need to repeat optimisation and want to skip all but TEXT columns
   public boolean optimise_TextOnlyColumnTypes = true;
   
+  // skip optimising to other types
+  public boolean skipOptimisingIntDateTimeDecTypeColumns = false;
+  
   // this will delete indexes, then optimise
   // a column can't have a index on it if it needs altering
   public boolean skipDeletingIndexingBeforeOptimise = false;
@@ -84,6 +89,12 @@ public class DestinationData_v2 {
   
   public FieldData[] compareBeforeUpdate = null;
   
+  private long millisecondsStart = 0;
+ 
+  public DestinationData_v2() {
+    setStart();
+  }
+  
   /**
    * optimize table settings basics
    * 
@@ -111,6 +122,32 @@ public class DestinationData_v2 {
   }
   
   public void debug(String s) {
-    System.out.println("DEBUG: " + s);
+    if (debug == 0) {
+      
+    } else if (debug == 1) {
+      System.out.println("DEBUG: " + s);
+    } else if (debug == 2) {
+      System.out.println("DEBUG: " + s.substring(0,20));
+    } else if (debug == 3) {
+      System.out.println(".");
+    }
+  }
+  
+  private void setStart() {
+    millisecondsStart = System.currentTimeMillis();
+  }
+  
+  public void getElapsedTime() {
+    long endTime = System.currentTimeMillis();
+    long howLong = endTime - millisecondsStart;
+    long seconds = (long) (howLong * .001);
+    System.out.println("milliseconds: " + howLong + " seconds: " + seconds);
+  }
+  
+  public void getElapsedTime(long millisecondsStart) {
+    long endTime = System.currentTimeMillis();
+    long howLong = endTime - millisecondsStart;
+    long seconds = (long) (howLong * .001);
+    System.out.println("milliseconds: " + howLong + " seconds: " + seconds);
   }
 }
