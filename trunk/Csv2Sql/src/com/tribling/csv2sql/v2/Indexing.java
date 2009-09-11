@@ -13,6 +13,9 @@ public class Indexing {
   private ColumnData[] columns = null;
   
   private ArrayList<String> index = new ArrayList<String>();
+
+  // full text indexing
+  private boolean fullTextIndex;
   
   public Indexing(DestinationData_v2 destinationData) {
     this.destinationData = destinationData;
@@ -26,6 +29,10 @@ public class Indexing {
     indexColumns();
     
     index();
+  }
+  
+  public void setFullText(boolean b) {
+    this.fullTextIndex = b;
   }
   
   private void indexColumns() {
@@ -57,7 +64,11 @@ public class Indexing {
       len = "(900)";
     } 
     
-    String sql = "ADD INDEX " + indexName + "(`" + cn + "`" + len + ")";
+    String kind = "";
+    if (fullTextIndex == true) {
+      kind = "FULLTEXT";
+    }
+    String sql = "ADD INDEX " + kind + " " + indexName + "(`" + cn + "`" + len + ")";
     
     return sql;
   }
