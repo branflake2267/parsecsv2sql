@@ -30,7 +30,8 @@ public class DateParserTests {
     parse.test_MySqlDate("2009-12-01 00:00:00AM", "2009-12-01 00:00:00"); 
     parse.test_MySqlDate("02/23/2009 11:14:31", "2009-02-23 11:14:31"); 
     parse.test_MySqlDate("04/03/2009 01:09:34 PM", "2009-04-03 13:09:34"); 
-    
+    parse.test_MySqlDate("8/6/2009 9:42", "2009-08-06 09:42:00"); 
+    parse.test_MySqlDate("8/6/2009 9:42", "2009-08-06 09:42:00"); 
     
     
     parse.test_MySqlDate("02/23/09 11:14 am", "2009-02-23 11:14:00"); 
