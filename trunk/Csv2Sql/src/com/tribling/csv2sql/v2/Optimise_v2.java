@@ -299,7 +299,7 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     }
 
     // debug chain logic
-    System.out.println("ThefieldType: " + fieldType + " ForTheValue::: " + s + " isText:"+ isText + " isInt:" + isInt + " isZeroInt:"+isZero + " isDecimal:"+isDecimal);
+    destinationData.debug("ThefieldType: " + fieldType + " ForTheValue::: " + s + " isText:"+ isText + " isInt:" + isInt + " isZeroInt:"+isZero + " isDecimal:"+isDecimal);
   }
 
   private String getLimitQuery() {
@@ -466,7 +466,7 @@ public class Optimise_v2 extends SQLProcessing_v2 {
       decb = r;
     }
     
-    System.out.println("decimal: left: " + deca + " right: " + decb + " value: " + s);
+    destinationData.debug("decimal: left: " + deca + " right: " + decb + " value: " + s);
   }
   
   private void formatColumn_ToDateTime(ColumnData columnData) {

@@ -59,19 +59,19 @@ public class Run_Import_ZipCodes {
     
     // destination settings
     destinationData = new DestinationData_v2();
-    destinationData.getElapsedTime();
+    destinationData.displayElapsedTime();
     destinationData.setData(databaseData, changeColumns, identities, table);
     
     // Settings
     destinationData.dropTable = true;
     destinationData.optimise = false;
-    destinationData.stopAtRow = 100; // lets only import a 100 rows for testing
+    destinationData.stopAtRow = 1000; // lets only import a 100 rows for testing
     
     destinationData.debug = 0;
     
     ProcessImport p = new ProcessImport(sourceData, destinationData);
     p.runImport();
-    destinationData.getElapsedTime();
+    destinationData.displayElapsedTime();
     
     
     
@@ -79,7 +79,7 @@ public class Run_Import_ZipCodes {
     Optimise_v2 o = new Optimise_v2(destinationData);
     o.run(columnData);
     
-    destinationData.getElapsedTime();
+    destinationData.displayElapsedTime();
     
     destinationData.dropTable = false;
     pathToFile = execPath + "/data/export/zipcodes_0_testalter1.csv"; 
@@ -90,7 +90,7 @@ public class Run_Import_ZipCodes {
     // optimise
     o.run(columnData);
     
-    destinationData.getElapsedTime();
+    destinationData.displayElapsedTime();
     
     destinationData.dropTable = false;
     pathToFile = execPath + "/data/export/zipcodes_0_testalter2.csv"; 
@@ -101,7 +101,7 @@ public class Run_Import_ZipCodes {
     // optomise
     o.run(columnData);
     
-    destinationData.getElapsedTime();
+    destinationData.displayElapsedTime();
     
     // index
     ColumnData[] indexColumns = new ColumnData[3];
@@ -116,7 +116,12 @@ public class Run_Import_ZipCodes {
     Indexing index = new Indexing(destinationData);
     index.runIndexColumns(indexColumns);
     
-    destinationData.getElapsedTime();
+    destinationData.displayElapsedTime();
+    
+    // optimise all
+    o.run();
+    
+    destinationData.displayElapsedTime();
   }
   
 }

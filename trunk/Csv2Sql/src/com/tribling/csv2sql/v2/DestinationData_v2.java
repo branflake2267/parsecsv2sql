@@ -143,7 +143,7 @@ public class DestinationData_v2 {
     millisecondsStart = System.currentTimeMillis();
   }
   
-  public void getElapsedTime() {
+  public void displayElapsedTime() {
     long endTime = System.currentTimeMillis();
     long howLong = endTime - millisecondsStart;
     long seconds = (long) (howLong * .001);
