@@ -7,8 +7,8 @@ import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.SourceData;
-import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
 import com.tribling.csv2sql.lib.sql.MySqlTransformAlterUtil;
+import com.tribling.csv2sql.lib.sql.MySqlTransformUtil;
 import com.tribling.csv2sql.v2.DestinationData_v2;
 import com.tribling.csv2sql.v2.Indexing;
 import com.tribling.csv2sql.v2.Optimise_v2;
@@ -75,7 +75,7 @@ public class Run_Import_ZipCodes {
     
     
     
-    ColumnData[] columnData = MySqlTransformAlterUtil.queryColumns(destinationData.databaseData, table, "`FIELD`='latitude'");
+    ColumnData[] columnData = MySqlTransformUtil.queryColumns(destinationData.databaseData, table, "`FIELD`='latitude'");
     Optimise_v2 o = new Optimise_v2(destinationData);
     o.run(columnData);
     
@@ -109,9 +109,9 @@ public class Run_Import_ZipCodes {
     indexColumns[1] = new ColumnData();
     indexColumns[2] = new ColumnData();
     
-    indexColumns[0] = MySqlTransformAlterUtil.queryColumn(destinationData.databaseData, table, "zip_code");
-    indexColumns[1] = MySqlTransformAlterUtil.queryColumn(destinationData.databaseData, table, "state_abbreviation");
-    indexColumns[2] = MySqlTransformAlterUtil.queryColumn(destinationData.databaseData, table, "latitude");
+    indexColumns[0] = MySqlTransformUtil.queryColumn(destinationData.databaseData, table, "zip_code");
+    indexColumns[1] = MySqlTransformUtil.queryColumn(destinationData.databaseData, table, "state_abbreviation");
+    indexColumns[2] = MySqlTransformUtil.queryColumn(destinationData.databaseData, table, "latitude");
     
     Indexing index = new Indexing(destinationData);
     index.runIndexColumns(indexColumns);

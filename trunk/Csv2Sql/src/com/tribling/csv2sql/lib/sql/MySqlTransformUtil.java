@@ -87,20 +87,20 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
    * 
    * @param dd
    * @param table
-   * @param column
+   * @param columnData
    * @return
    */
-  public static boolean doesColumnExist(DatabaseData dd, ColumnData column) {
+  public static boolean doesColumnExist(DatabaseData dd, ColumnData columnData) {
     
-    String table = column.getTable();
+    String table = columnData.getTable();
     
-    if (table == null | column == null) {
+    if (table == null | columnData == null) {
       return false;
     }
-    if (table.length() == 0 | column.getColumnName().length() == 0) {
+    if (table.length() == 0 | columnData.getColumnName().length() == 0) {
       return false;
     }
-    String sql = "SHOW COLUMNS FROM `" + table + "` FROM `" + dd.getDatabase() + "` LIKE '" + column.getColumnName() + "';";
+    String sql = "SHOW COLUMNS FROM `" + table + "` FROM `" + dd.getDatabase() + "` LIKE '" + columnData.getColumnName() + "';";
     boolean r = queryStringAndConvertToBoolean(dd, sql);
     return r;
   }
@@ -115,10 +115,27 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
    */
   public static ColumnData queryColumn(DatabaseData dd, String table, String columnName) {
     String where = "`FIELD`='" + columnName + "'";
-    ColumnData[] columnData = queryColumns(dd, table, where);
+    ColumnData[] c = queryColumns(dd, table, where);
     ColumnData r = null;
-    if (columnData != null && columnData.length > 0) {
-      r = columnData[0];
+    if (c != null && c.length > 0) {
+      r = c[0];
+    }
+    return r;
+  }
+  
+  /**
+   * query column
+   * 
+   * @param dd
+   * @param columnData
+   * @return
+   */
+  public static ColumnData queryColumn(DatabaseData dd, ColumnData columnData) {
+    String where = "`FIELD`='" + columnData.getColumnName() + "'";
+    ColumnData[] c = queryColumns(dd, columnData.getTable(), where);
+    ColumnData r = null;
+    if (c != null && c.length > 0) {
+      r = c[0];
     }
     return r;
   }
@@ -678,11 +695,11 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
         System.out.println(colname);
         int cIndex = ColumnData.searchColumnByName_UsingComparator(columnData, colname);
         ColumnData c = columnData[cIndex];
-        newIndex[i] = c;
-        String csql = ColumnData.getSql_Index_Multi(newIndex);
-        index = index.replaceAll("(.*)$", csql);
-        System.out.println("replace: " + index);
+        newIndex[i] = c; 
       }
+      String csql = ColumnData.getSql_Index_Multi(newIndex);
+      index = index.replaceAll("\\(.*\\)$", "(" + csql + ")");
+      System.out.println("replace: " + index);
     }
    
     return index;

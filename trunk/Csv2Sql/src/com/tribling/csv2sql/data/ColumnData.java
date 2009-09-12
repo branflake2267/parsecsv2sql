@@ -47,7 +47,7 @@ public class ColumnData {
   
 	// column field type - like INTEGER DEFAULT 0
   // TODO public access to this var is deprecated, changing to method access
-	public String columnType = "TEXT";
+	public String columnType = "TEXT DEFAULT NULL";
   // new var to show what type of column it is
   public int fieldType = FIELDTYPE_TEXT;
 	
@@ -1164,6 +1164,9 @@ public class ColumnData {
    */
   public static String getSql_Index_Multi(ColumnData[] columns) {
     int size = 900;
+    if (columns.length > 1) {
+      size = (int) size / columns.length;
+    }
     String sql = "";
     for(int i=0; i < columns.length; i++) {
       String c = columns[i].getColumnName();

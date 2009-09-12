@@ -9,7 +9,7 @@ import com.tribling.csv2sql.data.DatabaseData;
  * @author branflake2267
  *
  */
-public class MySqlTransformAlterUtil extends MySqlTransformUtil {
+public class MySqlTransformAlterUtil  {
 
   public MySqlTransformAlterUtil() {
   }
