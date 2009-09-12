@@ -15,6 +15,9 @@ import com.tribling.csv2sql.lib.sql.MySqlTransformUtil;
 
 /**
  * 
+ * TODO - delete duplicates - copy from v1
+ * TODO - delete empty columns - copy from v1
+ * 
  * @author BDonnelson
  * 
  */
@@ -417,7 +420,7 @@ public class Optimise_v2 extends SQLProcessing_v2 {
 
   private boolean isInt(String s) {
     boolean b = false;
-    if (s.matches("[0-9]+")) {
+    if (s.matches("[-]?[0-9]+")) {
       b = true;
     }
     return b;
@@ -445,7 +448,7 @@ public class Optimise_v2 extends SQLProcessing_v2 {
    */
   private boolean isDecimal(String s) {
     boolean b = false;
-    if (s.matches("^\\d+\\.\\d+|\\.\\d+")) {
+    if (s.matches("^[-]?\\.\\d+|^[-]?\\d+\\.\\d+")) {
       b = true;
       getDecimalLengths(s);
     }
