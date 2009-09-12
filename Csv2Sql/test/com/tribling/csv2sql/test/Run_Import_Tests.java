@@ -48,14 +48,14 @@ public class Run_Import_Tests {
     DatabaseData databaseData = new DatabaseData(DatabaseData.TYPE_MYSQL, "ark", "3306", "test", "test#", "test");
     
     String table = "import_states_test";
-    // destination settings
     destinationData = new DestinationData_v2();
     destinationData.setData(databaseData, changeColumns, identities, table);
     
     destinationData.optimise = true;
+    destinationData.stopAtRow = 50;
+    destinationData.debug = 1;
     
-    destinationData.stopAtRow = 100;
-    
+    // identities
     FieldData[] i1 = new FieldData[3];
     i1[0] = new FieldData();
     i1[1] = new FieldData();
@@ -73,12 +73,11 @@ public class Run_Import_Tests {
     destinationData.table = "test1";
     destinationData.identityColumns = i1;
     
+    
     // insert
     destinationData.dropTable = true;
     ProcessImport p = new ProcessImport(sourceData, destinationData);
     p.runImport();
-    
-    
     
     // repeat - update
     destinationData.dropTable = false;
@@ -86,7 +85,7 @@ public class Run_Import_Tests {
     p2.runImport();
     
     
-    
+    // try test 2
     FieldData[] i2 = new FieldData[1];
     i2[0] = new FieldData();
     i2[0].sourceField = "series_id";
