@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.lib.StringUtil;
@@ -371,11 +372,12 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
   
   /**
    * create index for identities
+   * 
    * @param dd
    * @param columnData - all the columnData - will get the identities columns from in them
    */
-  public static void createIndex_forIdentities(DatabaseData dd, ColumnData[] columnData) {
-
+  public static void createIndex_forIdentities(DatabaseData dd, ColumnData[] columnData, String indexName) {
+                                         
     ColumnData[] identities = ColumnData.getColumns_Identities(columnData);
 
     String indexes = "";
@@ -389,7 +391,6 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     }
     
     // create the index
-    String indexName = "auto_identies";
     String table = columnData[0].getTable();
     createIndex(dd, table, indexName, indexes, ColumnData.INDEXKIND_DEFAULT);
   }
@@ -568,6 +569,13 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     return indexesToRestore;
   }
   
+  /**
+   * delete indexes and returns indexes deleted
+   * 
+   * @param dd
+   * @param columnData
+   * @return - indexes deleted
+   */
   public static String[] deleteIndexForColumn(DatabaseData dd, ColumnData[] columnData) {
     
     ArrayList<String[]> index = new ArrayList<String[]>();
@@ -582,7 +590,7 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     for (int i=0; i < index.size(); i++) {
       String[] rr = index.get(i);
       for (int b=0; b < rr.length; b++) {
-        in.add(rr[i]);
+        in.add(rr[b]);
       }
     }
     
@@ -601,6 +609,7 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
    */
   public static void deleteIndex(DatabaseData dd, String table, String indexName) {
     String sql = "DROP INDEX `" + indexName + "` ON `" + table + "`;";
+    System.out.println("deleteIndex: " + sql);
     MySqlQueryUtil.update(dd, sql);
   }
   
@@ -629,7 +638,7 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
       return;
     }
     String[] sqlIndexRestore = deleteIndexForColumn(dd, columnData);
-    String indexSql = StringUtil.toCsv_NoQuotes(sqlIndexRestore);
+   
     
     String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + columnData[0].getTable() + "` ";
     for (int i=0; i < columnData.length; i++) {
@@ -640,6 +649,8 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
       }
     }
     
+    sqlIndexRestore = checkIndexTextLengths(columnData, sqlIndexRestore);
+    String indexSql = StringUtil.toCsv_NoQuotes(sqlIndexRestore);
     if (indexSql != null) {
       sql += ", " + indexSql;
     }
@@ -647,6 +658,36 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     MySqlQueryUtil.update(dd, sql);
   }
   
+  private static String[] checkIndexTextLengths(ColumnData[] columnData, String[] indexes) {
+    for (int i=0; i < indexes.length; i++) {
+      indexes[i] = checkIndexTextLength(columnData, indexes[i]);
+    }
+    return indexes;
+  }
+
+  private static String checkIndexTextLength(ColumnData[] columnData, String index) {
+    
+    System.out.println("index: " + index);
+    // ADD INDEX `auto_identities` (`series_id`,`period`(330),`value`(330))
+    if (index.contains(",") == true) {
+      String colstr = StringUtil.getValue("\\((.*)\\)$", index);
+      String[] cols = colstr.split(",");
+      ColumnData[] newIndex = new ColumnData[cols.length];
+      for (int i=0; i < cols.length; i++) {
+        String colname = StringUtil.getValue("`(.*)`", cols[i]);
+        System.out.println(colname);
+        int cIndex = ColumnData.searchColumnByName_UsingComparator(columnData, colname);
+        ColumnData c = columnData[cIndex];
+        newIndex[i] = c;
+        String csql = ColumnData.getSql_Index_Multi(newIndex);
+        index = index.replaceAll("(.*)$", csql);
+        System.out.println("replace: " + index);
+      }
+    }
+   
+    return index;
+  }
+
   public static String[] showCreateIndex(DatabaseData dd, ColumnData columnData) {
 
     String showCreateTable = showCreateTable(dd, columnData.getTable());
@@ -663,10 +704,13 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
         // if the index was a text and
         index = changeIndexFromTextToVarchar(columnData, index);
         
+        
         indexes.add(index);
+ 
       }
     } catch (Exception e) {
-      System.out.println("findMatch: regex error");
+      e.printStackTrace();
+      System.out.println("ERROR: showCreateIndex(): findMatch: regex error");
     }
   
     String[] r = new String[indexes.size()];
@@ -699,7 +743,11 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
     
     // does the index have a index length?
     if (change == true && index.matches(".*([0-9]+).*\n") == true) {
-      index = index.replaceFirst("(\\([0-9]+\\)", "");
+      try {
+        index = index.replaceFirst("(\\([0-9]+\\))", "");
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     } 
     
     return index;
