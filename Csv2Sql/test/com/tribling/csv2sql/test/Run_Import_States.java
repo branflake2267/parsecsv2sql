@@ -65,6 +65,7 @@ public class Run_Import_States {
     // Settings
     destinationData.dropTable = true;
     destinationData.optimise = true;
+    destinationData.debug = 1;
     
     ProcessImport p = new ProcessImport(sourceData, destinationData);
     p.runImport();
