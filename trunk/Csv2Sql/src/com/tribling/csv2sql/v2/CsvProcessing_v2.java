@@ -71,6 +71,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     // get and create columns
     createColumns();
 
+    markColumnsThatAreIdents();
+    
     createIdentitiesIndex();
     
     // loop through data rows
@@ -78,6 +80,16 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
 
   }
   
+  private void markColumnsThatAreIdents() {
+    for (int i=0; i < columnData.length; i++) {
+      for (int b=0; b < destinationData.identityColumns.length; b++) {
+        if (columnData[i].getColumnName().toLowerCase().equals(destinationData.identityColumns[b].destinationField) == true) {
+          columnData[i].setIdentity(true);
+        }
+      }
+    }
+  }
+
   private void createIdentitiesIndex() {
     if (destinationData.identityColumns == null) {
       return;
@@ -393,7 +405,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     FieldData[] c = destinationData.compareBeforeUpdate;
     for (int i=0; i < c.length; i++) {
       ColumnData forColumnData = new ColumnData(primKeyColumn.getTable(), c[i].destinationField, "TEXT");
-      int index = ColumnData.getColumnByName_NonComp(columnData, forColumnData);
+      int index = ColumnData.searchColumnByName_NonComp(columnData, forColumnData);
       if (index > -1) {
         String sql = "SELECT " + c[i].destinationField + " FROM " + primKeyColumn.getTable() + " " + where;
         String beforeValue = columnData[index].getValue();

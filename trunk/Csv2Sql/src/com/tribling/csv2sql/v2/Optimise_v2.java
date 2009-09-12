@@ -54,11 +54,14 @@ public class Optimise_v2 extends SQLProcessing_v2 {
       System.out.println("no columns to optimise");
       System.exit(1);
     }
+    
+    markColumnsThatAreIdents();
+    
     process();
     
     alterColumns();
   }
-  
+    
   /**
    * optimise only these columns
    * 
@@ -71,9 +74,22 @@ public class Optimise_v2 extends SQLProcessing_v2 {
       return;
     }
     this.columnData = columnData; 
+    
+    markColumnsThatAreIdents();
+    
     process();
     
     alterColumns();
+  }
+  
+  private void markColumnsThatAreIdents() {
+    for (int i=0; i < columnData.length; i++) {
+      for (int b=0; b < destinationData.identityColumns.length; b++) {
+        if (columnData[i].getColumnName().toLowerCase().equals(destinationData.identityColumns[b].destinationField) == true) {
+          columnData[i].setIdentity(true);
+        }
+      }
+    }
   }
   
   /**
