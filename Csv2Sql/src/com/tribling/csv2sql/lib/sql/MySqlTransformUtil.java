@@ -231,6 +231,9 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
       return null;
     }
     for (int i=0; i < columnData.length; i++) {
+      if (columnData[i].getColumnName() == null || columnData[i].getColumnName().trim().length() == 0) {
+        columnData[i].setColumnName("c" + i);
+      }
       columnData[i] = createColumn(dd, columnData[i]);
     }
     return columnData;
@@ -273,6 +276,7 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
       type = "TEXT DEFAULT NULL";
     }
     String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + table + "` ADD COLUMN `" + columnData.getColumnName() + "`  " + type + ";";
+    System.out.println("MySqlTransformUtil.createColumn(): " + sql);
     update(dd, sql);
     
     return columnData;

@@ -415,7 +415,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    }
    String idents = ColumnData.getSql_IdentitiesWhere(columnData);
    if (idents == null || idents.trim().length() == 0) {
-     System.out.println("ERROR: doesDataExist(): Can't figure out the identies");
+     System.out.println("ERROR: doesDataExist(): Can't figure out the identies. exiting. (check delimiter?)");
      System.exit(1);
    }
    String where = " WHERE " + idents;
