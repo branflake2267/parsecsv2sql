@@ -5,10 +5,9 @@ import java.net.URISyntaxException;
 
 import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.data.DatabaseData;
-import com.tribling.csv2sql.data.Export;
 import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.SourceData;
-import com.tribling.csv2sql.lib.sql.MySqlTransformAlterUtil;
+import com.tribling.csv2sql.lib.sql.MySqlTransformUtil;
 import com.tribling.csv2sql.v2.DestinationData_v2;
 import com.tribling.csv2sql.v2.Indexing;
 import com.tribling.csv2sql.v2.Optimise_v2;
@@ -75,7 +74,7 @@ public class Run_Import_ZipCodes_Indexing_Test {
     p.runImport();
     
     // index couple columns bofore optimising - make sure it can optimise them
-    ColumnData[] indexColumns = MySqlTransformAlterUtil.queryColumns(destinationData.databaseData, table, "`FIELD` like 'l%'");
+    ColumnData[] indexColumns = MySqlTransformUtil.queryColumns(destinationData.databaseData, table, "`FIELD` like 'l%'");
     Indexing index = new Indexing(destinationData);
     index.runIndexColumns(indexColumns);
     

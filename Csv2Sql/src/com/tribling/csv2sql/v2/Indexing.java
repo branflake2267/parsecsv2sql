@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
 import com.tribling.csv2sql.lib.sql.MySqlTransformAlterUtil;
+import com.tribling.csv2sql.lib.sql.MySqlTransformUtil;
 
 public class Indexing {
 
@@ -63,7 +64,7 @@ public class Indexing {
     String indexName = "`auto_" + nm + "_"+ i + "`";
     
     // does the index already exist?
-    boolean exists = MySqlTransformAlterUtil.doesIndexExist(destinationData.databaseData, columnData.getTable(), indexName);
+    boolean exists = MySqlTransformUtil.doesIndexExist(destinationData.databaseData, columnData.getTable(), indexName);
     if (exists == true) {
       return null;
     }
