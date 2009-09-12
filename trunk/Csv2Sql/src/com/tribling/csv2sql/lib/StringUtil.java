@@ -43,7 +43,8 @@ public class StringUtil {
         v = m.group(1);
       }
     } catch (Exception e) {
-      System.out.println("findMatch: regex error");
+      System.out.println("findMatch: regex error (check to see if you have a (group)");
+      e.printStackTrace();
     }
     
     return v;
@@ -59,20 +60,20 @@ public class StringUtil {
       return null;
     }
     int l = s.length;
-    String r = null;
-    if (l == 1) {
+    String r = "";
+    if (l == 1) { // only one
       r = s[0];
     } else {
-      
       for (int i=0; i < s.length; i++) {
-        r += s[0];
+        r += s[i];
         if (i < s.length-1) {
           r += ",";
         }
       }
-      
     }
-    
+    if (r != null && r.trim().length() == 0) {
+      return null;
+    }
     return r;
   }
   

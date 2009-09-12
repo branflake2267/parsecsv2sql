@@ -224,8 +224,8 @@ public class ColumnData {
 	}
 	
 	
-	public void setColumnName(String column) {
-	  this.column = column;
+	public void setColumnName(String columnName) {
+	  this.column = columnName;
 	  setColumnAsSql(); // in case it has sql AS in it
 	}
 
@@ -936,8 +936,14 @@ public class ColumnData {
     return b;
   }
  
-  public static int getColumnByName_NonComp(ColumnData[] searchColumnData, ColumnData forColumnData) {
-    
+  /**
+   * find column by name not using comparator
+   * 
+   * @param searchColumnData
+   * @param forColumnData
+   * @return
+   */
+  public static int searchColumnByName_NonComp(ColumnData[] searchColumnData, ColumnData forColumnData) {
     int index = -1;
     for (int i=0; i < searchColumnData.length; i++) {
       if (searchColumnData[i].getColumnName().toLowerCase().equals(forColumnData.getColumnName().toLowerCase()) == true) {
@@ -945,7 +951,27 @@ public class ColumnData {
         break;
       }
     }
-    
+    return index;
+  }
+  
+  /**
+   * find column by name using comparator
+   * 
+   * @param searchColumnData
+   * @param forColumnData
+   * @return
+   */
+  public static int searchColumnByName_UsingComparator(ColumnData[] searchColumnData, ColumnData forColumnData) {
+    Comparator<ColumnData> sort = new ColumnDataComparator(ColumnDataComparator.NAME);
+    Arrays.sort(searchColumnData, sort);
+    int index = Arrays.binarySearch(searchColumnData, forColumnData, sort);
+    return index;
+  }
+  
+  public static int searchColumnByName_UsingComparator(ColumnData[] searchColumnData, String columnName) {
+    ColumnData forColumnData = new ColumnData();
+    forColumnData.setColumnName(columnName);
+    int index = searchColumnByName_UsingComparator(searchColumnData, forColumnData);
     return index;
   }
   
@@ -1119,31 +1145,37 @@ public class ColumnData {
       return null;
     }
     
-    int size = 990;
-    if (cols.size() > 1) {
-      size = (int) size / cols.size();
-    }
+    ColumnData[] columns = new ColumnData[cols.size()];
+    cols.toArray(columns);
     
-    String columns = "";
-    for(int i=0; i < cols.size(); i++) {
-      ColumnData col = cols.get(i);
-      String c = col.getColumnName();
-      
+    String sqlColumns = getSql_Index_Multi(columns);
+    
+    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + columnData[0].getTable() + "` " +
+      "ADD INDEX `" + autoIndexName + "`(" + sqlColumns + ")"; 
+
+    return sql;
+  }
+  
+  /**
+   * get column index setup like "`smallInt`, `myTxt`(900)"
+   * 
+   * @param columns
+   * @return
+   */
+  public static String getSql_Index_Multi(ColumnData[] columns) {
+    int size = 900;
+    String sql = "";
+    for(int i=0; i < columns.length; i++) {
+      String c = columns[i].getColumnName();
       String len = "";
-      if (col.getType().toLowerCase().contains("text") == true) {
+      if (columns[i].getType().toLowerCase().contains("text") == true) {
         len = "(" + size + ")";
       }
-      columns += "`" + c + "`" + len;
-      
-      if (i < cols.size() - 1) {
-        columns += ",";
+      sql += "`" + c + "`" + len;
+      if (i < columns.length - 1) {
+        sql += ",";
       }
-      
     }
-  
-    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + columnData[0].getTable() + "` " +
-      "ADD INDEX `" + autoIndexName + "`(" + columns + ")"; 
-
     return sql;
   }
   
