@@ -52,8 +52,15 @@ public class Indexing {
   
   private String getIndex(int i, ColumnData columnData) {
     
+    String nm = "";
+    if (columnData.getColumnName().length() < 4) {
+      nm = columnData.getColumnName();
+    } else {
+      nm = columnData.getColumnName().substring(0,4);
+    }
+    
     String cn = columnData.getColumnName();
-    String indexName = "`auto_" + columnData.getColumnName().substring(0,4) + "_"+ i + "`";
+    String indexName = "`auto_" + nm + "_"+ i + "`";
     
     // does the index already exist?
     boolean exists = MySqlTransformAlterUtil.doesIndexExist(destinationData.databaseData, columnData.getTable(), indexName);
@@ -69,8 +76,9 @@ public class Indexing {
     String kind = "";
     if (fullTextIndex == true) {
       kind = "FULLTEXT";
+      len = "";
     }
-    String sql = "ADD INDEX " + kind + " " + indexName + "(`" + cn + "`" + len + ")";
+    String sql = "ADD " + kind + " INDEX " + indexName + "(`" + cn + "`" + len + ")";
     
     return sql;
   }

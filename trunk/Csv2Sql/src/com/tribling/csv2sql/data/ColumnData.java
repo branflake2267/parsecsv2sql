@@ -1109,7 +1109,7 @@ public class ColumnData {
     // get columns used first
     ArrayList<ColumnData> cols = new ArrayList<ColumnData>();
     for(int i=0; i < columnData.length; i++) {
-      if (columnData[i].getIdentityUse() == true) {
+      if (columnData != null && columnData[i].getIdentityUse() == true) {
         cols.add(columnData[i]);
       }
     }
