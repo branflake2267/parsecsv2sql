@@ -37,7 +37,9 @@ public class Indexing {
   
   private void indexColumns() {
     for (int i=0; i < columns.length; i++) {
-      if (columns[i].getColumnName().matches("Auto_.*") == true) {
+      if (columns[i]== null) {
+        // skip
+      } else if (columns[i].getColumnName().matches("Auto_.*") == true) {
         // skip
       } else {
         String in = getIndex(i, columns[i]);

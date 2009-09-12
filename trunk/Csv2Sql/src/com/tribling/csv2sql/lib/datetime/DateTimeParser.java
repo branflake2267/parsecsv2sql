@@ -104,6 +104,7 @@ public class DateTimeParser {
   public String getDateMysql(String datetime) {
     this.datetime = datetime;
     String s = getDate(TYPE_MYSQL_DATETIME);
+    // TODO return null, if nothing
     return s;
   }
   
@@ -485,7 +486,7 @@ public class DateTimeParser {
    */
   private boolean checkforFormat_datetime24hr() {
 
-    String re = "^([0-9]{1,2})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})$";
+    String re = "^([0-9]{1,2})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{1,2}):([0-9]{2}):([0-9]{2})$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
     boolean found = m.find();
@@ -596,13 +597,13 @@ public class DateTimeParser {
   }
 
   /**
-   * mm/dd/yyyy hh:min 
+   * mm/dd/yyyy hh:min  (or[h:mm])
    * 
    * @return
    */
   private boolean checkforFormat_datetime24hra() {
 
-    String re = "^([0-9]{1,2})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2})$";
+    String re = "^([0-9]{1,2})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{1,2}):([0-9]{2})$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
     boolean found = m.find();
