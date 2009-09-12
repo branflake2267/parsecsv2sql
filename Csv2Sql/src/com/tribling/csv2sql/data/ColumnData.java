@@ -119,6 +119,9 @@ public class ColumnData {
 	  
 	  if (value != null) {
 	    value.trim();
+	    if (value.length() == 0) {
+	      value = null;
+	    }
 	  }
 	  
 	}
@@ -768,13 +771,14 @@ public class ColumnData {
       if (columnData[i].isFunctionSetForValue() == true) {
         v = columnData[i].getValueAsFunction();
       } else {
-        String s = MySqlQueryUtil.escape(columnData[i].getValue());
-        v = "'" + s + "'";
+        if (columnData[i].getValue() == null) {
+          v = "NULL";
+        } else {
+          String s = MySqlQueryUtil.escape(columnData[i].getValue());
+          v = "'" + s + "'";
+        }
       }
 
-      if (columnData[i].getValue() == null) {
-        v = "NULL";
-      }
       sql += c + "=" + v;
       if (i < columnData.length -1) {
         sql += ",";
@@ -1042,7 +1046,12 @@ public class ColumnData {
       return null;
     }
     for (int i=0; i < columnData.length; i++) {
-      columnData[i].setValue(values[i]);
+      if (i < values.length) {
+        columnData[i].setValue(values[i]);
+      } else {
+        String s = null;
+        columnData[i].setValue(s);
+      }
     }
     return columnData;
   }

@@ -500,9 +500,15 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     
     String tranformed = dtp.getDateMysql(datetime);
 
+    if (datetime == null) {
+      tranformed = null;
+    } else if (datetime.trim().length() == 0) {
+      tranformed = null;
+    } 
+    
     columnData.setValue(tranformed);
     
-    System.out.println("before: " + datetime + " after: " + tranformed);
+    destinationData.debug("column: " + columnData.getColumnName() + " datetime before: " + datetime + " after: " + tranformed);
 
     // is there room for the transformation values
     columnData.alterColumnSizeBiggerIfNeedBe(destinationData.databaseData);
@@ -560,7 +566,7 @@ public class Optimise_v2 extends SQLProcessing_v2 {
 
     columnData.setValue(tranformed);
     
-    destinationData.debug("before: " + intvalue + " after: " + tranformed);
+    destinationData.debug("column: " + columnData.getColumnName() + " int before: " + intvalue + " after: " + tranformed);
 
     // is there room for the transformation values
     columnData.alterColumnSizeBiggerIfNeedBe(destinationData.databaseData);
