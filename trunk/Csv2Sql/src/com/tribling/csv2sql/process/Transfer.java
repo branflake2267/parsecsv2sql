@@ -237,11 +237,16 @@ public class Transfer {
     String where = "WHERE " + primKey.getColumnName() + " != '' AND " + primKey.getColumnName() + " IS NOT NULL";
     
     String columnCsv = ColumnData.getSql_Names_WSql(columnData_src, null);
-    String columnCsv2 = ColumnData.getSql_Names_WSql(columnData_src_oneToMany, null);
     
-    if (columnCsv2.length() > 0) {
-      columnCsv2 = "," + columnCsv2;
+    String columnCsv2 = "";
+    if (columnData_src_oneToMany != null) {
+      columnCsv2 = ColumnData.getSql_Names_WSql(columnData_src_oneToMany, null);
+      
+      if (columnCsv2.length() > 0) {
+        columnCsv2 = "," + columnCsv2;
+      }
     }
+    
     
     String sql = "";
     sql = "SELECT " + columnCsv + " " + columnCsv2 + " FROM " + tableFrom + " " + where;
