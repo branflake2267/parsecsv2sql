@@ -86,6 +86,9 @@ public class Optimise_v2 extends SQLProcessing_v2 {
   }
   
   private void markColumnsThatAreIdents() {
+    if (destinationData.identityColumns == null) {
+      return;
+    }
     for (int i=0; i < columnData.length; i++) {
       for (int b=0; b < destinationData.identityColumns.length; b++) {
         if (columnData[i].getColumnName().toLowerCase().equals(destinationData.identityColumns[b].destinationField) == true) {
