@@ -65,6 +65,8 @@ public class Transfer {
   
   private int index = 0;
   
+  private String srcWhere = null;
+  
   /**
    * Transfer data object setup 
    * 
@@ -105,6 +107,14 @@ public class Transfer {
     start();
   }
   
+  /**
+   * set a custom where query for the source table (no need for WHERE)
+   * 
+   * @param srcWhere
+   */
+  public void setWhere(String srcWhere) {
+    this.srcWhere = srcWhere;
+  }
   
   /**
    * set up tables from to and mapped fields to transfer
@@ -184,6 +194,14 @@ public class Transfer {
     }
   }
   
+  private String getSrcWhere() {
+    String s = "";
+    if (srcWhere != null && srcWhere.length() > 0) {
+      s = " AND " + srcWhere;
+    }
+    return s; 
+  }
+  
   /**
    * TODO start with columndata instead of field data, b/c there is more overhead here than I need
    * TODO slim down column data public vars 
@@ -247,9 +265,10 @@ public class Transfer {
       }
     }
     
-    
     String sql = "";
-    sql = "SELECT " + columnCsv + " " + columnCsv2 + " FROM " + tableFrom + " " + where;
+    sql = "SELECT " + columnCsv + " " + columnCsv2 + " FROM " + tableFrom + " ";
+    sql += where;
+    sql += getSrcWhere();
     
     System.out.println("sql: " + sql);
     
@@ -290,11 +309,12 @@ public class Transfer {
     ColumnData primKey = ColumnData.getPrimaryKey_ColumnData(columnData_des);
     String where = "WHERE " + primKey.getColumnName() + " != '' AND " + primKey.getColumnName() + " IS NOT NULL";
     
-    
     ColumnData keyDes = ColumnData.getPrimaryKey_ColumnData(columnData_des);
     
     String sql = "";
-    sql = "SELECT " + keyDes.getColumnName() + " FROM " + tableTo + " " + where;
+    sql = "SELECT " + keyDes.getColumnName() + " FROM " + tableTo + " ";
+    sql += where;
+    sql += getSrcWhere();
 
     System.out.println("sql: " + sql);
     
@@ -322,11 +342,12 @@ public class Transfer {
     String columnCsv = ColumnData.getSql_Names_WSql(columnData_src, null);
     
     ColumnData keySrc = ColumnData.getPrimaryKey_ColumnData(columnData_src);
-    ColumnData keyDes = ColumnData.getPrimaryKey_ColumnData(columnData_des);
+    //ColumnData keyDes = ColumnData.getPrimaryKey_ColumnData(columnData_des);
     
     String sql = "";
     sql = "SELECT " + columnCsv + " FROM " + tableFrom + " ";
     sql += "WHERE " + keySrc.getColumnName() + " = '" + keyValueDes + "' ";
+    sql += getSrcWhere();
     
     System.out.println("sql: " + sql);
     
