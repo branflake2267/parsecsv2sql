@@ -283,7 +283,12 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     
     //isEmpty(s); // this overides the types, need better logic, later...
 
-    if (isDate == true) { // date is first b/c it has text in it
+    if (isDate == true && isText == false && isInt == false && isDecimal == false && 
+        fieldType != ColumnData.FIELDTYPE_VARCHAR &&
+        fieldType != ColumnData.FIELDTYPE_INT &&
+        fieldType != ColumnData.FIELDTYPE_INT_ZEROFILL &&
+        fieldType != ColumnData.FIELDTYPE_TEXT &&
+        fieldType != ColumnData.FIELDTYPE_DECIMAL) { // date is first b/c it has text in it
       fieldType = ColumnData.FIELDTYPE_DATETIME; 
 
     } else if (isText == true && 
