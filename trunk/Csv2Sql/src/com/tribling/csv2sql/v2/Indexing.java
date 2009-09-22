@@ -53,6 +53,11 @@ public class Indexing {
   
   private String getIndex(int i, ColumnData columnData) {
     
+    String ft = "";
+    if (fullTextIndex == true) {
+      ft = "ft_";
+    }
+    
     String nm = "";
     if (columnData.getColumnName().length() < 4) {
       nm = columnData.getColumnName();
@@ -61,7 +66,7 @@ public class Indexing {
     }
     
     String cn = columnData.getColumnName();
-    String indexName = "`auto_" + nm + "_"+ i + "`";
+    String indexName = "`auto_" + ft + nm + "_"+ i + "`";
     
     // does the index already exist?
     boolean exists = MySqlTransformUtil.doesIndexExist(destinationData.databaseData, columnData.getTable(), indexName);
