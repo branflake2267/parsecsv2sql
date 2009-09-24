@@ -7,7 +7,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 
 import com.tribling.csv2sql.data.ColumnData;
-import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.lib.StringUtil;
 import com.tribling.csv2sql.lib.datetime.DateTimeParser;
 import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;

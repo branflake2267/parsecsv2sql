@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import com.tribling.csv2sql.data.ColumnData;
 import com.tribling.csv2sql.lib.sql.MySqlQueryUtil;
-import com.tribling.csv2sql.lib.sql.MySqlTransformAlterUtil;
 import com.tribling.csv2sql.lib.sql.MySqlTransformUtil;
 
 public class Indexing {
