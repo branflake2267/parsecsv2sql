@@ -8,8 +8,6 @@ import java.util.Comparator;
 
 import com.csvreader.CsvReader;
 import com.tribling.csv2sql.data.ColumnData;
-import com.tribling.csv2sql.data.ColumnDataComparator;
-import com.tribling.csv2sql.data.DatabaseData;
 import com.tribling.csv2sql.data.FieldData;
 import com.tribling.csv2sql.data.FieldDataComparator;
 import com.tribling.csv2sql.data.SourceData;
