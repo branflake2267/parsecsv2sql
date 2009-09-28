@@ -4,7 +4,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 import org.apache.commons.lang.WordUtils;
 
@@ -763,6 +765,10 @@ public class ColumnData {
     if (columnData == null) {
       return "";
     }
+    
+    // get distinct columns, otherwise two of the same will fail
+    columnData = getColumns_Distinct(columnData);
+    
     columnData = prune(columnData, pruneColumnData);
     String sql = "";
     for (int i=0; i < columnData.length; i++) {
@@ -1269,27 +1275,42 @@ public class ColumnData {
     return sql;
   }
   
-  // not working
-  @Deprecated
-  public static ColumnData[] pruneDuplicates_ByColumnName(ColumnData[] columnData) {
-    ArrayList<ColumnData> a = new ArrayList<ColumnData>();
-    final ColumnData[] c2 = columnData;
-    Comparator<ColumnData> sort = new ColumnDataComparator(ColumnDataComparator.NAME);
-    Arrays.sort(c2, sort);
+  /**
+   * get distinct column names
+   * 
+   * @param columnData
+   * @return
+   */
+  public static ColumnData[] getColumns_Distinct(ColumnData[] columnData) {
     
-    for (int i=0; i < c2.length; i++) {
-      int index = Arrays.binarySearch(columnData, c2[i], sort);
-      if (index > -1) {
-        a.add(c2[i]);
-      }
+    Comparator<ColumnData> sort = new ColumnDataComparator(ColumnDataComparator.NAME);
+    
+    ArrayList<ColumnData> a = new ArrayList<ColumnData>();
+    for (int i=0; i < columnData.length; i++) {
+      a.add(columnData[i]);
     }
     
-    ColumnData[] pruneColumnData = new ColumnData[a.size()];
-    a.toArray(pruneColumnData);
+    Collections.sort(a, sort);
     
-    columnData = prune(columnData, pruneColumnData);
+    ArrayList<ColumnData> b = new ArrayList<ColumnData>();
+
+    for (int i=0; i < a.size(); i++) {
+      
+      ColumnData key = a.get(i);
+      
+      // does a exist in b, if not add
+      int index = Collections.binarySearch(b, key, sort);
+      if (index < 0) {
+        b.add(a.get(i));
+      }
+      
+      Collections.sort(b, sort);
+    }
     
-    return columnData;
+    ColumnData[] r = new ColumnData[b.size()];
+    b.toArray(r);
+
+    return r;
   }
   
   
