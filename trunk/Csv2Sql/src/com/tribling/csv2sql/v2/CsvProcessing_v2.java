@@ -69,6 +69,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     // get and create columns
     createColumns();
 
+    //markColumnsThatAreIdents();
+     
     createIdentitiesIndex();
     
     // loop through data rows
@@ -414,7 +416,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    String idents = ColumnData.getSql_IdentitiesWhere(columnData);
    if (idents == null || idents.trim().length() == 0) {
      System.out.println("ERROR: doesDataExist(): Can't figure out the identies. exiting. (check delimiter?)");
-     System.exit(1);
+     //Thread.currentThread().stop();
+     // TODO - what if?
    }
    String where = " WHERE " + idents;
    String sql = "SELECT `" + destinationData.primaryKeyName + "` FROM `" + destinationData.table + "` " + where;
@@ -544,4 +547,19 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     }
     return b;
   }
+  
+  
+  private void markColumnsThatAreIdents() {
+    if (destinationData.identityColumns == null) {
+      return;
+    }
+    for (int i=0; i < columnData.length; i++) {
+      for (int b=0; b < destinationData.identityColumns.length; b++) {
+        if (columnData[i].getColumnName().toLowerCase().equals(destinationData.identityColumns[b].destinationField) == true) {
+          columnData[i].setIdentity(true);
+        }
+      }
+    }
+  }
+  
 }
