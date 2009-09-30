@@ -402,7 +402,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
         if (Integer.parseInt(beforeValue) < Integer.parseInt(inTableValue)) {
           b = true;
         }
-        System.out.println("before: " + beforeValue + " < inTable: " + inTableValue + " result: " + b);
+        destinationData.debug("CsvProcessing_v2.compareBefore(): forTable:" + destinationData.table + ": before: " + beforeValue + " < inTable: " + inTableValue + " result: " + b);
       }
     }
     
