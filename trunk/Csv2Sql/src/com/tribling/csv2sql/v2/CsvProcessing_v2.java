@@ -364,7 +364,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
       
       boolean skip = compareBefore(columnData, primaryKeyColumn);
       if (skip == true) {
-        System.out.println("skipping b/c of compare.!!!!!!!!!!!!!!!!!!");
+        destinationData.debug("skipping b/c of compare.!!!!!!!!!!!!!!!!!!");
         return;
       }
       ColumnData[] u = ColumnData.merge(columnData, defaultColumns[1]); // add update column
