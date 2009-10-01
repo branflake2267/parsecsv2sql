@@ -48,6 +48,9 @@ sudo pico /etc/mysql/my.cnf
  bind-address = 0.0.0.0
  max_connections=500
 
+sudo pico /etc/init.d/mysql.server
+ basedir=/srv/mysql5_4
+ datadir=/mnt/ssd/mysql_data
 
 
 # manual configure options - configure it on your own
