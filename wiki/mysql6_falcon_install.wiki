@@ -39,6 +39,9 @@ sudo mkdir /etc/mysql
 sudo cp my-large.cnf /etc/mysql/my.cnf
 sudo ln -s /etc/mysql/my.cnf /etc/my.cnf
 
+sudo mkdir /mnt/ssd/mysql_data
+
+
 
 # manual configure options - configure it on your own
 #./configure --help
