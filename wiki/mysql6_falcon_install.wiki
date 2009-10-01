@@ -39,9 +39,9 @@ sh ./BUILD/compile-amd64-max --prefix=/srv/mysql5_4 --with-plugins=innodb --with
 #./configure --help
 # run configure - i don't set the data directory here, I set it in the my.cnf
 # prev: ./configure --prefix=/srv/mysql6_11
-./configure --prefix=/srv/mysql5_4 --with-plugins=innodb
-make
-sudo make install
+#./configure --prefix=/srv/mysql5_4 --with-plugins=innodb
+#make
+#sudo make install
 
 
 
