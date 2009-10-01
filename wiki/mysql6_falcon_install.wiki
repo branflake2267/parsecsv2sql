@@ -27,26 +27,22 @@ sudo apt-get install lib64ncurses5 libncurses5 libncurses5-dbg libncurses-dev
 # for some reason I am install lib32ncurses5 lib32ncurses5-dev - which is a screen dump...
 sudo apt-get install autoconf libtool aclocal
 
-# auto configure - not sure if I really need to run this
-#autoreconf -vif option - not sure I will use this agian
 
-# this can setup the build parameters
-sh ./BUILD/autorun.sh 
-
-# OR this is even easier
+# Auto Build it quick and easy
 sh ./BUILD/compile-amd64-max --prefix=/srv/mysql5_4 --with-plugins=innodb --with-federated-storage-engine --with-partition
 
+# Or this can setup the build parameters
+# sh ./BUILD/autorun.sh 
 
-# configure options
+
+# manual configure options - configure it on your own
 #./configure --help
-
 # run configure - i don't set the data directory here, I set it in the my.cnf
 # prev: ./configure --prefix=/srv/mysql6_11
 ./configure --prefix=/srv/mysql5_4 --with-plugins=innodb
-
 make
-
 sudo make install
+
 
 
 # my.cnf
