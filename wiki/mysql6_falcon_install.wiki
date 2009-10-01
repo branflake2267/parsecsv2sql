@@ -35,8 +35,9 @@ sudo make
 sudo make install
 
 sudo cp mysql.server /etc/init.d/
-
-
+sudo mkdir /etc/mysql
+sudo cp my-large.cnf /etc/mysql/my.cnf
+sudo ln -s /etc/mysql/my.cnf /etc/my.cnf
 
 
 # manual configure options - configure it on your own
