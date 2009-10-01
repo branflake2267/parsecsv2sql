@@ -59,6 +59,10 @@ cd /srv/mysql5_4
 sudo chown -R mysql .
 sudo chgrp -R mysql .
 
+# install the defaults (data)
+sudo ./bin/mysql_install_db --user=mysql --datadir=/mnt/ssd/mysql_data
+
+sudo ln -s /srv/mysql5_4/bin/mysql /usr/local/bin/
 
 
 # manual configure options - configure it on your own
@@ -77,17 +81,6 @@ sudo chgrp -R mysql .
 
 sudo ./bin/mysql_install_db --user=mysql --basedir=/srv/mysql5_4 --builddir=/home/branflake2267/downloads/mysql-5.4.0-beta --datadir=/srv/mysql_data
 
-
-# set file permissions
-sudo chown -R root .
-
-
-# move startup script
-sudo cp ./share/mysql/mysql.server /etc/init.d/
-
-
-# link stuff you want to use in shell - or go to the bin dir
-sudo ln -s /srv/mysql5_4/bin/mysql /usr/local/bin/
 
 # start server
 sudo /etc/init.d/mysql.server start
