@@ -24,9 +24,9 @@ sudo apt-get install autoconf libtool aclocal
 
 
 # add options to base configuration in ./BUILD/Setup.sh
---with-innodb 
---with-federated-storage-engine 
---with-partition
+base_configs="$base_configs --with-innodb"
+base_configs="$base_configs --with-federated-storage-engine"
+base_configs="$base_configs --with-partition"
 
 # Auto Build it quick and easy
 sh ./BUILD/compile-amd64-max --prefix=/srv/mysql5_4 
