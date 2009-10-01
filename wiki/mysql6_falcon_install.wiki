@@ -41,6 +41,13 @@ sudo ln -s /etc/mysql/my.cnf /etc/my.cnf
 
 sudo mkdir /mnt/ssd/mysql_data
 
+sudo pico /etc/mysql/my.cnf
+ [mysqld]
+ basedir=/srv/mysql5_4
+ datadir=/srv/mysql_data
+ bind-address = 0.0.0.0
+ max_connections=500
+
 
 
 # manual configure options - configure it on your own
