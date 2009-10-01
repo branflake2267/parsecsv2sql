@@ -32,10 +32,6 @@ base_configs="$base_configs --with-partition"
 # Auto Build it quick and easy
 sh ./BUILD/compile-amd64-max --prefix=/srv/mysql5_4 
 
-# Or this can setup the build parameters
-# sh ./BUILD/autorun.sh 
-
-
 # manual configure options - configure it on your own
 #./configure --help
 # run configure - i don't set the data directory here, I set it in the my.cnf
