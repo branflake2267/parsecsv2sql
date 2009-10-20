@@ -60,9 +60,16 @@ public class Export {
   // set to true if you really want the primary key exported
   private boolean exportPrimaryKey = false;
   
+  // add to the file name
+  private String name;
+  
   public Export(DatabaseData source, File destinationDirectory) {
     this.src = source;
     this.des = destinationDirectory;
+  }
+  
+  public void setAddToFileName(String name) {
+    this.name = name;
   }
   
   /**
@@ -319,7 +326,13 @@ public class Export {
     } else if (exportAs == EXPORTAS_SQL) {
       ext = "sql";
     }
-    String fileName = des.getAbsolutePath() + "/" + table + "_" + fileIndex + "." + ext;
+    
+    String add = "";
+    if (name != null && name.length() > 0) {
+      add = "_" + name;
+    }
+    
+    String fileName = des.getAbsolutePath() + "/" + table + "_" + fileIndex + add + "." + ext;
     file = new File(fileName);
   }
   
