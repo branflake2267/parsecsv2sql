@@ -1,6 +1,8 @@
-package com.tribling.csv2sql.lib;
+package com.tribling.csv2sql.lib.experimental;
 
 import java.sql.ResultSet;
+
+import com.tribling.csv2sql.lib.StringUtil;
 
 /**
  * record of values to aggregate
@@ -16,6 +18,8 @@ public class Record  {
   // count these columns
   private double[] cfvalues = null;
 
+  private String[] regex = null;
+  
   // more sql data
   private ResultSet rs = null;
 
@@ -28,6 +32,10 @@ public class Record  {
     this.cfvalues = cfvalues;
   }
   
+  public void setRegex(String[] regex) {
+    this.regex = regex;
+  }
+  
   public String[] getGroubByValues() {
     return this.gbvalues;
   }
@@ -38,11 +46,26 @@ public class Record  {
 
   public void sumCounts(double[] addcfvalues) {
     
+    // TODO - testing regex found
     for (int i=0; i < cfvalues.length; i++) {
-      cfvalues[i] = cfvalues[i] + addcfvalues[i];
+      System.out.println("cfval: " + cfvalues[i]);
+      if (regex != null && regex[i] != null && test(regex[i], cfvalues[i])) {
+        cfvalues[i] = cfvalues[i] + addcfvalues[i]; 
+      } else {
+        //cfvalues[i] = cfvalues[i] + addcfvalues[i];
+      }
+      
     }
     
   }
+
+  private boolean test(String regex, double d) {
+    
+    boolean found = StringUtil.findMatch(regex, Double.toString(d));
+    
+    return found;
+  }
+  
   
 
 
