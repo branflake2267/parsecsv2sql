@@ -1,4 +1,4 @@
-package com.tribling.csv2sql.lib;
+package com.tribling.csv2sql.lib.experimental;
 
 import java.util.Comparator;
 

@@ -1,4 +1,4 @@
-package com.tribling.csv2sql.lib;
+package com.tribling.csv2sql.lib.experimental;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,12 +10,19 @@ import java.util.Comparator;
 public class RecordAggregator {
   
   private String[] groupByFields = null;
+  
+  // count fields
   private String[] countFields = null;
 
+  // regex count fields
+  private String[] regex = null;
+  
   private ArrayList<Record> records = new ArrayList<Record>();
   
   // sort and search by
   private Comparator<Record> sort = new RecordSort();
+  
+
   
   public RecordAggregator() {
   }
@@ -25,7 +32,11 @@ public class RecordAggregator {
   }
   
   public void setCountFields(String[] countfields) {
-    this.countFields  = countfields;
+    this.countFields = countfields;
+  }
+  
+  public void setRegexOnCountFields(String[] regex) {
+    this.regex = regex;
   }
   
   public void setData(ResultSet rs) {
@@ -55,6 +66,7 @@ public class RecordAggregator {
     
     if (records.size() == 0) {
       Record r = new Record();
+      r.setRegex(regex);
       r.setData(rs, gbvalues, cfvalues);
       records.add(r);
       return;
