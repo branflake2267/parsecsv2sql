@@ -16,8 +16,9 @@ public class Run_Slave_Setup {
     
     String replicationUsername = "Replication";
     String replicationPassword = "ReplicationPass";
+    String masterHost = "192.168.70.99";
     
-    MySqlReplication replicate = new MySqlReplication(dd_src, dd_des, tmpDir, replicationUsername, replicationPassword);
+    MySqlReplication replicate = new MySqlReplication(dd_src, dd_des, tmpDir, replicationUsername, replicationPassword, masterHost);
     replicate.setDryRun();
     replicate.run();
     
