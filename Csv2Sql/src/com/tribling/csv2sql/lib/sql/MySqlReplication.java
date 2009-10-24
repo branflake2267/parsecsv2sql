@@ -73,7 +73,7 @@ public class MySqlReplication {
     getMasterStatus();
     
     // use this for syncing slave
-    dumpMaster();
+    //dumpMaster();
     
     // unlock master tables after dump
     unlockTables();
@@ -175,7 +175,7 @@ public class MySqlReplication {
   private void setUpSlave() {
     
     String sql = "";
-    sql += "CHANGE MASTER TO";
+    sql += "CHANGE MASTER TO ";
     sql += "MASTER_HOST='" + masterHost + "', "; // master_host_name
     sql += "MASTER_USER='" + replicationUsername + "', "; // replication_user_name 
     sql += "MASTER_PASSWORD='" + replicationPassword + "', "; // replication_password
