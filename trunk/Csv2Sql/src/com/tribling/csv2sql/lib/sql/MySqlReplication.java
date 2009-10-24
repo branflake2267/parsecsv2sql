@@ -57,6 +57,9 @@ public class MySqlReplication {
   
   public void run() {
     
+    // stop slave just in case doing it again
+    stopSlave();
+    
     // setup mysql.cnf on master
     setupMasterConf();
     
@@ -185,6 +188,12 @@ public class MySqlReplication {
   
   private void startSlave() {
     String sql = "START SLAVE;";
+    System.out.println(sql);
+    MySqlQueryUtil.update(dd_des, sql);
+  }
+  
+  private void stopSlave() {
+    String sql = "STOP SLAVE;";
     System.out.println(sql);
     MySqlQueryUtil.update(dd_des, sql);
   }
