@@ -57,6 +57,9 @@ public class MySqlReplication {
   
   public void run() {
     
+    // setup the replication user
+    setupReplicationUser();
+    
     // stop slave just in case doing it again
     stopSlave();
     
@@ -87,9 +90,36 @@ public class MySqlReplication {
     // start the slave threads
     startSlave();
     
+    // delete tmp file at the end
     deleteTmpFile();
+    
+    System.out.println("Finished... Exiting...");
   }
   
+  /**
+   * 
+   */
+  private void setupReplicationUser() {
+    
+    // setup the replication user
+    // TODO - if user is already created this will error
+    String sqlCreateUser = "CREATE USER '" + replicationUsername + "'@'"+ dd_des.getHost() +"' IDENTIFIED BY '" + replicationPassword + "';";
+    System.out.println(sqlCreateUser);
+    MySqlQueryUtil.update(dd_src, sqlCreateUser);
+    
+    // setup replication user privileges
+    String sqlCreateUserPerm = "GRANT REPLICATION SLAVE ON *.*  TO '" + replicationUsername + "'@'" + dd_des.getHost() + "' IDENTIFIED BY '" + replicationPassword + "';";
+    System.out.println(sqlCreateUserPerm);
+    MySqlQueryUtil.update(dd_src, sqlCreateUserPerm);
+    
+    // flush privileges;
+    String sql = "FLUSH PRIVILEGES;";
+    System.out.println(sql);
+    MySqlQueryUtil.update(dd_src, sql);
+    
+    // TODO - maybe query the user to see if things are correct?
+  }
+
   /**
    * setup master conf
    * 
@@ -97,10 +127,19 @@ public class MySqlReplication {
    */
   private void setupMasterConf() {
   
-    // TODO - add to mysql.cnf
+    // TODO - add to master my.cnf
     // [mysqld]
     // log-bin=mysql-bin
     // server-id=1
+    
+    int slaveId = getServerId(1);
+    if (slaveId != 1) {
+      System.out.println("master server_id variable in my.cnf not set correctly. Its set as on master server_id=" + slaveId);
+      System.out.println("Exiting....");
+      System.exit(1);
+    } else {
+      System.out.println("master serverid = 1, it passes.");
+    }
     
   }
   
@@ -111,9 +150,17 @@ public class MySqlReplication {
    */
   private void setupSlaveConf() {
     
-    // TODO - add to mysql.cnf
+    // TODO - add to slave my.cnf
     // server-id=2
     
+    int slaveId = getServerId(2);
+    if (slaveId != 2) {
+      System.out.println("slave server_id variable in my.cnf not set correctly. Its set as on slave server_id=" + slaveId);
+      System.out.println("Exiting....");
+      System.exit(1);
+    } else {
+      System.out.println("slave server_id=2, it passes.");
+    }
   }
   
   private void lockTables() {
@@ -207,6 +254,38 @@ public class MySqlReplication {
   private String getTmpPath() {
     String path = tmpDir.getPath();
     return path;
+  }
+  
+  private int getServerId(int srcdes) {
+    
+    String sql = "SHOW VARIABLES like 'server_id'";
+    System.out.println(sql);
+    
+    DatabaseData dd = null;
+    if (srcdes == 1) {
+      dd = dd_src; 
+    } else {
+      dd = dd_des;
+    }
+    
+    String sid = null;
+    try {
+      Connection conn = dd.getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        sid = result.getString(2);
+      }
+      select.close();
+      select = null;
+      result.close();
+      result = null;
+      conn.close();
+    } catch (SQLException e) {
+      System.err.println("Error: Can't get master status: " + sql);
+      e.printStackTrace();
+    }
+    return Integer.parseInt(sid);
   }
   
   /**
