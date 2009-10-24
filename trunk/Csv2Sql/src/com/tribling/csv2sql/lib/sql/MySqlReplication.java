@@ -73,7 +73,7 @@ public class MySqlReplication {
     getMasterStatus();
     
     // use this for syncing slave
-    //dumpMaster();
+    dumpMaster();
     
     // unlock master tables after dump
     unlockTables();
@@ -167,7 +167,7 @@ public class MySqlReplication {
    * TODO - possibly use -f for passing on errors
    */
   private void loadSlave() {
-    String cmd = "mysqldump -h" + dd_des.getHost() + " -u" + dd_des.getUsername() + " -p" + dd_des.getPassword() + "  < " + getTmpPath() + "/master_dump.sql";
+    String cmd = "mysql -h" + dd_des.getHost() + " -u" + dd_des.getUsername() + " -p" + dd_des.getPassword() + "  < " + getTmpPath() + "/master_dump.sql";
     System.out.println(cmd);
     runShell(cmd);
   }
