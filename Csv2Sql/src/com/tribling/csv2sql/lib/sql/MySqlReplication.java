@@ -3,6 +3,7 @@ package com.tribling.csv2sql.lib.sql;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -29,6 +30,7 @@ public class MySqlReplication {
   // replication user credentials
   private String replicationUsername = null;
   private String replicationPassword = null;
+  private String masterHost = null;
   
   private int dryRun = 0;
   
@@ -39,12 +41,14 @@ public class MySqlReplication {
    * @param dd_des
    * @param tmpDir
    */
-  public MySqlReplication(DatabaseData dd_src, DatabaseData dd_des, File tmpDir, String replicationUsername, String replicationPassword) {
+  public MySqlReplication(DatabaseData dd_src, DatabaseData dd_des, File tmpDir, 
+      String masterHost,  String replicationUsername, String replicationPassword) {
     this.dd_src = dd_src;
     this.dd_des = dd_des;
     this.tmpDir = tmpDir;
     this.replicationUsername = replicationUsername;
     this.replicationPassword = replicationPassword;
+    this.masterHost = masterHost;
   }
   
   public void setDryRun() {
@@ -149,22 +153,27 @@ public class MySqlReplication {
   }
   
   private void dumpMaster() {
-    String cmd = "mysqldump -h" + dd_src.getHost() + " -u" + dd_src.getUsername() + " -p" + dd_src.getPassword() + " --all-databases --lock-all-tables > " + getTmpPath() + "/master_dump.sql ";
+    String cmd = "mysqldump -h" + dd_src.getHost() + " -u" + dd_src.getUsername() + " -p" + dd_src.getPassword() + " --all-databases --lock-all-tables > " + getTmpPath() + "/master_dump.sql";
     System.out.println(cmd);
-    executeShell(cmd);
+    runShell(cmd);
   }
   
+  /**
+   * load slave with the dump from master
+   * 
+   * TODO - possibly use -f for passing on errors
+   */
   private void loadSlave() {
-    String cmd = "mysqldump -h" + dd_des.getHost() + " -u" + dd_des.getUsername() + " -p" + dd_des.getPassword() + "  < " + getTmpPath() + "/master_dump.sql ";
+    String cmd = "mysqldump -h" + dd_des.getHost() + " -u" + dd_des.getUsername() + " -p" + dd_des.getPassword() + "  < " + getTmpPath() + "/master_dump.sql";
     System.out.println(cmd);
-    executeShell(cmd);
+    runShell(cmd);
   }
   
   private void setUpSlave() {
     
     String sql = "";
     sql += "CHANGE MASTER TO";
-    sql += "MASTER_HOST='" + dd_des.getHost() + "', "; // master_host_name
+    sql += "MASTER_HOST='" + masterHost + "', "; // master_host_name
     sql += "MASTER_USER='" + replicationUsername + "', "; // replication_user_name 
     sql += "MASTER_PASSWORD='" + replicationPassword + "', "; // replication_password
     sql += "MASTER_LOG_FILE='" + statusFile + "', "; // recorded_log_file_name
@@ -185,28 +194,40 @@ public class MySqlReplication {
     return path;
   }
   
-  private void executeShell(String cmd) {
-    Runtime run = Runtime.getRuntime();
-    Process pr = null;
+  /**
+   * run shell command
+   * 
+   * @param cmd
+   */
+  private void runShell(String cmd) {
+    ProcessBuilder pb = new ProcessBuilder("bash", "-c", cmd);
+    pb.redirectErrorStream(true); 
+    Process shell = null;
     try {
-      pr = run.exec(cmd);
+      shell = pb.start();
     } catch (IOException e) {
       e.printStackTrace();
     }
+    InputStream shellIn = shell.getInputStream();                 
     try {
-      pr.waitFor();
+      int shellExitStatus = shell.waitFor();
     } catch (InterruptedException e) {
       e.printStackTrace();
-    }
-    BufferedReader buf = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-    String line = "";
+    } 
+    int c;
     try {
-      while ((line=buf.readLine())!=null) {
-        System.out.println(line);
+      while ((c = shellIn.read()) != -1) {
+        System.out.write(c);
       }
     } catch (IOException e) {
       e.printStackTrace();
     }
+    try {
+      shellIn.close();
+    } catch (IOException ignoreMe) {
+    }
   }
+
   
 }
+
