@@ -86,6 +86,8 @@ public class MySqlReplication {
     
     // start the slave threads
     startSlave();
+    
+    deleteTmpFile();
   }
   
   /**
@@ -156,7 +158,11 @@ public class MySqlReplication {
   }
   
   private void dumpMaster() {
-    String cmd = "mysqldump -h" + dd_src.getHost() + " -u" + dd_src.getUsername() + " -p" + dd_src.getPassword() + " --all-databases --lock-all-tables > " + getTmpPath() + "/master_dump.sql";
+    String lock = "";
+    if (dryRun != 1) {
+      lock = "--lock-all-tables";
+    }
+    String cmd = "mysqldump -h" + dd_src.getHost() + " -u" + dd_src.getUsername() + " -p" + dd_src.getPassword() + " " + lock + " --all-databases > " + getTmpPath() + "/master_dump.sql";
     System.out.println(cmd);
     runShell(cmd);
   }
@@ -237,6 +243,11 @@ public class MySqlReplication {
     }
   }
 
+  private void deleteTmpFile() {
+    System.out.println("deleting mysql dump file.");
+    File tmpFile = new File(tmpDir.getPath() + "master_dump.sql");
+    tmpFile.delete();
+  }
   
 }
 
