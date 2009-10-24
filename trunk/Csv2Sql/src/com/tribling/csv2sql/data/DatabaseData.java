@@ -149,9 +149,8 @@ public class DatabaseData {
       Class.forName(driver).newInstance();
       conn = DriverManager.getConnection(url + database, username, password);
     } catch (Exception e) {
-      System.err.println("ERROR: getConn_MySql(): connection error: " + e.getMessage());
+      System.err.println("ERROR: getConn_MySql(): connection error: " + e.getMessage() + " " + "getConn_MySql: url:" + url + " user: " + username + " driver: " + driver);
       e.printStackTrace();
-      //System.exit(1);
     }
     
     return conn;
@@ -177,7 +176,6 @@ public class DatabaseData {
     } catch (Exception e) {
       System.err.println("ERROR: getConn_MsSql(): connection error: " + e.getMessage());
       e.printStackTrace();
-      System.exit(1);
     }
     return conn;
   }
