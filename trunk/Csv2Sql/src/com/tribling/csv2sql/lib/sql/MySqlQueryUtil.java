@@ -285,6 +285,9 @@ public class MySqlQueryUtil {
     long id = 0;
     try {
       Connection conn = dd.getConnection();
+      if (dd.getLoadBalance() == true) {
+        conn.setReadOnly(false);
+      }
       Statement update = conn.createStatement();
       update.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
       ResultSet result = update.getGeneratedKeys();
@@ -310,6 +313,9 @@ public class MySqlQueryUtil {
     long id = 0;
     try {
       Connection conn = dd.getConnection();
+      if (dd.getLoadBalance() == true) {
+        conn.setReadOnly(false);
+      }
       Statement update = conn.createStatement();
       update.executeUpdate(sql);
 

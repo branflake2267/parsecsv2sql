@@ -43,6 +43,10 @@ public class DatabaseData {
   // to use this connection pooling servlet needs to be running on tomcat
   private String serverInfo = null;
   
+  // load balance master, slave, slave...
+  private boolean autoReconnect = false;
+  private boolean roundRobinLoadBalance = false;
+  
   /**
    * set database location and credentials
    * 
@@ -59,6 +63,19 @@ public class DatabaseData {
     this.username = username;
     this.password = password;
     this.database = database;
+  }
+  
+  /**
+   * http://dev.mysql.com/doc/refman/5.4/en/connector-j-reference-configuration-properties.html
+   */
+  public void setLoadBalance(boolean b) {
+    if (b == true) {
+      autoReconnect = true;
+      roundRobinLoadBalance = true;
+    } else {
+      autoReconnect = true;
+      roundRobinLoadBalance = false;
+    }
   }
   
   public int getDatabaseType() {
@@ -136,12 +153,22 @@ public class DatabaseData {
   /**
    * get a mysql database connection
    * 
+   * jdbc:mysql://[host][,failoverhost...][:port]/[database] » [?propertyName1][=propertyValue1][&propertyName2][=propertyValue2]...
+   * 
+   * parameters list
+   * http://dev.mysql.com/doc/refman/5.4/en/connector-j-reference-configuration-properties.html
+   * 
    * @return
    */
   private Connection getConn_MySql() {
     Connection conn = null;
     
-    String url = "jdbc:mysql://" + host + ":" + port + "/";
+    String loadBalance = "";
+    if (roundRobinLoadBalance == true) {
+      loadBalance = "?roundRobinLoadBalance=true&autoReconnect=true&autoReconnectForPools=true";
+    }
+    
+    String url = "jdbc:mysql://" + host + ":" + port + "/" + loadBalance;
     String driver = "com.mysql.jdbc.Driver";
     //System.out.println("getConn_MySql: url:" + url + " user: " + username + " driver: " + driver);
 
@@ -151,6 +178,14 @@ public class DatabaseData {
     } catch (Exception e) {
       System.err.println("ERROR: getConn_MySql(): connection error: " + e.getMessage() + " " + "getConn_MySql: url:" + url + " user: " + username + " driver: " + driver);
       e.printStackTrace();
+    }
+    
+    if (roundRobinLoadBalance == true) {
+      try {
+        conn.setReadOnly(true);
+      } catch (SQLException e) {
+        e.printStackTrace();
+      }
     }
     
     return conn;
@@ -258,6 +293,10 @@ public class DatabaseData {
     }
 
     return ctx;
+  }
+  
+  public boolean getLoadBalance() {
+    return this.roundRobinLoadBalance;
   }
   
 }
