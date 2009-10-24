@@ -30,7 +30,7 @@ public class DatabaseData {
   private int databaseType = 0;
   
   // setup a connection and store it in this object for easy reference to
-  private Connection conn = null;
+  //private Connection conn = null;
   
   // servlet context - used for connection pooling
   private Context context = null;
@@ -137,17 +137,17 @@ public class DatabaseData {
    *  conn.close();
    */
   public void closeConnection() {
-    if (conn == null) {
-      return;
-    }
+    //if (conn == null) {
+      //return;
+    //}
     
-    try {
-      conn.close();
-    } catch (SQLException e) {
-      e.printStackTrace();
-    } finally {
-      conn = null;
-    }
+    //try {
+      //conn.close();
+    //} catch (SQLException e) {
+      //e.printStackTrace();
+    //} finally {
+      //conn = null;
+    //}
   }
   
   /**
