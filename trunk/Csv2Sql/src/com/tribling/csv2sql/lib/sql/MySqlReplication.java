@@ -164,10 +164,10 @@ public class MySqlReplication {
   /**
    * load slave with the dump from master
    * 
-   * TODO - possibly use -f for passing on errors
+   * useing -f for passing on errors
    */
   private void loadSlave() {
-    String cmd = "mysql -h" + dd_des.getHost() + " -u" + dd_des.getUsername() + " -p" + dd_des.getPassword() + "  < " + getTmpPath() + "/master_dump.sql";
+    String cmd = "mysql -h" + dd_des.getHost() + " -u" + dd_des.getUsername() + " -p" + dd_des.getPassword() + " -f  < " + getTmpPath() + "/master_dump.sql";
     System.out.println(cmd);
     runShell(cmd);
   }
