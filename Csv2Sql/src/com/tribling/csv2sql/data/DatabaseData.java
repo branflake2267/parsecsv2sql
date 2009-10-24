@@ -165,16 +165,20 @@ public class DatabaseData {
     
     String loadBalance = "";
     if (roundRobinLoadBalance == true) {
-      loadBalance = "?roundRobinLoadBalance=true&autoReconnect=true&autoReconnectForPools=true";
+      loadBalance = "?roundRobinLoadBalance=true&autoReconnect=true";
     }
     
-    String url = "jdbc:mysql://" + host + ":" + port + "/" + loadBalance;
+    String url = "jdbc:mysql://" + host + ":" + port + "/" + database + loadBalance;
     String driver = "com.mysql.jdbc.Driver";
     //System.out.println("getConn_MySql: url:" + url + " user: " + username + " driver: " + driver);
 
+    if (roundRobinLoadBalance == true) {
+      driver = "com.mysql.jdbc.ReplicationDriver";
+    }
+    
     try {
       Class.forName(driver).newInstance();
-      conn = DriverManager.getConnection(url + database, username, password);
+      conn = DriverManager.getConnection(url, username, password);
     } catch (Exception e) {
       System.err.println("ERROR: getConn_MySql(): connection error: " + e.getMessage() + " " + "getConn_MySql: url:" + url + " user: " + username + " driver: " + driver);
       e.printStackTrace();
