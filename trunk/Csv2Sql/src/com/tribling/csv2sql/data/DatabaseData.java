@@ -46,6 +46,7 @@ public class DatabaseData {
   // load balance master, slave, slave...
   private boolean autoReconnect = false;
   private boolean roundRobinLoadBalance = false;
+  private boolean readOnly = false;
   
   /**
    * set database location and credentials
@@ -192,6 +193,13 @@ public class DatabaseData {
       }
     }
     
+    if (readOnly == true) {
+      try {
+        conn.setReadOnly(readOnly);
+      } catch (SQLException e) {
+      }
+    }
+    
     return conn;
   }
   
@@ -301,6 +309,10 @@ public class DatabaseData {
   
   public boolean getLoadBalance() {
     return this.roundRobinLoadBalance;
+  }
+
+  public void setReadOnly(boolean b) {
+    this.readOnly  = b;
   }
   
 }
