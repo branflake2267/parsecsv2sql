@@ -245,10 +245,19 @@ public class MySqlReplication {
     MySqlQueryUtil.update(dd_des, sql);
   }
   
+  /**
+   * stop and reset slave before trying anything
+   * http://dev.mysql.com/doc/refman/5.4/en/reset-slave.html
+   */
   private void stopSlave() {
     String sql = "STOP SLAVE;";
     System.out.println(sql);
     MySqlQueryUtil.update(dd_des, sql);
+    
+    sql = "RESET SLAVE;";
+    System.out.println(sql);
+    MySqlQueryUtil.update(dd_des, sql);
+    
   }
   
   private String getTmpPath() {
