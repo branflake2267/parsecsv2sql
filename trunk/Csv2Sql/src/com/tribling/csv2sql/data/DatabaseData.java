@@ -48,6 +48,10 @@ public class DatabaseData {
   private boolean roundRobinLoadBalance = false;
   private boolean readOnly = false;
   
+  // for profiling connection times
+  private long startTime = 0;
+  private boolean profile = false;
+  
   /**
    * set database location and credentials
    * 
@@ -162,6 +166,9 @@ public class DatabaseData {
    * @return
    */
   private Connection getConn_MySql() {
+    
+   
+    
     Connection conn = null;
     
     String loadBalance = "";
@@ -177,6 +184,7 @@ public class DatabaseData {
       driver = "com.mysql.jdbc.ReplicationDriver";
     }
     
+    profileTime("connection to mysql url: " + url);
     try {
       Class.forName(driver).newInstance();
       conn = DriverManager.getConnection(url, username, password);
@@ -184,6 +192,7 @@ public class DatabaseData {
       System.err.println("ERROR: getConn_MySql(): connection error: " + e.getMessage() + " " + "getConn_MySql: url:" + url + " user: " + username + " driver: " + driver);
       e.printStackTrace();
     }
+    profileTime("connected  to mysql url: " + url);
     
     if (roundRobinLoadBalance == true) {
       try {
@@ -315,4 +324,22 @@ public class DatabaseData {
     this.readOnly  = b;
   }
   
+  public void setProfileTime(long startTime) {
+    this.startTime = startTime;
+  }
+  
+  public void startProfileTime() {
+    startTime = System.currentTimeMillis();
+    profile = true;
+  }
+  
+  public void profileTime(String msg) {
+    if (profile == false) {
+      return;
+    }
+     
+    long endTime = System.currentTimeMillis();
+    long howLong = endTime - startTime;
+    System.out.println(msg + " " + Long.toString(howLong) + "ms");
+  }
 }
