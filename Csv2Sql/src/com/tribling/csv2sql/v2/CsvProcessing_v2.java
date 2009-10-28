@@ -423,7 +423,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    String sql = "SELECT `" + destinationData.primaryKeyName + "` FROM `" + destinationData.table + "` " + where;
    long primaryKeyId = MySqlQueryUtil.queryLong(destinationData.databaseData, sql); 
    return primaryKeyId; 
-  }
+  } 
   
   /**
    * process each row > 0 against the flat file settings
