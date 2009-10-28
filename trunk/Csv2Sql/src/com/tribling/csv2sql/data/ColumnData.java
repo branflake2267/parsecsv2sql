@@ -2,11 +2,14 @@ package com.tribling.csv2sql.data;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.commons.lang.WordUtils;
 
@@ -184,6 +187,19 @@ public class ColumnData {
       } else {
         try {
           Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+          value = "0";
+        }
+      }
+    } else if (columnType.toLowerCase().contains("dec") == true) {
+      if (value == null) {
+        value = "0";
+      } else if (value.trim().length() == 0) {
+        value = "0";
+      } else {
+        try { 
+          value = value.replaceAll("[^0-9\\-\\.]", "");
+          value = Double.toString(Double.parseDouble(value));
         } catch (NumberFormatException e) {
           value = "0";
         }
