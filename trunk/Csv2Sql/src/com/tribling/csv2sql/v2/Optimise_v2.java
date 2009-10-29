@@ -50,7 +50,7 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     
     alterColumns = new ArrayList<ColumnData>();
     
-    String where = null; // all columns
+    String where = "`Field` NOT LIKE 'Auto_%'"; // all columns except auto columns
     columnData = MySqlTransformUtil.queryColumns(destinationData.databaseData, destinationData.table, where);
     if (columnData == null) {
       System.out.println("no columns to optimise");
