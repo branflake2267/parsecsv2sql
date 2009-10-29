@@ -7,9 +7,12 @@ public class Run_Sql_Escape {
   public static void main(String[] args) {
     
     String value = "mystring\\";
-   
     String s = MySqlQueryUtil.escape(value);
+    System.out.println("s: " + s);
     
+    
+    value = "mystring\\\\\\"; 
+    s = MySqlQueryUtil.escape(value);
     System.out.println("s: " + s);
   }
   
