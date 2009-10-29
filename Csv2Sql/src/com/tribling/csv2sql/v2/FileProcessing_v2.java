@@ -59,6 +59,7 @@ public class FileProcessing_v2 {
 
     Arrays.sort(files);
 
+    int c = 0;
     for (int i=0; i < files.length; i++) {
 
       System.out.println("File: " + files[i].getName());
@@ -69,7 +70,7 @@ public class FileProcessing_v2 {
       } else if (files[i].isFile() == true) {
         
         // drop table, only on first file, if it is set
-        if (i == 0) {
+        if (c == 0) {
           dropTable();
         }
         // process this file
@@ -77,6 +78,7 @@ public class FileProcessing_v2 {
         
         // move file to folder when done processing
         moveFileWhenDone(files[i]);
+        c++;
       }
     }
 
@@ -198,6 +200,7 @@ public class FileProcessing_v2 {
    */
   private void dropTable() {
     if (desinationData.dropTable == true) {
+      System.out.println("Dropping Table");
       MySqlTransformUtil.dropTable(desinationData.databaseData, desinationData.table);
     }
   }
