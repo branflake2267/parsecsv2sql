@@ -28,7 +28,7 @@ public class MySqlQueryUtil {
     s = StringEscapeUtils.escapeSql(s);
     s = s.trim();
     
-    // when string looks like this column='value\'
+    // when string looks like this column='value\' or column='value\\'
     char bs = "\\".charAt(0);
     if (s.matches(".*[" + bs + bs + "]") == true) {
       s = s.replaceFirst("[" + bs + bs + "]+$", "");
