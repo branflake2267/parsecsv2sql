@@ -31,7 +31,7 @@ public class MySqlQueryUtil {
     // when string looks like this column='value\'
     char bs = "\\".charAt(0);
     if (s.matches(".*[" + bs + bs + "]") == true) {
-      s = s.replaceFirst("[" + bs + bs + "]$", "");
+      s = s.replaceFirst("[" + bs + bs + "]+$", "");
     }
     return s;
   }

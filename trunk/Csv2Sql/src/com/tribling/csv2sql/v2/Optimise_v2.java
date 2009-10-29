@@ -615,4 +615,186 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     
     MySqlTransformUtil.alterColumn(destinationData.databaseData, columnData);
   }
+  
+  /**
+   * how many duplicates are in table?
+   * 
+   * @return
+   */
+  public long getTableHasDuplicates() {
+    
+    // get total record count for table
+    long tc = getTableRecordCount();
+    
+    // check distinct count for identities
+    long tdc = getTableDistinctIdentCount();
+    
+    long r = tc - tdc;
+    
+    return r;
+  }
+  
+  private long getTableRecordCount() {
+    String sql = "SELECT COUNT(*) AS t FROM " + destinationData.databaseData.getDatabase() + "." + destinationData.table + ";";
+    System.out.println(sql);
+    return MySqlQueryUtil.queryLong(destinationData.databaseData, sql);
+  }
+  
+  private long getTableDistinctIdentCount() {
+    
+    if (destinationData.identityColumns == null) {
+      return 0;
+    }
+    
+    // get ident columns
+    String idents_Columns = getIdentitiesColumns_inCsv();
+    
+    String sql = "SELECT DISTINCT " + idents_Columns + " FROM " + 
+      destinationData.databaseData.getDatabase() + "." + destinationData.table + ";"; 
+
+    System.out.println(sql);
+    
+    long c = 0;
+    try {
+      Connection conn = destinationData.databaseData.getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      c = MySqlQueryUtil.getResultSetSize(result);
+      select.close();
+      result.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    }
+    return c;
+  }
+  
+  private String getIdentitiesColumns_inCsv() {
+    if (destinationData.identityColumns == null) {
+      return "";
+    }
+    String columns = "";
+    for (int i = 0; i < destinationData.identityColumns.length; i++) {
+      columns += destinationData.identityColumns[i].destinationField;
+      if (i < destinationData.identityColumns.length - 1) {
+        columns += ",";
+      }
+    }
+    
+    return columns;
+  }
+  
+  public void deleteDuplicates() {
+    
+    long c = getTableHasDuplicates();
+    
+    if (c == 0) {
+     System.out.println("No duplicates exist for the identities.");
+     return;
+    }
+    
+    String idents_Columns = getIdentitiesColumns_inCsv();
+    
+    // load the records that indicate they there duplicates
+    String sql = "SELECT " + destinationData.primaryKeyName + " FROM " + 
+    destinationData.databaseData.getDatabase() + "." + destinationData.table + " " +
+    		"GROUP BY "+ idents_Columns + " HAVING count(*) > 1;"; 
+
+    System.out.println(sql);
+    
+    try {
+      Connection conn = destinationData.databaseData.getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      int index = MySqlQueryUtil.getResultSetSize(result);
+      while (result.next()) {
+        processDuplicate(index, result.getInt(1));
+        index--;
+      }
+      select.close();
+      result.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    }
+    
+
+  }
+  
+  private void processDuplicate(int index, int uniqueId) {
+    
+    String idents_Columns = getIdentitiesColumns_inCsv();
+    String where = "WHERE " + destinationData.primaryKeyName + "='" + uniqueId + "'";
+    
+    String sql = "SELECT "+ idents_Columns + " FROM " + 
+      destinationData.databaseData.getDatabase() + "." + destinationData.table + " " + where; 
+
+    System.out.println(index + ". " + sql);
+    
+    try {
+      Connection conn = destinationData.databaseData.getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        String[] values = new String[destinationData.identityColumns.length];
+        for (int i=0; i < destinationData.identityColumns.length; i++) {
+          values[i] = result.getString(i+1);
+        }
+        deleteDuplicate(values);
+      }
+      select.close();
+      result.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    }
+  }
+
+  private void deleteDuplicate(String[] identValues) {
+    
+    String where = "";
+    for (int i=0; i < destinationData.identityColumns.length; i++) {
+      where += "" + destinationData.identityColumns[i].destinationField + "='" + identValues[i] + "'";
+      if (i < destinationData.identityColumns.length-1) {
+        where += " AND ";
+      }
+    }
+    
+    String sql = "SELECT " + destinationData.primaryKeyName + " FROM " + 
+    destinationData.databaseData.getDatabase() + "." + destinationData.table + " WHERE " + where; 
+ 
+    System.out.println("sql" + sql);
+    
+    try {
+      Connection conn = destinationData.databaseData.getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      int i = 0;
+      while (result.next()) {
+        int uniqueId = result.getInt(1);
+        if (i > 0) {
+          deleteRecord(uniqueId);
+        }
+        i++;
+      }
+      select.close();
+      result.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    }
+    
+  }
+  
+  private void deleteRecord(int uniqueId) {
+    
+    String where = "" + destinationData.primaryKeyName + "='" + uniqueId + "'";
+    
+    String sql = "DELETE FROM " + destinationData.databaseData.getDatabase() + "." + destinationData.table + " WHERE " + where; 
+    
+    System.out.println("sql: " + sql);
+    
+    MySqlQueryUtil.update(destinationData.databaseData, sql);
+  }
+  
 }
