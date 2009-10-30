@@ -104,6 +104,7 @@ public class Optimise_v2 {
    */
   public void discoverColumnTypes() {
     discoverToTable = true;
+    alterColumns = new ArrayList<ColumnData>();
     
     String where = "`Field` NOT LIKE 'Auto_%'"; // all columns except auto columns
     columnData = MySqlTransformUtil.queryColumns(destinationData.databaseData, destinationData.table, where);
