@@ -127,7 +127,9 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     }
     
     // only analyze text columns
-    if (destinationData.optimise_TextOnlyColumnTypes == true && columnData.getType().toLowerCase().contains("text") == false) {
+    if (destinationData.optimise_TextOnlyColumnTypes == true && 
+        columnData.getType().toLowerCase().contains("text") == false) {
+      System.out.println("checkColumn(): skipping b/c destinationData.optimise_TextOnlyColumnTypes=true and columnData.getType().toLowerCase().contains(\"text\") = false");
       return;
     }
       
@@ -135,8 +137,7 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     analyzeColumnType(columnData);
     
     // get character max length in column
-    String sql = ColumnData.getSql_GetMaxCharLength(destinationData.databaseData, columnData);
-    int maxCharLength = MySqlQueryUtil.queryInteger(destinationData.databaseData, sql);
+    int maxCharLength = getMaxLength(columnData);
     
     String newColumnType = getColumnType(columnData, maxCharLength);
     
@@ -149,6 +150,21 @@ public class Optimise_v2 extends SQLProcessing_v2 {
       alter(columnData, newColumnType);
     }
      
+  }
+  
+  private int getMaxLength(ColumnData columnData) {
+    String sql = ColumnData.getSql_GetMaxCharLength(destinationData.databaseData, columnData);
+    System.out.println("checking column length: " + sql);
+    int maxCharLength = MySqlQueryUtil.queryInteger(destinationData.databaseData, sql);
+    return maxCharLength;
+  }
+  
+  public void alterExplicit(ColumnData columnData, String columnType) {
+    alterColumns = new ArrayList<ColumnData>();
+    
+    alter(columnData, columnType);
+    
+    alterColumns();
   }
   
   private void alter(ColumnData columnData, String columnType) {
@@ -200,6 +216,11 @@ public class Optimise_v2 extends SQLProcessing_v2 {
    * @param columnData
    */
   private void analyzeColumnType(ColumnData columnData) {
+    
+    if (columnData.getType().contains("text") == false) {
+      System.out.println("analyzeColumnType(): Type already defined in columnData, skipping and going with column definition.");
+      return;
+    }
     
     fieldType = 0;  
     deca = 0;
@@ -290,8 +311,7 @@ public class Optimise_v2 extends SQLProcessing_v2 {
         fieldType != ColumnData.FIELDTYPE_DECIMAL) { // date is first b/c it has text in it
       fieldType = ColumnData.FIELDTYPE_DATETIME; 
 
-    } else if (isText == true && 
-        fieldType != ColumnData.FIELDTYPE_DATETIME) {
+    } else if (isText == true && fieldType != ColumnData.FIELDTYPE_DATETIME) {
         fieldType = ColumnData.FIELDTYPE_VARCHAR; 
 
     } else if (isInt == true && isZero == true && 
@@ -349,6 +369,11 @@ public class Optimise_v2 extends SQLProcessing_v2 {
   
   private String getColumnType(ColumnData columnData, int charLength) {
 
+    if (columnData.getType().contains("text") == false) {
+      System.out.println("getColumnType(): column's type is already set. Skipping setting a new one.");
+      return columnData.getType();
+    }
+    
     // can skip discovery of other types
     if (destinationData.skipOptimisingIntDateTimeDecTypeColumns == true) {
       fieldType = 2;
@@ -613,7 +638,7 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     ColumnData[] columns = new ColumnData[alterColumns.size()];
     alterColumns.toArray(columns);
     
-    MySqlTransformUtil.alterColumn(destinationData.databaseData, columnData);
+    MySqlTransformUtil.alterColumn(destinationData.databaseData, columns);
   }
   
   /**
