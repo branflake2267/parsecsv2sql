@@ -20,7 +20,7 @@ import com.tribling.csv2sql.lib.sql.MySqlTransformUtil;
  * @author BDonnelson
  * 
  */
-public class Optimise_v2 extends SQLProcessing_v2 {
+public class Optimise_v2 {
 
   private DestinationData_v2 destinationData = null;
   
@@ -246,8 +246,9 @@ public class Optimise_v2 extends SQLProcessing_v2 {
 
     try { 
       Connection conn = destinationData.databaseData.getConnection();
-      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
-      select.setFetchSize(Integer.MIN_VALUE); // read row by row 
+      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, 
+          java.sql.ResultSet.CONCUR_READ_ONLY);
+      select.setFetchSize(Integer.MIN_VALUE);
       ResultSet result = select.executeQuery(sql);
       int i = 0;
       while (result.next()) {
@@ -529,7 +530,9 @@ public class Optimise_v2 extends SQLProcessing_v2 {
 
     try {
       Connection conn = destinationData.databaseData.getConnection();
-      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
+      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, 
+          java.sql.ResultSet.CONCUR_READ_ONLY);
+      select.setFetchSize(Integer.MIN_VALUE);
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         cpriKey.setValue(Integer.toString(result.getInt(1)));
@@ -582,7 +585,9 @@ public class Optimise_v2 extends SQLProcessing_v2 {
 
     try {
       Connection conn = destinationData.databaseData.getConnection();
-      Statement select = conn.createStatement();
+      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, 
+          java.sql.ResultSet.CONCUR_READ_ONLY);
+      select.setFetchSize(Integer.MIN_VALUE);
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         cpriKey.setValue(Integer.toString(result.getInt(1)));
@@ -682,7 +687,9 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     long c = 0;
     try {
       Connection conn = destinationData.databaseData.getConnection();
-      Statement select = conn.createStatement();
+      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, 
+          java.sql.ResultSet.CONCUR_READ_ONLY);
+      select.setFetchSize(Integer.MIN_VALUE);
       ResultSet result = select.executeQuery(sql);
       c = MySqlQueryUtil.getResultSetSize(result);
       select.close();
@@ -729,7 +736,9 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     
     try {
       Connection conn = destinationData.databaseData.getConnection();
-      Statement select = conn.createStatement();
+      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, 
+          java.sql.ResultSet.CONCUR_READ_ONLY);
+      select.setFetchSize(Integer.MIN_VALUE);
       ResultSet result = select.executeQuery(sql);
       int index = MySqlQueryUtil.getResultSetSize(result);
       while (result.next()) {
@@ -742,8 +751,6 @@ public class Optimise_v2 extends SQLProcessing_v2 {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
     }
-    
-
   }
   
   private void processDuplicate(int index, int uniqueId) {
@@ -758,7 +765,9 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     
     try {
       Connection conn = destinationData.databaseData.getConnection();
-      Statement select = conn.createStatement();
+      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, 
+          java.sql.ResultSet.CONCUR_READ_ONLY);
+      select.setFetchSize(Integer.MIN_VALUE);
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         String[] values = new String[destinationData.identityColumns.length];
@@ -792,7 +801,9 @@ public class Optimise_v2 extends SQLProcessing_v2 {
     
     try {
       Connection conn = destinationData.databaseData.getConnection();
-      Statement select = conn.createStatement();
+      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, 
+          java.sql.ResultSet.CONCUR_READ_ONLY);
+      select.setFetchSize(Integer.MIN_VALUE);
       ResultSet result = select.executeQuery(sql);
       int i = 0;
       while (result.next()) {
