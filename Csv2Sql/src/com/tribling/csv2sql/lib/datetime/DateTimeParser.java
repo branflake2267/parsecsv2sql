@@ -907,13 +907,13 @@ public class DateTimeParser {
   }
   
   /**
-   * custom format -bsgbB620090200054003 or 20090200054003
+   * custom format -bsgbB620090200054003 or 20090200054003 or 200902000540030000000000
    * 
    * @return
    */
   private boolean checkforFormat_Intformat() {
 
-    String re = "^.*?([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})$";
+    String re = "^.*?([0-9]{4})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})([0-9]{2})([0]+)?$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
     boolean found = m.find();
