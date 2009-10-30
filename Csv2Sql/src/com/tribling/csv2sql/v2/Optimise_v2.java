@@ -529,7 +529,7 @@ public class Optimise_v2 extends SQLProcessing_v2 {
 
     try {
       Connection conn = destinationData.databaseData.getConnection();
-      Statement select = conn.createStatement();
+      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         cpriKey.setValue(Integer.toString(result.getInt(1)));
