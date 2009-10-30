@@ -190,7 +190,6 @@ public class Optimise_v2 {
     		"DecA='" + deca + "', " +
     		"DecB='" + decb + "';";
     MySqlQueryUtil.update(destinationData.databaseData, sql);
-    
   }
 
   private void createTmpDiscoverTable() {
