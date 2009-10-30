@@ -182,7 +182,8 @@ public class Optimise_v2 {
       int maxCharLength, boolean changed, int fieldType, int deca, int decb) {
     
     String tmptable = destinationData.table + "_auto_discover";
-    String sql = "UPDATE " + tmptable + " SET " +
+    String sql = "INSERT INTO " + tmptable + " SET " +
+    		"DateCreated=NOW(), " +
     		"Column_Name='" + columnData.getColumnName() + "', " +
     		"Column_Len='" + columnData.getCharLength() + "', " +
     		"ColumnType_New='" + newColumnType + "', " +
@@ -197,6 +198,7 @@ public class Optimise_v2 {
     String tmptable = destinationData.table + "_auto_discover";
     MySqlTransformUtil.createTable(destinationData.databaseData, tmptable, "Id");
     
+    ColumnData c0 = new ColumnData(tmptable, "DateCreated", "DATETIME");
     ColumnData c1 = new ColumnData(tmptable, "Column_Name", "VARCHAR(50)");
     ColumnData c2 = new ColumnData(tmptable, "Column_Len", "INTEGER");
     ColumnData c3 = new ColumnData(tmptable, "ColumnType_New", "VARCHAR(100)");
@@ -204,6 +206,7 @@ public class Optimise_v2 {
     ColumnData c5 = new ColumnData(tmptable, "FieldType", "INTEGER");
     ColumnData c6 = new ColumnData(tmptable, "DecA", "INTEGER");
     ColumnData c7 = new ColumnData(tmptable, "DecB", "INTEGER");
+    MySqlTransformUtil.createColumn(destinationData.databaseData, c0);
     MySqlTransformUtil.createColumn(destinationData.databaseData, c1);
     MySqlTransformUtil.createColumn(destinationData.databaseData, c2);
     MySqlTransformUtil.createColumn(destinationData.databaseData, c3);
