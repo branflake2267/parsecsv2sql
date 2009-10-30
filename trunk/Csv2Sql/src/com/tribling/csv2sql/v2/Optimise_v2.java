@@ -33,13 +33,13 @@ public class Optimise_v2 {
   private ArrayList<ColumnData> alterColumns = null;
   
   // when examining the column values, watch the values types
-  public int fieldType = ColumnData.FIELDTYPE_TEXT;
+  private int fieldType = ColumnData.FIELDTYPE_TEXT;
   
   // decimal lengths
-  public int deca = 0;
-  public int decb = 0;
+  private int deca = 0;
+  private int decb = 0;
   
-  public boolean discoverToTable = false;
+  private boolean discoverToTable = false;
   
   public Optimise_v2(DestinationData_v2 destinationData) {
     this.destinationData = destinationData;
