@@ -39,6 +39,8 @@ public class Optimise_v2 {
   public int deca = 0;
   public int decb = 0;
   
+  public boolean discoverToTable = false;
+  
   public Optimise_v2(DestinationData_v2 destinationData) {
     this.destinationData = destinationData;
   }
@@ -59,7 +61,7 @@ public class Optimise_v2 {
     
     markColumnsThatAreIdents();
     
-    process();
+    processDiscovery();
     
     alterColumns();
   }
@@ -79,7 +81,7 @@ public class Optimise_v2 {
     
     markColumnsThatAreIdents();
     
-    process();
+    processDiscovery();
     
     alterColumns();
   }
@@ -98,9 +100,29 @@ public class Optimise_v2 {
   }
   
   /**
+   * discover the column types and save them in a tmp table to deal with later
+   */
+  public void discoverColumnTypes() {
+    discoverToTable = true;
+    
+    String where = "`Field` NOT LIKE 'Auto_%'"; // all columns except auto columns
+    columnData = MySqlTransformUtil.queryColumns(destinationData.databaseData, destinationData.table, where);
+    if (columnData == null) {
+      System.out.println("no columns to optimise");
+      System.exit(1);
+    }
+    
+    markColumnsThatAreIdents();
+    
+    createTmpDiscoverTable();
+    
+    processDiscovery();
+  }
+  
+  /**
    * analyze columns to go smaller
    */
-  private void process() {
+  private void processDiscovery() {
     for (int i=0; i < columnData.length; i++) {
       checkColumn(columnData[i]);
     }
@@ -149,7 +171,46 @@ public class Optimise_v2 {
     if (changed == true) {
       alter(columnData, newColumnType);
     }
-     
+    
+    if (discoverToTable == true) {
+      saveToTmpTable(columnData, newColumnType, maxCharLength, changed, fieldType, deca, decb);
+    }
+  }
+  
+  private void saveToTmpTable(ColumnData columnData, String newColumnType,
+      int maxCharLength, boolean changed, int fieldType, int deca, int decb) {
+    
+    String tmptable = destinationData.table + "_auto_discover";
+    String sql = "UPDATE " + tmptable + " SET " +
+    		"Column_Name='" + columnData.getColumnName() + "', " +
+    		"Column_Len='" + columnData.getCharLength() + "', " +
+    		"ColumnType_New='" + newColumnType + "', " +
+    		"MaxCharLen='" + maxCharLength + "', " +
+    		"FieldType='" + fieldType + "', " +
+    		"DecA='" + deca + "', " +
+    		"DecB='" + decb + "';";
+    MySqlQueryUtil.update(destinationData.databaseData, sql);
+    
+  }
+
+  private void createTmpDiscoverTable() {
+    String tmptable = destinationData.table + "_auto_discover";
+    MySqlTransformUtil.createTable(destinationData.databaseData, tmptable, "Id");
+    
+    ColumnData c1 = new ColumnData(tmptable, "Column_Name", "VARCHAR(50)");
+    ColumnData c2 = new ColumnData(tmptable, "Column_Len", "INTEGER");
+    ColumnData c3 = new ColumnData(tmptable, "ColumnType_New", "VARCHAR(100)");
+    ColumnData c4 = new ColumnData(tmptable, "MaxCharLen", "INTEGER");
+    ColumnData c5 = new ColumnData(tmptable, "FieldType", "INTEGER");
+    ColumnData c6 = new ColumnData(tmptable, "DecA", "INTEGER");
+    ColumnData c7 = new ColumnData(tmptable, "DecB", "INTEGER");
+    MySqlTransformUtil.createColumn(destinationData.databaseData, c1);
+    MySqlTransformUtil.createColumn(destinationData.databaseData, c2);
+    MySqlTransformUtil.createColumn(destinationData.databaseData, c3);
+    MySqlTransformUtil.createColumn(destinationData.databaseData, c4);
+    MySqlTransformUtil.createColumn(destinationData.databaseData, c5);
+    MySqlTransformUtil.createColumn(destinationData.databaseData, c6);
+    MySqlTransformUtil.createColumn(destinationData.databaseData, c7);
   }
   
   private int getMaxLength(ColumnData columnData) {
