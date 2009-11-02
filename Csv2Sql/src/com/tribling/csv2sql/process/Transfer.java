@@ -17,6 +17,9 @@ import com.tribling.csv2sql.lib.sql.MySqlTransformUtil;
 /**
  * transfer data from one table to another
  * 
+ * TODO - do i want to add multple idents as the solution of transfering from source with no autoincrement?
+ * TODO - how to transfer from source with no auto increment
+ * 
  * @author design
  *
  */
@@ -252,7 +255,10 @@ public class Transfer {
   private void processSrc() {
 
     ColumnData primKey = ColumnData.getPrimaryKey_ColumnData(columnData_src);
-    String where = "WHERE " + primKey.getColumnName() + " != '' AND " + primKey.getColumnName() + " IS NOT NULL";
+    String where = "";
+    if (primKey != null) {
+      where = "WHERE " + primKey.getColumnName() + " != '' AND " + primKey.getColumnName() + " IS NOT NULL";
+    }
     
     String columnCsv = ColumnData.getSql_Names_WSql(columnData_src, null);
     
@@ -270,19 +276,26 @@ public class Transfer {
     sql += where;
     sql += getSrcWhere();
     
+    // TODO - work around for ms sql server query
+    if (database_src.getDatabaseType() == DatabaseData.TYPE_MSSQL) {
+      sql = sql.replaceAll("`", "");
+    }
+    
     System.out.println("sql: " + sql);
     
     try {
       Connection conn = database_src.getConnection();
       Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
-      select.setFetchSize(Integer.MIN_VALUE); // read row by row
+      if (database_src.getDatabaseType() == DatabaseData.TYPE_MYSQL) {
+        select.setFetchSize(Integer.MIN_VALUE); // read row by row
+      } 
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
 
         // get values 
         for (int i=0; i < columnData_src.length; i++) {
           String value = result.getString(columnData_src[i].getColumnName());
-          // TODO - change the way values are gotten, by the column type
+          // TODO - change the way values are gotten, by the column type?? can't remember what this means
           columnData_src[i].setValue(value);
         }
         
@@ -673,6 +686,10 @@ public class Transfer {
   private long doIdentsExistAlready(DatabaseData databaseData) {
    
     ColumnData primaryKey = MySqlTransformUtil.queryPrimaryKey(database_des, tableTo);
+    
+    if (primaryKey == null) {
+      return 0;
+    }
     
     String sql = "Select `" + primaryKey.getColumnName() + "` FROM " + tableTo + " WHERE "  + getSqlIdent();
     

@@ -27,10 +27,13 @@ public class FieldData implements Comparable<FieldData> {
 	// when using identity insert index on a beginning type
 	// you can force a column type for optimization of the field in the beginning
 	// otherwise an identity column starts with varchar(50)
-	public String destinationField_ColumnType = null;
+	public String destinationField_ColumnType = null; // like VARCHAR(50)
 	
 	// Transfer: this designates this column is used as the primary key
 	public boolean isPrimaryKey = false;
+	
+	// NOT USING YET: Transfer: this designates this field has multiple fields that are needed to make the record unique, instead of using a primary key
+	//public boolean isIdentity = false;
 	
 	// Transfer: on copy when dest value is blank. (Zero is not blank, and is something)
 	public boolean onlyOverwriteBlank = true;

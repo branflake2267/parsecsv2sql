@@ -1026,7 +1026,10 @@ public class ColumnData {
    */
   public static String getPrimaryKey_Value(ColumnData[] columnData) {
     int indexPrimKey = getPrimaryKey_Index(columnData);
-    String value = columnData[indexPrimKey].getValue();
+    String value = null;
+    if (indexPrimKey > -1) {
+      value = columnData[indexPrimKey].getValue();
+    }
     return value;
   }
 
@@ -1074,6 +1077,7 @@ public class ColumnData {
    * @return
    */
   public static ColumnData getPrimaryKey_ColumnData(ColumnData[] columnData) {
+    // TODO - do I need to sort first? or should I sort first, b/c this wouldn't work if primary key is not listed in order
     int index = getPrimaryKey_Index(columnData);
     ColumnData r = null;
     if (index > -1) {

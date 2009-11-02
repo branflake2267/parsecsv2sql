@@ -10,10 +10,6 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 public class DatabaseData {
-
-  public static final int TYPE_MYSQL = 1;
-  public static final int TYPE_MSSQL = 2;
-  public static final int TYPE_JDO = 3;
   
   // location
   private String host;
@@ -27,6 +23,9 @@ public class DatabaseData {
   private String database;
   
   // what type of database is it? Mysql, Jdo, ...
+  public static final int TYPE_MYSQL = 1;
+  public static final int TYPE_MSSQL = 2;
+  public static final int TYPE_JDO = 3;
   private int databaseType = 0;
   
   // setup a connection and store it in this object for easy reference to
@@ -222,9 +221,9 @@ public class DatabaseData {
   private Connection getConn_MsSql() {
     Connection conn = null;
     
-    String url = "jdbc:sqlserver://" + host + ";user=" + username + ";password=" + password + ";databaseName=" + database + ";";
+    String url = "jdbc:sqlserver://" + host + ":" + port +  ";user=" + username + ";password=" + password + ";databaseName=" + database + ";";
     String driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-    //System.out.println("getConn_MsSql: url:" + url + " user: " + username + " driver: " + driver);
+    System.out.println("getConn_MsSql: url:" + url + " user: " + username + " driver: " + driver);
 
     try {
       Class.forName(driver);
