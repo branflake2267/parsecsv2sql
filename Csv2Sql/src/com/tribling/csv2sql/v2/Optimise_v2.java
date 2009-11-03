@@ -591,7 +591,7 @@ public class Optimise_v2 {
     
     String sql = "SELECT " + cpriKey.getColumnName() + ", `" + columnData.getColumnName() + "` " +
     		"FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "`;"; 
-
+    System.out.println(sql);
     try {
       Connection conn = destinationData.databaseData.getConnection();
       Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, 
@@ -646,7 +646,7 @@ public class Optimise_v2 {
     
     String sql = "SELECT " + cpriKey.getColumnName() + ", `" + columnData.getColumnName() + "` " +
         "FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "`;"; 
-
+    System.out.println(sql);
     try {
       Connection conn = destinationData.databaseData.getConnection();
       Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, 
