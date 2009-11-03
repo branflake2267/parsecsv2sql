@@ -566,7 +566,7 @@ public class Transfer {
     sql += "`" + column + "`='" +  MySqlQueryUtil.escape(value) + "'";
 
     // don't insert blank data
-    if (value.length() == 0) {
+    if (value == null || value.length() == 0) {
       sql = null;
     }
     
