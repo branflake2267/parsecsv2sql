@@ -44,6 +44,15 @@ public class Run_Sql_Escape {
     
     sql = "INSERT INTO test_escape SET Value='" + s + "'";
     MySqlQueryUtil.update(databaseData, sql);
+    
+    
+    // S\\\
+    value = "value\\\\";
+    s = MySqlQueryUtil.escape(value);
+    System.out.println("s: " + s);
+    
+    sql = "INSERT INTO test_escape SET Value='" + s + "'";
+    MySqlQueryUtil.update(databaseData, sql);
   }
   
 }
