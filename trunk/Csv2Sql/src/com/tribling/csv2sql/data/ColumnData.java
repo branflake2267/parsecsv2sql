@@ -2,14 +2,10 @@ package com.tribling.csv2sql.data;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
 
 import org.apache.commons.lang.WordUtils;
 
@@ -430,6 +426,8 @@ public class ColumnData {
 	    b = doesValueFit_Varchar();
 	  } else if (columnType.contains("bigint") == true) {
       b = doesValueFit_BigInt();
+    } else if (columnType.contains("tinyint") == true) {
+      b = doesValueFit_TinyInt();
     } else if (columnType.contains("int") == true) {
 	    b = doesValueFit_Int();
 	  }  else if (columnType.contains("dec") == true) {
@@ -472,13 +470,21 @@ public class ColumnData {
 	  return b;
 	}
 	
-	 private boolean doesValueFit_BigInt() {
-	    boolean b = false;
-	    if (value.length() < 20) {
-	      b = true;
-	    }
-	    return b;
+	private boolean doesValueFit_TinyInt() {
+    boolean b = false;
+    if (value.length() <= 1) {
+      b = true;
+    }
+    return b;
+  }
+	
+	private boolean doesValueFit_BigInt() {
+	  boolean b = false;
+	  if (value.length() < 20) {
+	    b = true;
 	  }
+	  return b;
+	}
 
 	// TODO - this needs adjustment of the left value, and total values are different
 	private boolean doesValueFit_Decimal() {

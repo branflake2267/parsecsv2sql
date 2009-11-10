@@ -1,5 +1,6 @@
 package com.tribling.csv2sql.lib.sql;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -201,6 +202,29 @@ public class MySqlQueryUtil {
     return d;
   }
 
+  public static BigDecimal queryBigDecimal(DatabaseData dd, String sql) {
+    BigDecimal bd = null;
+    try {
+      Connection conn = dd.getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        if (result.getString(1) != null) {
+          bd = new BigDecimal(result.getString(1));
+        } 
+      }
+      result.close();
+      result = null;
+      select.close();
+      select = null;
+      conn.close();
+    } catch (SQLException e) {
+      System.err.println("Error: queryBigDecimal(): " + sql);
+      e.printStackTrace();
+    } 
+    return bd;
+  }
+  
   /**
    * 
    * @param dd
