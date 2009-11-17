@@ -104,7 +104,9 @@ public class DateTimeParser {
   public String getDateMysql(String datetime) {
     this.datetime = datetime;
     String s = getDate(TYPE_MYSQL_DATETIME);
-    // TODO return null, if nothing
+    if (isDate == false) {
+      System.out.println("getDateMysql(): Can't figure out date format.");
+    }
     return s;
   }
   

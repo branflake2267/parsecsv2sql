@@ -586,16 +586,38 @@ public class Optimise_v2 {
   }
   
   private void formatColumn_ToDateTime(ColumnData columnData) {
+    String sql = "SELECT COUNT(*) AS t FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "`;"; 
+    long total = MySqlQueryUtil.queryLong(destinationData.databaseData, sql);
+    
+    int lim = 1000;
+    int totalPages = (int) (total / lim);
 
+    int offset = 0;
+    int limit = 0;
+    for (int i=0; i < totalPages; i++) {
+      if (i==0) {
+        offset = 0;
+        limit = 1000;
+      } else {
+        offset = ((i+1)*1000) - 1000;
+        limit = ((i+1)*1000);
+      }
+      
+      formatColumn_ToDateTime(columnData, offset, limit);
+    }
+    
+  }
+  
+  private void formatColumn_ToDateTime(ColumnData columnData, int offset, int limit) {
+    
     ColumnData cpriKey = MySqlTransformUtil.queryPrimaryKey(destinationData.databaseData, columnData.getTable());
     
     String sql = "SELECT " + cpriKey.getColumnName() + ", `" + columnData.getColumnName() + "` " +
-    		"FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "`;"; 
+    		"FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "` LIMIT " + offset + ", " + limit + ";"; 
     System.out.println(sql);
     try {
       Connection conn = destinationData.databaseData.getConnection();
-      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, 
-          java.sql.ResultSet.CONCUR_READ_ONLY);
+      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
       select.setFetchSize(Integer.MIN_VALUE);
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
@@ -613,9 +635,7 @@ public class Optimise_v2 {
   }
   
   private void updateColumn_Date(ColumnData cpriKey, ColumnData columnData) {
-
     String datetime = columnData.getValue();
-    
     String tranformed = dtp.getDateMysql(datetime);
 
     if (datetime == null) {
@@ -625,7 +645,6 @@ public class Optimise_v2 {
     } 
     
     columnData.setValue(tranformed);
-    
     destinationData.debug("column: " + columnData.getColumnName() + " datetime before: " + datetime + " after: " + tranformed);
 
     // is there room for the transformation values
@@ -639,14 +658,39 @@ public class Optimise_v2 {
     MySqlQueryUtil.update(destinationData.databaseData, sql);
   }
   
-  
   private void formatColumn_ToInt(ColumnData columnData) {
+
+    String sql = "SELECT COUNT(*) as t FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "`;";
+    long total = MySqlQueryUtil.queryLong(destinationData.databaseData, sql);
+    
+    int lim = 1000;
+    int totalPages = (int) (total / lim);
+
+    int offset = 0;
+    int limit = 0;
+    for (int i=0; i < totalPages; i++) {
+      if (i==0) {
+        offset = 0;
+        limit = 1000;
+      } else {
+        offset = ((i+1)*1000) - 1000;
+        limit = ((i+1)*1000);
+      }
+      
+      formatColumn_ToInt(columnData, offset, limit);
+    }
+    
+  }
+  
+  private void formatColumn_ToInt(ColumnData columnData, int offset, int limit) {
 
     ColumnData cpriKey = MySqlTransformUtil.queryPrimaryKey(destinationData.databaseData, columnData.getTable());
     
     String sql = "SELECT " + cpriKey.getColumnName() + ", `" + columnData.getColumnName() + "` " +
-        "FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "`;"; 
+        "FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "` LIMIT " + offset + ", " + limit + ";"; 
+    
     System.out.println(sql);
+    
     try {
       Connection conn = destinationData.databaseData.getConnection();
       Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, 
