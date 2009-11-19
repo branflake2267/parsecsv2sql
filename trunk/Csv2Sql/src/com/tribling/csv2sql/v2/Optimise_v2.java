@@ -242,7 +242,7 @@ public class Optimise_v2 {
     // when altering dates, make sure every value is transformed to
     if (columnType.toLowerCase().contains("datetime") == true) {
       formatColumn_ToDateTime(columnData);
-    } else if (columnType.toLowerCase().contains("int") == true) {
+    } else if (columnType.toLowerCase().contains("int") == true | columnType.toLowerCase().contains("dec") == true) {
       formatColumn_ToInt(columnData);
     }
     
@@ -617,8 +617,8 @@ public class Optimise_v2 {
     System.out.println(sql);
     try {
       Connection conn = destinationData.databaseData.getConnection();
-      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
-      select.setFetchSize(Integer.MIN_VALUE);
+      Statement select = conn.createStatement(); // java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY
+      //select.setFetchSize(Integer.MIN_VALUE);
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         cpriKey.setValue(Integer.toString(result.getInt(1)));
@@ -693,9 +693,8 @@ public class Optimise_v2 {
     
     try {
       Connection conn = destinationData.databaseData.getConnection();
-      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, 
-          java.sql.ResultSet.CONCUR_READ_ONLY);
-      select.setFetchSize(Integer.MIN_VALUE);
+      Statement select = conn.createStatement(); // java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY
+      //select.setFetchSize(Integer.MIN_VALUE);
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         cpriKey.setValue(Integer.toString(result.getInt(1)));

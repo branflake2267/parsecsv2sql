@@ -776,6 +776,11 @@ public class ColumnData {
     return getSql(columnData, null);
   }
   
+  // TODO move to dependency injection
+  public static String getSql_MSSQL(ColumnData[] columnData) {
+    return getSql_MSSQL(columnData, null);
+  }
+  
   /**
    * get columns as sql, `column1`='value1', `column2`='value2', `column3`='value3',...
    * 
@@ -815,6 +820,58 @@ public class ColumnData {
     return sql;
   }
   
+  // TODO move to dependency injection
+  public static String getSql_MSSQL(ColumnData[] columnData, ColumnData[] pruneColumnData) {
+    if (columnData == null) {
+      return "";
+    }
+    
+    // get distinct columns, otherwise two of the same will fail
+    columnData = getColumns_Distinct(columnData);
+    
+    columnData = prune(columnData, pruneColumnData);
+    
+    String sql = "(";
+    
+    // columns
+    for (int i=0; i < columnData.length; i++) {
+      
+      String c = "[" + columnData[i].getColumnName() + "]";    
+      sql += c;
+      if (i < columnData.length -1) {
+        sql += ",";
+      }
+      
+    }
+    
+    sql += ") VALUES (";
+    
+    // values
+    for (int i=0; i < columnData.length; i++) {
+      
+      String v = null;
+      if (columnData[i].isFunctionSetForValue() == true) {
+        v = columnData[i].getValueAsFunction();
+      } else {
+        if (columnData[i].getValue() == null) {
+          v = "NULL";
+        } else {
+          String s = MySqlQueryUtil.escape(columnData[i].getValue());
+          v = "'" + s + "'";
+        }
+      }
+
+      sql += v;
+      if (i < columnData.length -1) {
+        sql += ",";
+      }
+    }
+    
+    sql += ");";
+    
+    return sql;
+  }
+  
   /**
    * get Columns as Sql Insert Statement
    * 
@@ -823,6 +880,10 @@ public class ColumnData {
    */
   public static String getSql_Insert(ColumnData[] columnData) {
     return getSql_Insert(columnData, null);
+  }
+  
+  public static String getSql_Insert_MSSQL(ColumnData[] columnData) {
+    return getSql_Insert_MSSQL(columnData, null);
   }
   
   /**
@@ -842,6 +903,17 @@ public class ColumnData {
     String table = columnData[0].getTable();
     String fields = getSql(columnData);
     String sql = "INSERT INTO `" + table + "` SET " + fields + ";";
+    return sql;
+  }
+  
+  public static String getSql_Insert_MSSQL(ColumnData[] columnData, ColumnData[] pruneColumnData) {
+    if (columnData == null) {
+      return "";
+    }
+    columnData = prune(columnData, pruneColumnData);
+    String table = columnData[0].getTable();
+    String columnsvalues = getSql_MSSQL(columnData);
+    String sql = "INSERT INTO `" + table + "` " + columnsvalues + ";";
     return sql;
   }
   
