@@ -63,6 +63,9 @@ public class Export {
   // add to the file name
   private String name;
   
+  // set the export source style
+  private int exportServerType = DatabaseData.TYPE_MYSQL;
+  
   public Export(DatabaseData source, File destinationDirectory) {
     this.src = source;
     this.des = destinationDirectory;
@@ -70,6 +73,15 @@ public class Export {
   
   public void setAddToFileName(String name) {
     this.name = name;
+  }
+  
+  /**
+   * export (insert style) DatabaseData.TYPE_MYSQL;
+   * 
+   * @param serverType
+   */
+  public void setExportServerType(int serverType) {
+    this.exportServerType = serverType;
   }
   
   /**
@@ -263,7 +275,14 @@ public class Export {
     if (exportAs == EXPORTAS_CSV) {
       s = ColumnData.getCsv_Values(columnData);
     } else if (exportAs == EXPORTAS_SQL) {
-      s = ColumnData.getSql_Insert(columnData);
+      
+      // TODO - move this to dependency injection later
+      if (exportServerType == DatabaseData.TYPE_MYSQL) {
+        s = ColumnData.getSql_Insert(columnData);
+      } else if (exportServerType == DatabaseData.TYPE_MSSQL) {
+        s = ColumnData.getSql_Insert_MSSQL(columnData);
+      }
+      
     }
     s += "\n";
     return s;
