@@ -913,7 +913,7 @@ public class ColumnData {
     columnData = prune(columnData, pruneColumnData);
     String table = columnData[0].getTable();
     String columnsvalues = getSql_MSSQL(columnData);
-    String sql = "INSERT INTO `" + table + "` " + columnsvalues + ";";
+    String sql = "INSERT INTO " + table + " " + columnsvalues + ";";
     return sql;
   }
   
