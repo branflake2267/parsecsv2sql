@@ -46,6 +46,8 @@ public class MySqlTransformUtil extends MySqlQueryUtil {
   /**
    * simple create table to work with
    * 
+   * TODO - what if the schema does not exist, create it?
+   * 
    * @param dd
    * @param table
    * @param primaryKeyName
