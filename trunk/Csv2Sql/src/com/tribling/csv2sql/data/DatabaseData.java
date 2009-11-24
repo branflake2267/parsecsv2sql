@@ -165,9 +165,7 @@ public class DatabaseData {
    * @return
    */
   private Connection getConn_MySql() {
-    
-   
-    
+
     Connection conn = null;
     
     String loadBalance = "";
