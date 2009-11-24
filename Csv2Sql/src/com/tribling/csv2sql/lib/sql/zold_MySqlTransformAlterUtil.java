@@ -9,9 +9,9 @@ import com.tribling.csv2sql.data.DatabaseData;
  * @author branflake2267
  *
  */
-public class MySqlTransformAlterUtil  {
+public class zold_MySqlTransformAlterUtil  {
 
-  public MySqlTransformAlterUtil() {
+  public zold_MySqlTransformAlterUtil() {
   }
   
   // TODO move this to its own class
