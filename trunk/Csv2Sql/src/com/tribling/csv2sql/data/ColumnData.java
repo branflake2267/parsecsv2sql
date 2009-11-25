@@ -1,5 +1,6 @@
 package com.tribling.csv2sql.data;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -170,6 +171,7 @@ public class ColumnData {
 	
 	/**
 	 * when column type is int - be sure to check the value is really an int
+	 * 
 	 * @param value
 	 * @return
 	 */
@@ -182,7 +184,12 @@ public class ColumnData {
         value = "0";
       } else {
         try {
-          Integer.parseInt(value);
+          if (value.matches("[\\(].*[\\)]")) {
+            value = value.replaceAll("[\\)\\(]", "");
+            value = "-" + value;
+          }
+          BigDecimal bd = new BigDecimal(value);
+          value = bd.toString();
         } catch (NumberFormatException e) {
           value = "0";
         }
@@ -194,8 +201,13 @@ public class ColumnData {
         value = "0";
       } else {
         try { 
-          value = value.replaceAll("[^0-9\\-\\.]", "");
-          value = Double.toString(Double.parseDouble(value));
+          if (value.matches("[\\(].*[\\)]")) {
+            value = value.replaceAll("[\\)\\(]", "");
+            value = "-" + value;
+          }
+          //value = value.replaceAll("[^0-9\\-\\.]", ""); // this doesn't look right??? what the?
+          BigDecimal bd = new BigDecimal(value);
+          value = bd.toString();
         } catch (NumberFormatException e) {
           value = "0";
         }

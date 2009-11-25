@@ -1,5 +1,6 @@
 package com.tribling.csv2sql.v2;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -515,9 +516,17 @@ public class Optimise_v2 {
     return b;
   }
 
+  /**
+   * is the value an integer positive or negative
+   * 
+   * @param s
+   * @return
+   */
   private boolean isInt(String s) {
     boolean b = false;
-    if (s.matches("[-]?[0-9]+")) {
+    if (s.matches("[\\(]?[0-9]+[\\)]")) {
+      b = true;
+    } else if (s.matches("[-]?[0-9]+")) {
       b = true;
     }
     return b;
@@ -531,7 +540,9 @@ public class Optimise_v2 {
    */
   private boolean isIntZero(String s) {
     boolean b = false;
-    if (s.matches("[0-9]+") && s.matches("^0[0-9]+")) {
+    if (s.matches("[\\(][0-9]+[\\)]") && s.matches("^[\\(]0[0-9]+[\\)]")) {
+      b = true;
+    } else if (s.matches("[0-9]+") && s.matches("^0[0-9]+")) {
       b = true;
     }
     return b;
@@ -545,7 +556,10 @@ public class Optimise_v2 {
    */
   private boolean isDecimal(String s) {
     boolean b = false;
-    if (s.matches("^[-]?\\.\\d+|^[-]?\\d+\\.\\d+")) {
+    if (s.matches("^[\\(]\\.\\d+|^[\\(]?\\d+\\.\\d+[\\)]")) {
+      b = true;
+      getDecimalLengths(s);
+    } else if (s.matches("^[-]?\\.\\d+|^[-]?\\d+\\.\\d+")) {
       b = true;
       getDecimalLengths(s);
     }
@@ -676,10 +690,8 @@ public class Optimise_v2 {
         offset = ((i+1)*1000) - 1000;
         limit = ((i+1)*1000);
       }
-      
       formatColumn_ToInt(columnData, offset, limit);
     }
-    
   }
   
   private void formatColumn_ToInt(ColumnData columnData, int offset, int limit) {
@@ -721,7 +733,12 @@ public class Optimise_v2 {
       tranformed = "0";
     } else {
       try {
-        Integer.parseInt(tranformed);
+        if (tranformed.matches("[\\(].*[\\)]")) {
+          tranformed = tranformed.replaceAll("[\\)\\(]", "");
+          tranformed = "-" + tranformed;
+        }
+        BigDecimal bd = new BigDecimal(tranformed);
+        tranformed = bd.toString();
       } catch (NumberFormatException e) {
         tranformed = "0";
       } 
