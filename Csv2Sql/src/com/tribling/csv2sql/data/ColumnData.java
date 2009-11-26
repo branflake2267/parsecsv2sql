@@ -184,9 +184,14 @@ public class ColumnData {
         value = "0";
       } else {
         try {
-          if (value.matches("[\\(].*[\\)]")) {
+          // change (1234) to negative
+          if (value != null && value.matches("[\\(].*[\\)]")) {
             value = value.replaceAll("[\\)\\(]", "");
             value = "-" + value;
+          }
+          // take out all non digit characters except . - and 0-9
+          if (value != null) {
+            value = value.replaceAll("[^0-9\\.\\-]", ""); 
           }
           BigDecimal bd = new BigDecimal(value);
           value = bd.toString();
@@ -201,11 +206,15 @@ public class ColumnData {
         value = "0";
       } else {
         try { 
-          if (value.matches("[\\(].*[\\)]")) {
+          // change (1234) to negative
+          if (value != null && value.matches("[\\(].*[\\)]")) {
             value = value.replaceAll("[\\)\\(]", "");
             value = "-" + value;
           }
-          //value = value.replaceAll("[^0-9\\-\\.]", ""); // this doesn't look right??? what the?
+          // take out all non digit characters except . - and 0-9
+          if (value != null) {
+            value = value.replaceAll("[^0-9\\.\\-]", "");
+          }
           BigDecimal bd = new BigDecimal(value);
           value = bd.toString();
         } catch (NumberFormatException e) {

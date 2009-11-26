@@ -523,6 +523,9 @@ public class Optimise_v2 {
    * @return
    */
   private boolean isInt(String s) {
+    // take the commas out of the and see if its an int value 
+    s = s.replaceAll(",", ""); 
+    
     boolean b = false;
     if (s.matches("[\\(]?[0-9]+[\\)]")) {
       b = true;
@@ -539,8 +542,11 @@ public class Optimise_v2 {
    * @return
    */
   private boolean isIntZero(String s) {
+    // take the commas out of the and see if its an int value 
+    s = s.replaceAll(",", ""); 
+    
     boolean b = false;
-    if (s.matches("[\\(][0-9]+[\\)]") && s.matches("^[\\(]0[0-9]+[\\)]")) {
+    if (s.matches("[\\(][0-9]+[\\)]") && s.matches("^[\\(]0[0-9]+[\\)]")) { // does it have negative (12345) value
       b = true;
     } else if (s.matches("[0-9]+") && s.matches("^0[0-9]+")) {
       b = true;
@@ -555,8 +561,11 @@ public class Optimise_v2 {
    * @return
    */
   private boolean isDecimal(String s) {
+    // take the commas out of the and see if its an int value 
+    s = s.replaceAll(",", ""); 
+    
     boolean b = false;
-    if (s.matches("^[\\(]\\.\\d+|^[\\(]?\\d+\\.\\d+[\\)]")) {
+    if (s.matches("^[\\(]\\.\\d+|^[\\(]?\\d+\\.\\d+[\\)]")) { // does it have negative (12345) value
       b = true;
       getDecimalLengths(s);
     } else if (s.matches("^[-]?\\.\\d+|^[-]?\\d+\\.\\d+")) {
@@ -705,8 +714,7 @@ public class Optimise_v2 {
     
     try {
       Connection conn = destinationData.databaseData.getConnection();
-      Statement select = conn.createStatement(); // java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY
-      //select.setFetchSize(Integer.MIN_VALUE);
+      Statement select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         cpriKey.setValue(Integer.toString(result.getInt(1)));
@@ -724,29 +732,34 @@ public class Optimise_v2 {
   
   private void updateColumn_Int(ColumnData cpriKey, ColumnData columnData) {
 
-    String intvalue = columnData.getValue();
+    String before = columnData.getValue();
     
-    String tranformed = columnData.getValue();
-    if (intvalue == null) {
-      tranformed = "0";
-    } else if (intvalue.trim().length() == 0) {
-      tranformed = "0";
+    String value = columnData.getValue();
+    if (value == null) {
+      value = "0";
+    } else if (value.trim().length() == 0) {
+      value = "0";
     } else {
       try {
-        if (tranformed.matches("[\\(].*[\\)]")) {
-          tranformed = tranformed.replaceAll("[\\)\\(]", "");
-          tranformed = "-" + tranformed;
+        // change (1234) to negative
+        if (value != null && value.matches("[\\(].*[\\)]")) {
+          value = value.replaceAll("[\\)\\(]", "");
+          value = "-" + value;
         }
-        BigDecimal bd = new BigDecimal(tranformed);
-        tranformed = bd.toString();
+        // take out all non digit characters except . - and 0-9
+        if (value != null) {
+          value = value.replaceAll("[^0-9\\.\\-]", ""); 
+        }
+        BigDecimal bd = new BigDecimal(value);
+        value = bd.toString();
       } catch (NumberFormatException e) {
-        tranformed = "0";
+        value = "0";
       } 
     }
 
-    columnData.setValue(tranformed);
+    columnData.setValue(value);
     
-    destinationData.debug("column: " + columnData.getColumnName() + " int before: " + intvalue + " after: " + tranformed);
+    destinationData.debug("column: " + columnData.getColumnName() + " (is an int) was before: " + before + " after: " + value);
 
     // is there room for the transformation values
     columnData.alterColumnSizeBiggerIfNeedBe(destinationData.databaseData);
