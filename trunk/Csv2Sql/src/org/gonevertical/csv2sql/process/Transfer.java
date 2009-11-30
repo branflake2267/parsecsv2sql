@@ -253,10 +253,31 @@ public class Transfer {
     
   }
   
-  /**
-   * TODO - fix looping through large record sets, b/c can't forward read, b/c it locks table, need to loop in pages
-   */
   private void processSrc() {
+    
+    String sql = "SELECT COUNT(*) AS t FROM `" + tableFrom + "`;"; 
+    long total = MySqlQueryUtil.queryLong(database_src, sql);
+    
+    int lim = 1000;
+    int totalPages = (int) (total / lim);
+
+    int offset = 0;
+    int limit = 0;
+    for (int i=0; i < totalPages; i++) {
+      if (i==0) {
+        offset = 0;
+        limit = 1000;
+      } else {
+        offset = ((i+1)*1000) - 1000;
+        limit = ((i+1)*1000);
+      }
+      
+      processSrc(offset, limit);
+    }
+    
+  }
+  
+  private void processSrc(int offset, int limit) {
 
     ColumnData primKey = ColumnData.getPrimaryKey_ColumnData(columnData_src);
     String where = "";
@@ -279,6 +300,7 @@ public class Transfer {
     sql = "SELECT " + columnCsv + " " + columnCsv2 + " FROM " + tableFrom + " ";
     sql += where;
     sql += getSrcWhere();
+    sql += " LIMIT " + offset + ", " + limit + ";";
     
     // TODO - work around for ms sql server query
     if (database_src.getDatabaseType() == DatabaseData.TYPE_MSSQL) {
@@ -318,10 +340,31 @@ public class Transfer {
     }
   }
   
-  /**
-   * TODO - fix looping through large record sets, b/c can't forward read, b/c it locks table, need to loop in pages
-   */
   private void processSrc_Mash() {
+
+    String sql = "SELECT COUNT(*) AS t FROM `" + tableFrom + "`;"; 
+    long total = MySqlQueryUtil.queryLong(database_src, sql);
+    
+    int lim = 1000;
+    int totalPages = (int) (total / lim);
+
+    int offset = 0;
+    int limit = 0;
+    for (int i=0; i < totalPages; i++) {
+      if (i==0) {
+        offset = 0;
+        limit = 1000;
+      } else {
+        offset = ((i+1)*1000) - 1000;
+        limit = ((i+1)*1000);
+      }
+      
+      processSrc_Mash(offset, limit);
+    }
+    
+  }
+  
+  private void processSrc_Mash(int offset, int limit) {
 
     ColumnData primKey = ColumnData.getPrimaryKey_ColumnData(columnData_des);
     String where = "WHERE " + primKey.getColumnName() + " != '' AND " + primKey.getColumnName() + " IS NOT NULL";
@@ -332,7 +375,8 @@ public class Transfer {
     sql = "SELECT " + keyDes.getColumnName() + " FROM " + tableTo + " ";
     sql += where;
     sql += getSrcWhere();
-
+    sql += " LIMIT " + offset + ", " + limit + ";";
+    
     System.out.println("sql: " + sql);
     
     try {
