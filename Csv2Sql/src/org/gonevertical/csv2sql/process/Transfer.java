@@ -253,6 +253,9 @@ public class Transfer {
     
   }
   
+  /**
+   * TODO - fix looping through large record sets, b/c can't forward read, b/c it locks table, need to loop in pages
+   */
   private void processSrc() {
 
     ColumnData primKey = ColumnData.getPrimaryKey_ColumnData(columnData_src);
@@ -286,10 +289,7 @@ public class Transfer {
     
     try {
       Connection conn = database_src.getConnection();
-      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
-      if (database_src.getDatabaseType() == DatabaseData.TYPE_MYSQL) {
-        select.setFetchSize(Integer.MIN_VALUE); // read row by row
-      } 
+      Statement select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
 
@@ -318,6 +318,9 @@ public class Transfer {
     }
   }
   
+  /**
+   * TODO - fix looping through large record sets, b/c can't forward read, b/c it locks table, need to loop in pages
+   */
   private void processSrc_Mash() {
 
     ColumnData primKey = ColumnData.getPrimaryKey_ColumnData(columnData_des);
@@ -334,8 +337,7 @@ public class Transfer {
     
     try {
       Connection conn = database_des.getConnection();
-      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
-      select.setFetchSize(Integer.MIN_VALUE); // read row by row
+      Statement select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
 
