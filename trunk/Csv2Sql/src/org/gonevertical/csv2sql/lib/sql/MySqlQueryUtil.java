@@ -31,6 +31,7 @@ public class MySqlQueryUtil {
     // escape quotes
     s = StringEscapeUtils.escapeSql(s);
     
+    // TODO - maybe I only need it at end of string????
     // when string looks like this column='value\' or column='value\\'
     //if (s.matches(".*[\\]") == true) {
       s = s.replaceAll("\\\\", "\\\\\\\\");
