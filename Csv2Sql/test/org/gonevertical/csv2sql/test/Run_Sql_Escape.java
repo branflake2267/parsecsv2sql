@@ -1,5 +1,7 @@
 package org.gonevertical.csv2sql.test;
 
+import static org.junit.Assert.assertEquals;
+
 import org.gonevertical.csv2sql.data.ColumnData;
 import org.gonevertical.csv2sql.data.DatabaseData;
 import org.gonevertical.csv2sql.lib.sql.MySqlQueryUtil;
@@ -17,43 +19,27 @@ public class Run_Sql_Escape {
     MySqlTransformUtil.createTable(databaseData, "test_escape", "TestId");
     MySqlTransformUtil.createColumn(databaseData, columnData);
     
+    String value = "mystring\\\\ \\ "; 
     
-    // 1
-    String value = "mystring\\";
     String s = MySqlQueryUtil.escape(value);
-    System.out.println("s: " + s);
     
     String sql = "INSERT INTO test_escape SET Value='" + s + "'";
-    MySqlQueryUtil.update(databaseData, sql);
+    
+    System.out.println("sql: " + sql);
+    
+    long id = MySqlQueryUtil.update(databaseData, sql);
+    
+    sql = "SELECT Value FROM test_escape WHERE TestId='" + id + "';";
+    
+    String valueTest = MySqlQueryUtil.queryString(databaseData, sql);
     
     
     
-    // 2
-    value = "mystring\\\\ \\ "; 
-    s = MySqlQueryUtil.escape(value);
-    System.out.println("s: " + s);
-    
-    sql = "INSERT INTO test_escape SET Value='" + s + "'";
-    MySqlQueryUtil.update(databaseData, sql);
     
     
-    
-    // 3
-    value = "mystring\\\\ \\"; 
-    s = MySqlQueryUtil.escape(value);
-    System.out.println("s: " + s);
-    
-    sql = "INSERT INTO test_escape SET Value='" + s + "'";
-    MySqlQueryUtil.update(databaseData, sql);
+    System.out.println("value: " + value + " valueTest: " + valueTest);
     
     
-    // S\\\
-    value = "value\\\\";
-    s = MySqlQueryUtil.escape(value);
-    System.out.println("s: " + s);
-    
-    sql = "INSERT INTO test_escape SET Value='" + s + "'";
-    MySqlQueryUtil.update(databaseData, sql);
   }
   
 }
