@@ -17,6 +17,9 @@ public class MySqlQueryUtil {
   
   /**
    * escape string
+   * 
+   * fixes: Strings can come like this abcdefg\  and then when made into a statement 'abcdefg\'
+   * I used to trim here, but not a good idea b/c I want to replicate exactly what comes in.
    *  
    * @param s
    * @return
@@ -27,13 +30,11 @@ public class MySqlQueryUtil {
     }
     // escape quotes
     s = StringEscapeUtils.escapeSql(s);
-    s = s.trim();
     
     // when string looks like this column='value\' or column='value\\'
-    char bs = "\\".charAt(0);
-    if (s.matches(".*[" + bs + bs + "]") == true) {
-      s = s.replaceAll("[" + bs + bs + "]+$", "\\\\\\\\");
-    }
+    //if (s.matches(".*[\\]") == true) {
+      s = s.replaceAll("\\\\", "\\\\\\\\");
+    //}
     return s;
   }
   
