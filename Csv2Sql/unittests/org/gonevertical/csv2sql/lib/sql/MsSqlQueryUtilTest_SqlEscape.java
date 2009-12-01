@@ -40,9 +40,6 @@ public class MsSqlQueryUtilTest_SqlEscape {
 
   @Test
   public void testEscapeString2() {
-    
-    // TODO fix
-    
     String value = "mystring\\\\ \\ "; 
     String s = MySqlQueryUtil.escape(value);
     String sql = "INSERT INTO test_escape SET Value='" + s + "'";
@@ -54,9 +51,6 @@ public class MsSqlQueryUtilTest_SqlEscape {
   
   @Test
   public void testEscapeString3() {
-    
-    // TODO fix
-    
     String value = "mystring\\\\ \\"; 
     String s = MySqlQueryUtil.escape(value);
     String sql = "INSERT INTO test_escape SET Value='" + s + "'";
@@ -110,6 +104,25 @@ public class MsSqlQueryUtilTest_SqlEscape {
     assertEquals(value, valueTest);
   }
   
-
+  @Test
+  public void testEscapeString8() {
+    String value = "single ' '' ''' '''' '''' '";
+    String s = MySqlQueryUtil.escape(value);
+    String sql = "INSERT INTO test_escape SET Value='" + s + "'";
+    long id = MySqlQueryUtil.update(dd, sql);
+    sql = "SELECT Value FROM test_escape WHERE TestId='" + id + "';";
+    String valueTest = MySqlQueryUtil.queryString(dd, sql);
+    assertEquals(value, valueTest);
+  }
   
+  @Test
+  public void testEscapeString9() {
+    String value = "single \" \" \" \" \" \"";
+    String s = MySqlQueryUtil.escape(value);
+    String sql = "INSERT INTO test_escape SET Value='" + s + "'";
+    long id = MySqlQueryUtil.update(dd, sql);
+    sql = "SELECT Value FROM test_escape WHERE TestId='" + id + "';";
+    String valueTest = MySqlQueryUtil.queryString(dd, sql);
+    assertEquals(value, valueTest);
+  }
 }
