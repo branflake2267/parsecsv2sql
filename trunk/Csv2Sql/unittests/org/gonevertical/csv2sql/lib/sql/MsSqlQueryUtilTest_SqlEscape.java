@@ -20,6 +20,9 @@ public class MsSqlQueryUtilTest_SqlEscape {
     ColumnData columnData = new ColumnData("test_escape", "Value", "VARCHAR(100) DEFAULT NULL");
     MySqlTransformUtil.createTable(dd, "test_escape", "TestId");
     MySqlTransformUtil.createColumn(dd, columnData);
+    
+    //String sql = "DELETE FROM test_escape;";
+    //MySqlQueryUtil.update(dd, sql);
   }
 
   @After
@@ -73,7 +76,7 @@ public class MsSqlQueryUtilTest_SqlEscape {
   
   @Test
   public void testEscapeString5() {
-    String value = "NELLA O\\\'NEAL";
+    String value = "MR O\\\'NEAL";
     String s = MySqlQueryUtil.escape(value);
     String sql = "INSERT INTO test_escape SET Value='" + s + "'";
     long id = MySqlQueryUtil.update(dd, sql);
@@ -95,7 +98,7 @@ public class MsSqlQueryUtilTest_SqlEscape {
   
   @Test
   public void testEscapeString7() {
-    String value = "SAM O'NEILL JR";
+    String value = "MR O'NEILL JR";
     String s = MySqlQueryUtil.escape(value);
     String sql = "INSERT INTO test_escape SET Value='" + s + "'";
     long id = MySqlQueryUtil.update(dd, sql);
@@ -117,7 +120,7 @@ public class MsSqlQueryUtilTest_SqlEscape {
   
   @Test
   public void testEscapeString9() {
-    String value = "single \" \" \" \" \" \"";
+    String value = "double \" \" \" \" \" \"";
     String s = MySqlQueryUtil.escape(value);
     String sql = "INSERT INTO test_escape SET Value='" + s + "'";
     long id = MySqlQueryUtil.update(dd, sql);
