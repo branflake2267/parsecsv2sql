@@ -20,7 +20,8 @@ public class DateTimeParser {
    * 2009/12/01
    * 01/12/2009
    * jan 01 2009
-   * January 01, 2009
+   * January 01, 2009  
+   * ??? "jan 012009" don't know if this works
    * 2009-12-01 00:00:00
    * 2009-12-01 00:00:00AM
    * 20091201000000
