@@ -77,6 +77,14 @@ public class DateTimeParser {
     return isDate;
   }
   
+  /**
+   * is the value just parsed recognized as a datetime value?
+   * @return
+   */
+  public boolean getIsDate() {
+    return isDate;
+  }
+  
   public boolean getIsDateExplicit(String dt) {
     isDate = false;
     this.datetime = dt;

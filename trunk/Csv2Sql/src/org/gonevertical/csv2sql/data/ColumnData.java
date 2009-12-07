@@ -10,6 +10,7 @@ import java.util.Comparator;
 
 import org.apache.commons.lang.WordUtils;
 import org.gonevertical.csv2sql.lib.StringUtil;
+import org.gonevertical.csv2sql.lib.datetime.DateTimeParser;
 import org.gonevertical.csv2sql.lib.sql.MySqlQueryUtil;
 import org.gonevertical.csv2sql.lib.sql.MySqlTransformUtil;
 
@@ -163,13 +164,41 @@ public class ColumnData {
 	    v = this.value;
 	  }
 	  
+	  // the next only affect given types
 	  // if type is int, check to be sure its an int
 	  v = getValueAsInt(value);
+	  // if type is datetime, lets deal with it now
+	  v = getValueAsDateTime(value);
 	  
 	  return v;
 	}
 	
 	/**
+	 * when column type is datetime, transform it to datetime and be sure datetime correct on the way out
+	 *    TODO on setting datetime, do I parse it too? 
+	 * 
+	 * @param value
+	 * @return
+	 */
+	private String getValueAsDateTime(String value) {
+	  if (columnType.toLowerCase().contains("datetime") == true) {
+	    if (value == null) {
+	        value = "00/00/00 00:00:00";
+	      } else if (value.trim().length() == 0) {
+	        value = "00/00/00 00:00:00";
+	      } else {
+	        // TODO move dtp to class instance var
+	        DateTimeParser dtp = new DateTimeParser();
+	        value = dtp.getDateMysql(value);
+	        if (dtp.isDate == false) {
+	          value = "00/00/00 00:00:00";
+	        }
+	      }
+	  }
+    return value;
+  }
+
+  /**
 	 * when column type is int - be sure to check the value is really an int
 	 * 
 	 * @param value
