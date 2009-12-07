@@ -1,2 +1,3 @@
 
 1 - Replace All $ characters in a file before processing - preprocess file before inserting
+2 - Check before hand for stuff that should be removed like \"String\", \"String\",123,asddb,... - that is if its not recognized as a delimter automatcially
