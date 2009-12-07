@@ -183,15 +183,15 @@ public class ColumnData {
 	private String getValueAsDateTime(String value) {
 	  if (columnType.toLowerCase().contains("datetime") == true) {
 	    if (value == null) {
-	        value = "00/00/00 00:00:00";
+	        value = null;
 	      } else if (value.trim().length() == 0) {
-	        value = "00/00/00 00:00:00";
+	        value = null;
 	      } else {
 	        // TODO move dtp to class instance var
 	        DateTimeParser dtp = new DateTimeParser();
 	        value = dtp.getDateMysql(value);
 	        if (dtp.isDate == false) {
-	          value = "00/00/00 00:00:00";
+	          value = null;
 	        }
 	      }
 	  }
