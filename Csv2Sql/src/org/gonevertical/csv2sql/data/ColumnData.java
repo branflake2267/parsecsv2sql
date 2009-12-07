@@ -208,9 +208,9 @@ public class ColumnData {
 	   
     if (columnType.toLowerCase().contains("int") == true) {
       if (value == null) {
-        value = "0";
+        value = null;
       } else if (value.trim().length() == 0) {
-        value = "0";
+        value = null;
       } else {
         try {
           // change (1234) to negative
