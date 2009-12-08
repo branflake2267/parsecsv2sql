@@ -166,9 +166,15 @@ public class ColumnData {
 	  
 	  // the next only affect given types
 	  // if type is int, check to be sure its an int
-	  v = getValueAsInt(value);
+	  if (columnType.toLowerCase().contains("int") == true | columnType.toLowerCase().contains("dec") == true) {
+	    v = getValueAsInt(value);
+	  }
+	  
 	  // if type is datetime, lets deal with it now
-	  v = getValueAsDateTime(value);
+	  if (columnType.toLowerCase().contains("datetime") == true) {
+	    v = getValueAsDateTime(value);
+	  }
+	  
 	  
 	  return v;
 	}
@@ -230,9 +236,9 @@ public class ColumnData {
       }
     } else if (columnType.toLowerCase().contains("dec") == true) {
       if (value == null) {
-        value = "0";
+        value = null;
       } else if (value.trim().length() == 0) {
-        value = "0";
+        value = null;
       } else {
         try { 
           // change (1234) to negative
