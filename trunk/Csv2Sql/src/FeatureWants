@@ -1,3 +1,4 @@
 
 1 - Replace All $ characters in a file before processing - preprocess file before inserting
 2 - Check before hand for stuff that should be removed like \"String\", \"String\",123,asddb,... - that is if its not recognized as a delimter automatcially
+3 - when columns only have 1,000 10,100 values, check auto discovery to make them numbers

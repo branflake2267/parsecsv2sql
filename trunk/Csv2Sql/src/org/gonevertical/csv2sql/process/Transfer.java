@@ -255,11 +255,15 @@ public class Transfer {
   
   private void processSrc() {
     
-    String sql = "SELECT COUNT(*) AS t FROM `" + tableFrom + "`;"; 
+    String sql = "SELECT COUNT(*) AS t FROM `" + tableFrom + "`;";
+    System.out.println("sql" + sql);
     long total = MySqlQueryUtil.queryLong(database_src, sql);
     
     int lim = 1000;
     int totalPages = (int) (total / lim);
+    if (totalPages == 0) {
+      totalPages = 1;
+    }
 
     int offset = 0;
     int limit = 0;
