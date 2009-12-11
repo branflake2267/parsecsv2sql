@@ -155,7 +155,7 @@ public class MySqlReplication {
     int slaveId = getServerId(2);
     if (slaveId == 1) {
       System.out.println("slave server_id variable in my.cnf not set correctly. It's current setting is server_id=" + slaveId);
-      System.out.println("Set Slave server_id=2 (greater than 1). Exiting....");
+      System.out.println("Set Slave server_id=>2 (greater than 1). Exiting....");
       System.exit(1);
     } else {
       System.out.println("slave server_id="+slaveId+", it passes.");
