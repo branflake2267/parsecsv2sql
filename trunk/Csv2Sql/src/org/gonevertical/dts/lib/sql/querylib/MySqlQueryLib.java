@@ -59,9 +59,11 @@ public class MySqlQueryLib implements QueryLib {
   
   public boolean queryBoolean(DatabaseData dd, String sql) {
     boolean b = false;
+    Connection conn = null;
+    Statement select = null;
     try {
-      Connection conn = dd.getConnection();
-      Statement select = conn.createStatement();
+      conn = dd.getConnection();
+      select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         b = result.getBoolean(1);
@@ -74,15 +76,20 @@ public class MySqlQueryLib implements QueryLib {
     } catch (SQLException e) {
       System.err.println("Error: queryBoolean(): " + sql);
       e.printStackTrace();
-    } 
+    } finally {
+      conn = null;
+      select = null;
+    }
     return b;
   }
 
   public int queryInteger(DatabaseData dd, String sql) {
     int i = 0;
+    Connection conn = null;
+    Statement select = null;
     try {
-      Connection conn = dd.getConnection();
-      Statement select = conn.createStatement();
+      conn = dd.getConnection();
+      select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         i = result.getInt(1);
@@ -95,15 +102,20 @@ public class MySqlQueryLib implements QueryLib {
     } catch (SQLException e) {
       System.err.println("Error: queryInteger(): " + sql);
       e.printStackTrace();
-    } 
+    } finally {
+      conn = null;
+      select = null;
+    }
     return i;
   }
   
   public long queryLong(DatabaseData dd, String sql) {
     long i = 0;
+    Connection conn = null;
+    Statement select = null;
     try {
-      Connection conn = dd.getConnection();
-      Statement select = conn.createStatement();
+      conn = dd.getConnection();
+      select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         i = result.getLong(1);
@@ -116,15 +128,20 @@ public class MySqlQueryLib implements QueryLib {
     } catch (SQLException e) {
       System.err.println("Error: queryInteger(): " + sql);
       e.printStackTrace();
-    } 
+    } finally {
+      conn = null;
+      select = null;
+    }
     return i;
   }
 
   public String queryString(DatabaseData dd, String sql) {
     String s = null;
+    Connection conn = null;
+    Statement select = null;
     try {
-      Connection conn = dd.getConnection();
-      Statement select = conn.createStatement();
+      conn = dd.getConnection();
+      select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         s = result.getString(1);
@@ -137,15 +154,20 @@ public class MySqlQueryLib implements QueryLib {
     } catch (SQLException e) {
       System.err.println("Error: queryString(): " + sql);
       e.printStackTrace();
-    } 
+    } finally {
+      conn = null;
+      select = null;
+    }
     return s;
   }
 
   public double queryDouble(DatabaseData dd, String sql) {
     double d = 0.0;
+    Connection conn = null;
+    Statement select = null;
     try {
-      Connection conn = dd.getConnection();
-      Statement select = conn.createStatement();
+      conn = dd.getConnection();
+      select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         d = result.getDouble(1);
@@ -158,15 +180,20 @@ public class MySqlQueryLib implements QueryLib {
     } catch (SQLException e) {
       System.err.println("Error: queryDouble(): " + sql);
       e.printStackTrace();
-    } 
+    } finally {
+      conn = null;
+      select = null;
+    }
     return d;
   }
 
   public BigDecimal queryBigDecimal(DatabaseData dd, String sql) {
     BigDecimal bd = null;
+    Connection conn = null;
+    Statement select = null;
     try {
-      Connection conn = dd.getConnection();
-      Statement select = conn.createStatement();
+      conn = dd.getConnection();
+      select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         if (result.getString(1) != null) {
@@ -181,15 +208,20 @@ public class MySqlQueryLib implements QueryLib {
     } catch (SQLException e) {
       System.err.println("Error: queryBigDecimal(): " + sql);
       e.printStackTrace();
-    } 
+    } finally {
+      conn = null;
+      select = null;
+    }
     return bd;
   }
   
   public String queryIntegersToCsv(DatabaseData dd, String sql, char delimiter) {
     String csv = null;
+    Connection conn = null;
+    Statement select = null;
     try {
-      Connection conn = dd.getConnection();
-      Statement select = conn.createStatement();
+      conn = dd.getConnection();
+      select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       int size = getResultSetSize(result);
       int i = 0;
@@ -213,7 +245,10 @@ public class MySqlQueryLib implements QueryLib {
     } catch (SQLException e) {
       System.err.println("Error: queryIntegersToCsv(): " + sql);
       e.printStackTrace();
-    } 
+    } finally {
+      conn = null;
+      select = null;
+    }
     if (csv == null | csv.length() == 0) {
       csv = "NULL";
     }
@@ -221,11 +256,12 @@ public class MySqlQueryLib implements QueryLib {
   }
   
   public String queryStringToCsv(DatabaseData dd, String sql, char delimiter) {
-    
     String csv = null;
+    Connection conn = null;
+    Statement select = null;
     try {
-      Connection conn = dd.getConnection();
-      Statement select = conn.createStatement();
+      conn = dd.getConnection();
+      select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       int size = getResultSetSize(result);
       if (size > 0) {
@@ -248,7 +284,10 @@ public class MySqlQueryLib implements QueryLib {
     } catch (SQLException e) {
       System.err.println("Error: queryStringToCsv(): " + sql);
       e.printStackTrace();
-    } 
+    } finally {
+      conn = null;
+      select = null;
+    }
     if (csv == null | csv.length() == 0) {
       csv = "NULL";
     }
@@ -260,12 +299,14 @@ public class MySqlQueryLib implements QueryLib {
       return 0;
     }
     long id = 0;
+    Connection conn = null;
+    Statement update = null;
     try {
-      Connection conn = dd.getConnection();
+      conn = dd.getConnection();
       if (dd.getLoadBalance() == true) {
         conn.setReadOnly(false);
       }
-      Statement update = conn.createStatement();
+      update = conn.createStatement();
       update.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
       ResultSet result = update.getGeneratedKeys();
       if (result != null && result.next()) { 
@@ -279,7 +320,10 @@ public class MySqlQueryLib implements QueryLib {
     } catch (SQLException e) {
       System.err.println("Error: update(): " + sql);
       e.printStackTrace();
-    } 
+    } finally {
+      conn = null;
+      update = null;
+    }
     return id;
   }
   
@@ -288,12 +332,14 @@ public class MySqlQueryLib implements QueryLib {
       return 0;
     }
     long id = 0;
+    Connection conn = null;
+    Statement update = null;
     try {
-      Connection conn = dd.getConnection();
+      conn = dd.getConnection();
       if (dd.getLoadBalance() == true) {
         conn.setReadOnly(false);
       }
-      Statement update = conn.createStatement();
+      update = conn.createStatement();
       update.executeUpdate(sql);
 
       if (getKey == true) {
@@ -310,15 +356,20 @@ public class MySqlQueryLib implements QueryLib {
     } catch (SQLException e) {
       System.err.println("Error: update(): " + sql);
       e.printStackTrace();
-    } 
+    } finally {
+      conn = null;
+      update = null;
+    }
     return id;
   }
   
   public boolean queryStringAndConvertToBoolean(DatabaseData dd, String sql) {
     String value = null;
+    Connection conn = null;
+    Statement select = null;
     try {
-      Connection conn = dd.getConnection();
-      Statement select = conn.createStatement();
+      conn = dd.getConnection();
+      select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         value = result.getString(1);
@@ -331,7 +382,10 @@ public class MySqlQueryLib implements QueryLib {
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
-    } 
+    } finally {
+      conn = null;
+      select = null;
+    }
     boolean b = false;
     if ((value != null && value.length() > 0) && 
         value.equals("0") == false | 
@@ -343,9 +397,11 @@ public class MySqlQueryLib implements QueryLib {
   
   public boolean queryLongAndConvertToBoolean(DatabaseData dd, String sql) {
     long l = 0;
+    Connection conn = null;
+    Statement select = null;
     try {
-      Connection conn = dd.getConnection();
-      Statement select = conn.createStatement();
+      conn = dd.getConnection();
+      select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         l = result.getLong(1);
@@ -358,7 +414,10 @@ public class MySqlQueryLib implements QueryLib {
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
-    } 
+    } finally {
+      conn = null;
+      select = null;
+    }
     boolean b = false;
     if (l > 0) {
       b = true;
