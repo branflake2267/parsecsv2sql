@@ -1,17 +1,9 @@
 package org.gonevertical.dts.lib.sql.columnlib;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 
 import org.gonevertical.dts.data.ColumnData;
-import org.gonevertical.dts.data.ColumnDataComparator;
 import org.gonevertical.dts.data.DatabaseData;
-import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
-import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
 
 public interface ColumnLib {
 

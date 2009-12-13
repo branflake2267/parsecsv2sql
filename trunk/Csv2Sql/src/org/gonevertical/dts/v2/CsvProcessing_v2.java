@@ -7,23 +7,17 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 import org.gonevertical.dts.data.ColumnData;
-import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.FieldData;
 import org.gonevertical.dts.data.FieldDataComparator;
 import org.gonevertical.dts.data.SourceData;
-import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;
-import org.gonevertical.dts.lib.sql.columnmulti.ColumnModule;
-import org.gonevertical.dts.lib.sql.columnmulti.ColumnMulti;
 import org.gonevertical.dts.lib.sql.querylib.QueryLib;
 import org.gonevertical.dts.lib.sql.querymulti.QueryLibFactory;
 import org.gonevertical.dts.lib.sql.transformlib.TransformLib;
 import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
 
 import com.csvreader.CsvReader;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 
 public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
 
@@ -173,7 +167,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    */
   private void createColumns() {
     columnData = getColumnsFromCsv();
-    MySqlTransformUtil.createColumn(destinationData.databaseData, columnData);
+    tl.createColumn(destinationData.databaseData, columnData);
   }
   
   /**
@@ -194,7 +188,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     defaultColumns[1].setType("DATETIME DEFAULT NULL");
     defaultColumns[1].setValueAsFunction("NOW()");
     
-    MySqlTransformUtil.createColumn(destinationData.databaseData, defaultColumns);
+    tl.createColumn(destinationData.databaseData, defaultColumns);
   }
 
   /**
@@ -366,7 +360,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
           } catch (NumberFormatException e) {
             // alter back to text
             columnData[i].setType("TEXT DEFAULT NULL");
-            MySqlTransformUtil.alterColumn(destinationData.databaseData, columnData[i]);
+            tl.alterColumn(destinationData.databaseData, columnData[i]);
           }
         }
       }
@@ -476,7 +470,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    * create destination table
    */
   private void createTable() {
-    MySqlTransformUtil.createTable(destinationData.databaseData, destinationData.table, destinationData.primaryKeyName);
+    tl.createTable(destinationData.databaseData, destinationData.table, destinationData.primaryKeyName);
   }
   
   

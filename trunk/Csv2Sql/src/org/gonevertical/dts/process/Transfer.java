@@ -11,8 +11,6 @@ import java.util.Iterator;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.FieldData;
-import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
-import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;
 import org.gonevertical.dts.lib.sql.querylib.QueryLib;
@@ -203,19 +201,19 @@ public class Transfer {
    */
   private void createDestTable() {
     String primaryKeyName = cl_src.getPrimaryKey_Name(columnData_src);
-    MySqlTransformUtil.createTable(database_des, tableTo, primaryKeyName);
+    tl_des.createTable(database_des, tableTo, primaryKeyName);
   }
   
   private void createColumns() {
     
     for (int i=0; i < columnData_src.length; i++) {
-      MySqlTransformUtil.createColumn(database_des, columnData_des[i]);
+      tl_des.createColumn(database_des, columnData_des[i]);
     }
     
   }
   
   private void setColumnData_All() {
-    columnData_src = MySqlTransformUtil.queryColumns(database_src, tableFrom, null);
+    columnData_src = tl_src.queryColumns(database_src, tableFrom, null);
     
     columnData_des = new ColumnData[columnData_src.length];
     for(int i=0; i < columnData_src.length; i++) {
@@ -548,7 +546,7 @@ public class Transfer {
   private long getOneToManyId(ColumnData columnData, HashMap<String,String> hardOneToMany) {
     
     // get primary key
-    oneToManyTablePrimaryKey = MySqlTransformUtil.queryPrimaryKey(database_des, columnData.getTable());
+    oneToManyTablePrimaryKey = tl_des.queryPrimaryKey(database_des, columnData.getTable());
     
     String where = getOneToManySqlWhere(columnData, hardOneToMany);
 
@@ -764,7 +762,7 @@ public class Transfer {
 
   private long doIdentsExistAlready(DatabaseData databaseData) {
    
-    ColumnData primaryKey = MySqlTransformUtil.queryPrimaryKey(database_des, tableTo);
+    ColumnData primaryKey = tl_des.queryPrimaryKey(database_des, tableTo);
     
     if (primaryKey == null) {
       return 0;

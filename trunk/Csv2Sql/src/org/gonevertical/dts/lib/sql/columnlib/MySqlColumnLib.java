@@ -10,9 +10,8 @@ import java.util.Comparator;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.ColumnDataComparator;
 import org.gonevertical.dts.data.DatabaseData;
-import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
-import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
 import org.gonevertical.dts.lib.sql.querylib.MySqlQueryLib;
+import org.gonevertical.dts.lib.sql.transformlib.MySqlTransformLib;
 
 public class MySqlColumnLib implements ColumnLib {
 
@@ -570,7 +569,7 @@ public class MySqlColumnLib implements ColumnLib {
 
     String autoIndexName = "auto_identities";
 
-    boolean exists = MySqlTransformUtil.doesIndexExist(dd, columnData[0].getTable(), autoIndexName);
+    boolean exists = new MySqlTransformLib().doesIndexExist(dd, columnData[0].getTable(), autoIndexName);
     if (exists == true) {
       return null;
     }

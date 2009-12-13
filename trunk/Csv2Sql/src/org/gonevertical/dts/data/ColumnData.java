@@ -1,18 +1,11 @@
 package org.gonevertical.dts.data;
 
 import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 
 import org.apache.commons.lang.WordUtils;
 import org.gonevertical.dts.lib.StringUtil;
 import org.gonevertical.dts.lib.datetime.DateTimeParser;
-import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
-import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
+import org.gonevertical.dts.lib.sql.transformlib.MySqlTransformLib;
 
 
 public class ColumnData {
@@ -616,7 +609,7 @@ public class ColumnData {
       return;
     }
 
-    MySqlTransformUtil.alterColumn(dd, this);
+    new MySqlTransformLib().alterColumn(dd, this);
   }
 
   /**

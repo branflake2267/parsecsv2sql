@@ -7,7 +7,7 @@ import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.FieldData;
 import org.gonevertical.dts.data.SourceData;
-import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
+import org.gonevertical.dts.lib.sql.transformlib.MySqlTransformLib;
 import org.gonevertical.dts.v2.DestinationData_v2;
 import org.gonevertical.dts.v2.Indexing;
 import org.gonevertical.dts.v2.Optimise_v2;
@@ -75,7 +75,7 @@ public class Run_Import_ZipCodes_Indexing_Test {
     p.runImport();
     
     // index couple columns bofore optimising - make sure it can optimise them
-    ColumnData[] indexColumns = MySqlTransformUtil.queryColumns(destinationData.databaseData, table, "`FIELD` like 'l%'");
+    ColumnData[] indexColumns = new MySqlTransformLib().queryColumns(destinationData.databaseData, table, "`FIELD` like 'l%'");
     Indexing index = new Indexing(destinationData);
     index.runIndexColumns(indexColumns);
     

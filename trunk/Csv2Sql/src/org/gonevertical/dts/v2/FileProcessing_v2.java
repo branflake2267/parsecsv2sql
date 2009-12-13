@@ -5,11 +5,14 @@ import java.util.Arrays;
 
 import org.gonevertical.dts.data.SourceData;
 import org.gonevertical.dts.lib.FileUtil;
-import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
+import org.gonevertical.dts.lib.sql.transformlib.TransformLib;
+import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
 
 
 public class FileProcessing_v2 {
 
+  private TransformLib tl = null;
+  
   private CsvProcessing_v2 csvProcess = null;
 
   // source data point
@@ -25,6 +28,14 @@ public class FileProcessing_v2 {
     this.sourceData = sourceData; 
     this.desinationData = destinationData;
     csvProcess = new CsvProcessing_v2(sourceData, destinationData);
+  }
+  
+  /**
+   * guice injects the libraries needed for the database
+   */
+  private void setSupportingLibraries() {
+    // get tranformation library
+    tl = TransformLibFactory.getLib(desinationData.databaseData.getDatabaseType());
   }
 
   /**
@@ -202,7 +213,7 @@ public class FileProcessing_v2 {
   private void dropTable() {
     if (desinationData.dropTable == true) {
       System.out.println("Dropping Table");
-      MySqlTransformUtil.dropTable(desinationData.databaseData, desinationData.table);
+      tl.dropTable(desinationData.databaseData, desinationData.table);
     }
   }
   

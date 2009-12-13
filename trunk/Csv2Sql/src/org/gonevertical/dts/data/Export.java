@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.gonevertical.dts.lib.FileUtil;
-import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;
 import org.gonevertical.dts.lib.sql.querylib.QueryLib;
@@ -287,7 +286,7 @@ public class Export {
   private String showTableCreate() {
     String s = "";
     if (createTable == true) {
-      s = MySqlTransformUtil.showCreateTable(src, table);
+      s = tl.showCreateTable(src, table);
     }
     return s;
   }
@@ -314,7 +313,7 @@ public class Export {
    * @return
    */
   private ColumnData[] getColumns() {
-    ColumnData[] c = MySqlTransformUtil.queryColumns(src, table, null);
+    ColumnData[] c = tl.queryColumns(src, table, null);
     return c;
   }
   
