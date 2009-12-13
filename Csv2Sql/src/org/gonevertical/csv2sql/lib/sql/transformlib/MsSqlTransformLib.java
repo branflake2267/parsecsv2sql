@@ -772,6 +772,10 @@ public class MsSqlTransformLib extends MySqlQueryUtil implements TransformLib {
     
     return index;
   }
+
+  public String getType() {
+    return "MsSql";
+  }
   
   
 }

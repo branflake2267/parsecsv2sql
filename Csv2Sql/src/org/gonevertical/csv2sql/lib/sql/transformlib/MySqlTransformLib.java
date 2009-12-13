@@ -772,6 +772,10 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
     
     return index;
   }
+
+  public String getType() {
+    return "MySql";
+  }
   
   
 }

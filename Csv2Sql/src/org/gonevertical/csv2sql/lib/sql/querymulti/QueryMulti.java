@@ -5,7 +5,7 @@ import org.gonevertical.csv2sql.lib.sql.querylib.QueryLib;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-public class QueryMultiUtil {
+public class QueryMulti {
 
   private QueryLib queryLibMySql;
   private QueryLib queryLibMsSql;
