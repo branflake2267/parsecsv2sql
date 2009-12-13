@@ -18,13 +18,11 @@ public class MsSqlQueryUtilTest_SqlEscape {
   public void setUp() throws Exception {
     dd = new DatabaseData(DatabaseData.TYPE_MYSQL, "ark", "3306", "test", "test#", "test");
     
-    // setup table to actually test inserting into
-    ColumnData columnData = new ColumnData("test_escape", "Value", "VARCHAR(100) DEFAULT NULL");
+    new MySqlTransformLib().dropTable(dd, "test_escape");
+    ColumnData columnData = new ColumnData("test_escape", "Value", "TEXT DEFAULT NULL");
     new MySqlTransformLib().createTable(dd, "test_escape", "TestId");
     new MySqlTransformLib().createColumn(dd, columnData);
     
-    //String sql = "DELETE FROM test_escape;";
-    //new MySqlQueryLib().update(dd, sql);
   }
 
   @After
@@ -129,5 +127,17 @@ public class MsSqlQueryUtilTest_SqlEscape {
     sql = "SELECT Value FROM test_escape WHERE TestId='" + id + "';";
     String valueTest = new MySqlQueryLib().queryString(dd, sql);
     assertEquals(value, valueTest);
+  }
+  
+  @Test
+  public void testEscapeString10() {
+    String value = "lit\neral\\hi there\\";
+    String s = new MySqlQueryLib().escape(value);
+    String sql = "INSERT INTO test_escape SET Value='" + s + "'";
+    long id = new MySqlQueryLib().update(dd, sql);
+    sql = "SELECT Value FROM test_escape WHERE TestId='" + id + "';";
+    String valueTest = new MySqlQueryLib().queryString(dd, sql);
+    assertEquals(value, valueTest);
+    System.out.println(valueTest);
   }
 }
