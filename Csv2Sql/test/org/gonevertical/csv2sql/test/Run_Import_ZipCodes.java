@@ -8,7 +8,6 @@ import org.gonevertical.csv2sql.data.DatabaseData;
 import org.gonevertical.csv2sql.data.FieldData;
 import org.gonevertical.csv2sql.data.SourceData;
 import org.gonevertical.csv2sql.lib.sql.MySqlTransformUtil;
-import org.gonevertical.csv2sql.lib.sql.zold_MySqlTransformAlterUtil;
 import org.gonevertical.csv2sql.v2.DestinationData_v2;
 import org.gonevertical.csv2sql.v2.Indexing;
 import org.gonevertical.csv2sql.v2.Optimise_v2;
