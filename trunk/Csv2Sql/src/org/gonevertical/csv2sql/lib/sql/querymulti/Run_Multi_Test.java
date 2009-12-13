@@ -1,4 +1,4 @@
-package org.gonevertical.csv2sql.lib.sql.multi;
+package org.gonevertical.csv2sql.lib.sql.querymulti;
 
 
 import com.google.inject.Guice;
