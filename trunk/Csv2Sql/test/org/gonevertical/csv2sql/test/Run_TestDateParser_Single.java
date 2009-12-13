@@ -1,6 +1,6 @@
 package org.gonevertical.csv2sql.test;
 
-import org.gonevertical.csv2sql.lib.datetime.DateTimeParser;
+import org.gonevertical.dts.lib.datetime.DateTimeParser;
 
 public class Run_TestDateParser_Single {
 

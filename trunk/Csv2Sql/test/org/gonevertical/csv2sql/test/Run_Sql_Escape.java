@@ -1,9 +1,9 @@
 package org.gonevertical.csv2sql.test;
 
-import org.gonevertical.csv2sql.data.ColumnData;
-import org.gonevertical.csv2sql.data.DatabaseData;
-import org.gonevertical.csv2sql.lib.sql.MySqlQueryUtil;
-import org.gonevertical.csv2sql.lib.sql.MySqlTransformUtil;
+import org.gonevertical.dts.data.ColumnData;
+import org.gonevertical.dts.data.DatabaseData;
+import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
+import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
 
 
 public class Run_Sql_Escape {

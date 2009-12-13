@@ -8,7 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.gonevertical.csv2sql.data.DatabaseData;
+import org.gonevertical.dts.data.DatabaseData;
+import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

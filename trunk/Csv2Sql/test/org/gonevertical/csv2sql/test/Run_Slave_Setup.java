@@ -2,8 +2,8 @@ package org.gonevertical.csv2sql.test;
 
 import java.io.File;
 
-import org.gonevertical.csv2sql.data.DatabaseData;
-import org.gonevertical.csv2sql.lib.sql.MySqlReplication;
+import org.gonevertical.dts.data.DatabaseData;
+import org.gonevertical.dts.lib.sql.MySqlReplication;
 
 
 public class Run_Slave_Setup {

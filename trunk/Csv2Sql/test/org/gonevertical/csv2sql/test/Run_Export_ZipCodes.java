@@ -3,9 +3,9 @@ package org.gonevertical.csv2sql.test;
 import java.io.File;
 import java.net.URISyntaxException;
 
-import org.gonevertical.csv2sql.data.ColumnData;
-import org.gonevertical.csv2sql.data.DatabaseData;
-import org.gonevertical.csv2sql.data.Export;
+import org.gonevertical.dts.data.ColumnData;
+import org.gonevertical.dts.data.DatabaseData;
+import org.gonevertical.dts.data.Export;
 
 
 public class Run_Export_ZipCodes {

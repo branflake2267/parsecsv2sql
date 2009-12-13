@@ -3,6 +3,7 @@ package org.gonevertical.csv2sql.lib.datetime;
 
 import static org.junit.Assert.assertEquals;
 
+import org.gonevertical.dts.lib.datetime.DateTimeParser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
