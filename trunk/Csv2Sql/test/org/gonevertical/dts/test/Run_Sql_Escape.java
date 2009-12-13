@@ -4,6 +4,7 @@ import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
 import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
+import org.gonevertical.dts.lib.sql.querylib.MySqlQueryLib;
 
 
 public class Run_Sql_Escape {
@@ -19,17 +20,17 @@ public class Run_Sql_Escape {
     
     String value = "mystring\\\\ \\ "; 
     
-    String s = MySqlQueryUtil.escape(value);
+    String s = new MySqlQueryLib().escape(value);
     
     String sql = "INSERT INTO test_escape SET Value='" + s + "'";
     
     System.out.println("sql: " + sql);
     
-    long id = MySqlQueryUtil.update(databaseData, sql);
+    long id = new MySqlQueryLib().update(databaseData, sql);
     
     sql = "SELECT Value FROM test_escape WHERE TestId='" + id + "';";
     
-    String valueTest = MySqlQueryUtil.queryString(databaseData, sql);
+    String valueTest = new MySqlQueryLib().queryString(databaseData, sql);
     
     
     

@@ -1,6 +1,8 @@
 package org.gonevertical.dts.test;
 
 import org.gonevertical.dts.data.ColumnData;
+import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
+import org.gonevertical.dts.lib.sql.columnlib.MySqlColumnLib;
 
 public class Run_Get_DistinctColumns {
 
@@ -23,7 +25,7 @@ public class Run_Get_DistinctColumns {
     c[5] = c6;
     c[6] = c7;
     
-    ColumnData[] cb = ColumnData.getColumns_Distinct(c);
+    ColumnData[] cb = new MySqlColumnLib().getColumns_Distinct(c);
     
     for (int i=0; i < cb.length; i++) {
       System.out.println("column: " + cb[i].getColumnName());

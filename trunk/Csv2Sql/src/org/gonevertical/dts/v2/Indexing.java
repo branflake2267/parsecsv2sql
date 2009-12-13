@@ -5,10 +5,21 @@ import java.util.ArrayList;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
 import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
+import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
+import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;
+import org.gonevertical.dts.lib.sql.querylib.QueryLib;
+import org.gonevertical.dts.lib.sql.querymulti.QueryLibFactory;
+import org.gonevertical.dts.lib.sql.transformlib.TransformLib;
+import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
 
 
 public class Indexing {
 
+  // supporting libraries
+  private QueryLib ql = null;
+  private TransformLib tl = null;
+  private ColumnLib cl = null;
+  
   private DestinationData_v2 destinationData = null;
   
   private ColumnData[] columns = null;
@@ -20,6 +31,22 @@ public class Indexing {
   
   public Indexing(DestinationData_v2 destinationData) {
     this.destinationData = destinationData;
+    // setup injector libraries
+    setSupportingLibraries();
+  }
+  
+  /**
+   * guice injects the libraries needed for the database
+   */
+  private void setSupportingLibraries() {
+    // get query library
+    ql = QueryLibFactory.getLib(destinationData.databaseData.getDatabaseType());
+    
+    // get column library
+    cl = ColumnLibFactory.getLib(destinationData.databaseData.getDatabaseType());
+    
+    // get tranformation library
+    tl = TransformLibFactory.getLib(destinationData.databaseData.getDatabaseType());
   }
   
   public void runIndexColumns(ColumnData[] indexColumns) {
@@ -104,6 +131,6 @@ public class Indexing {
     }
     
     System.out.println("index: " + sql);
-    MySqlQueryUtil.update(destinationData.databaseData, sql);
+    ql.update(destinationData.databaseData, sql);
   }
 }

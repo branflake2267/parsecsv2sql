@@ -9,10 +9,21 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.gonevertical.dts.data.DatabaseData;
+import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
+import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;
+import org.gonevertical.dts.lib.sql.querylib.QueryLib;
+import org.gonevertical.dts.lib.sql.querymulti.QueryLibFactory;
+import org.gonevertical.dts.lib.sql.transformlib.TransformLib;
+import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
 
 
 public class MySqlReplication {
 
+  // supporting libraries
+  private QueryLib ql = null;
+  private TransformLib tl = null;
+  private ColumnLib cl = null;
+  
   // source database
   private DatabaseData dd_src = null;
   
@@ -48,6 +59,21 @@ public class MySqlReplication {
     this.replicationUsername = replicationUsername;
     this.replicationPassword = replicationPassword;
     this.masterHost = masterHost;
+    setSupportingLibraries();
+  }
+  
+  /**
+   * guice injects the libraries needed for the database
+   */
+  private void setSupportingLibraries() {
+    // get query library
+    ql = QueryLibFactory.getLib(DatabaseData.TYPE_MYSQL);
+    
+    // get column library
+    cl = ColumnLibFactory.getLib(DatabaseData.TYPE_MYSQL);
+    
+    // get tranformation library
+    tl = TransformLibFactory.getLib(DatabaseData.TYPE_MYSQL);
   }
   
   public void setDryRun() {
@@ -104,17 +130,17 @@ public class MySqlReplication {
     // TODO - if user is already created this will error
     String sqlCreateUser = "CREATE USER '" + replicationUsername + "'@'"+ dd_des.getHost() +"' IDENTIFIED BY '" + replicationPassword + "';";
     System.out.println(sqlCreateUser);
-    MySqlQueryUtil.update(dd_src, sqlCreateUser);
+    ql.update(dd_src, sqlCreateUser);
     
     // setup replication user privileges
     String sqlCreateUserPerm = "GRANT REPLICATION SLAVE ON *.*  TO '" + replicationUsername + "'@'" + dd_des.getHost() + "' IDENTIFIED BY '" + replicationPassword + "';";
     System.out.println(sqlCreateUserPerm);
-    MySqlQueryUtil.update(dd_src, sqlCreateUserPerm);
+    ql.update(dd_src, sqlCreateUserPerm);
     
     // flush privileges;
     String sql = "FLUSH PRIVILEGES;";
     System.out.println(sql);
-    MySqlQueryUtil.update(dd_src, sql);
+    ql.update(dd_src, sql);
     
     // TODO - maybe query the user to see if things are correct?
   }
@@ -171,13 +197,13 @@ public class MySqlReplication {
     
     String sql = "FLUSH TABLES WITH READ LOCK;";
     System.out.println(sql);
-    MySqlQueryUtil.update(dd_src, sql);
+    ql.update(dd_src, sql);
   }
   
   private void unlockTables() {
     String sql = "UNLOCK TABLES;";
     System.out.println(sql);
-    MySqlQueryUtil.update(dd_src, sql);
+    ql.update(dd_src, sql);
   }
   
   private void getMasterStatus() {
@@ -235,13 +261,13 @@ public class MySqlReplication {
     sql += "MASTER_LOG_POS=" + statusPosition + "; "; // recorded_log_position
    
     System.out.println(sql);
-    MySqlQueryUtil.update(dd_des, sql);
+    ql.update(dd_des, sql);
   }
   
   private void startSlave() {
     String sql = "START SLAVE;";
     System.out.println(sql);
-    MySqlQueryUtil.update(dd_des, sql);
+    ql.update(dd_des, sql);
   }
   
   /**
@@ -251,11 +277,11 @@ public class MySqlReplication {
   private void stopSlave() {
     String sql = "STOP SLAVE;";
     System.out.println(sql);
-    MySqlQueryUtil.update(dd_des, sql);
+    ql.update(dd_des, sql);
     
     sql = "RESET SLAVE;";
     System.out.println(sql);
-    MySqlQueryUtil.update(dd_des, sql);
+    ql.update(dd_des, sql);
     
   }
   

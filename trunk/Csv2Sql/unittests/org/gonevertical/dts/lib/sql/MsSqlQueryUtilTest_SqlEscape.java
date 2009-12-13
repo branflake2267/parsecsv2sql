@@ -4,8 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
-import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
 import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
+import org.gonevertical.dts.lib.sql.querylib.MySqlQueryLib;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +24,7 @@ public class MsSqlQueryUtilTest_SqlEscape {
     MySqlTransformUtil.createColumn(dd, columnData);
     
     //String sql = "DELETE FROM test_escape;";
-    //MySqlQueryUtil.update(dd, sql);
+    //new MySqlQueryLib().update(dd, sql);
   }
 
   @After
@@ -35,99 +35,99 @@ public class MsSqlQueryUtilTest_SqlEscape {
   @Test
   public void testEscapeString1() {
     String value = "mystring\\";
-    String s = MySqlQueryUtil.escape(value);
+    String s = new MySqlQueryLib().escape(value);
     String sql = "INSERT INTO test_escape SET Value='" + s + "'";
-    long id = MySqlQueryUtil.update(dd, sql);
+    long id = new MySqlQueryLib().update(dd, sql);
     sql = "SELECT Value FROM test_escape WHERE TestId='" + id + "';";
-    String valueTest = MySqlQueryUtil.queryString(dd, sql);
+    String valueTest = new MySqlQueryLib().queryString(dd, sql);
     assertEquals(value, valueTest);
   }
 
   @Test
   public void testEscapeString2() {
     String value = "mystring\\\\ \\ "; 
-    String s = MySqlQueryUtil.escape(value);
+    String s = new MySqlQueryLib().escape(value);
     String sql = "INSERT INTO test_escape SET Value='" + s + "'";
-    long id = MySqlQueryUtil.update(dd, sql);
+    long id = new MySqlQueryLib().update(dd, sql);
     sql = "SELECT Value FROM test_escape WHERE TestId='" + id + "';";
-    String valueTest = MySqlQueryUtil.queryString(dd, sql);
+    String valueTest = new MySqlQueryLib().queryString(dd, sql);
     assertEquals(value, valueTest);
   }
   
   @Test
   public void testEscapeString3() {
     String value = "mystring\\\\ \\"; 
-    String s = MySqlQueryUtil.escape(value);
+    String s = new MySqlQueryLib().escape(value);
     String sql = "INSERT INTO test_escape SET Value='" + s + "'";
-    long id = MySqlQueryUtil.update(dd, sql);
+    long id = new MySqlQueryLib().update(dd, sql);
     sql = "SELECT Value FROM test_escape WHERE TestId='" + id + "';";
-    String valueTest = MySqlQueryUtil.queryString(dd, sql);
+    String valueTest = new MySqlQueryLib().queryString(dd, sql);
     assertEquals(value, valueTest);
   }
   
   @Test
   public void testEscapeString4() {
     String value = "value\\\\";
-    String s = MySqlQueryUtil.escape(value);
+    String s = new MySqlQueryLib().escape(value);
     String sql = "INSERT INTO test_escape SET Value='" + s + "'";
-    long id = MySqlQueryUtil.update(dd, sql);
+    long id = new MySqlQueryLib().update(dd, sql);
     sql = "SELECT Value FROM test_escape WHERE TestId='" + id + "';";
-    String valueTest = MySqlQueryUtil.queryString(dd, sql);
+    String valueTest = new MySqlQueryLib().queryString(dd, sql);
     assertEquals(value, valueTest);
   }
   
   @Test
   public void testEscapeString5() {
     String value = "MR O\\\'NEAL";
-    String s = MySqlQueryUtil.escape(value);
+    String s = new MySqlQueryLib().escape(value);
     String sql = "INSERT INTO test_escape SET Value='" + s + "'";
-    long id = MySqlQueryUtil.update(dd, sql);
+    long id = new MySqlQueryLib().update(dd, sql);
     sql = "SELECT Value FROM test_escape WHERE TestId='" + id + "';";
-    String valueTest = MySqlQueryUtil.queryString(dd, sql);
+    String valueTest = new MySqlQueryLib().queryString(dd, sql);
     assertEquals(value, valueTest);
   }
   
   @Test
   public void testEscapeString6() {
     String value = "MY\'S INTERNATIONAL"; 
-    String s = MySqlQueryUtil.escape(value);
+    String s = new MySqlQueryLib().escape(value);
     String sql = "INSERT INTO test_escape SET Value='" + s + "'";
-    long id = MySqlQueryUtil.update(dd, sql);
+    long id = new MySqlQueryLib().update(dd, sql);
     sql = "SELECT Value FROM test_escape WHERE TestId='" + id + "';";
-    String valueTest = MySqlQueryUtil.queryString(dd, sql);
+    String valueTest = new MySqlQueryLib().queryString(dd, sql);
     assertEquals(value, valueTest);
   }
   
   @Test
   public void testEscapeString7() {
     String value = "MR O'NEILL JR";
-    String s = MySqlQueryUtil.escape(value);
+    String s = new MySqlQueryLib().escape(value);
     String sql = "INSERT INTO test_escape SET Value='" + s + "'";
-    long id = MySqlQueryUtil.update(dd, sql);
+    long id = new MySqlQueryLib().update(dd, sql);
     sql = "SELECT Value FROM test_escape WHERE TestId='" + id + "';";
-    String valueTest = MySqlQueryUtil.queryString(dd, sql);
+    String valueTest = new MySqlQueryLib().queryString(dd, sql);
     assertEquals(value, valueTest);
   }
   
   @Test
   public void testEscapeString8() {
     String value = "single ' '' ''' '''' '''' '";
-    String s = MySqlQueryUtil.escape(value);
+    String s = new MySqlQueryLib().escape(value);
     String sql = "INSERT INTO test_escape SET Value='" + s + "'";
-    long id = MySqlQueryUtil.update(dd, sql);
+    long id = new MySqlQueryLib().update(dd, sql);
     sql = "SELECT Value FROM test_escape WHERE TestId='" + id + "';";
-    String valueTest = MySqlQueryUtil.queryString(dd, sql);
+    String valueTest = new MySqlQueryLib().queryString(dd, sql);
     assertEquals(value, valueTest);
   }
   
   @Test
   public void testEscapeString9() {
     String value = "double \" \" \" \" \" \"";
-    String s = MySqlQueryUtil.escape(value);
+    String s = new MySqlQueryLib().escape(value);
     String sql = "INSERT INTO test_escape SET Value='" + s + "'";
-    long id = MySqlQueryUtil.update(dd, sql);
+    long id = new MySqlQueryLib().update(dd, sql);
     sql = "SELECT Value FROM test_escape WHERE TestId='" + id + "';";
-    String valueTest = MySqlQueryUtil.queryString(dd, sql);
+    String valueTest = new MySqlQueryLib().queryString(dd, sql);
     assertEquals(value, valueTest);
   }
 }

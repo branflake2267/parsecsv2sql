@@ -12,10 +12,14 @@ import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.lib.StringUtil;
 import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
+import org.gonevertical.dts.lib.sql.columnlib.MySqlColumnLib;
+import org.gonevertical.dts.lib.sql.querylib.MySqlQueryLib;
 
 
 public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
 
+  private MySqlQueryLib ql = new MySqlQueryLib();
+  
   public MySqlTransformLib() {
   }
 
@@ -70,7 +74,7 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
         "`" + primaryKeyName + "` BIGINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (`" + primaryKeyName + "`) " + 
       ") ENGINE = MyISAM;";
     System.out.println("createTable: " + sql);
-    update(dd, sql);
+    ql.update(dd, sql);
   }
   
   /**
@@ -82,7 +86,7 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
    */
   public boolean doesTableExist(DatabaseData dd, String table) {
     String query = "SHOW TABLES FROM `" + dd.getDatabase() + "` LIKE '" + table + "';";
-    return queryStringAndConvertToBoolean(dd, query);
+    return ql.queryStringAndConvertToBoolean(dd, query);
   }
   
   /**
@@ -104,7 +108,7 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
       return false;
     }
     String sql = "SHOW COLUMNS FROM `" + table + "` FROM `" + dd.getDatabase() + "` LIKE '" + columnData.getColumnName() + "';";
-    boolean r = queryStringAndConvertToBoolean(dd, sql);
+    boolean r = ql.queryStringAndConvertToBoolean(dd, sql);
     return r;
   }
   
@@ -163,7 +167,7 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
       Connection conn = dd.getConnection();
       Statement select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
-      columns = new ColumnData[getResultSetSize(result)];
+      columns = new ColumnData[ql.getResultSetSize(result)];
       int i = 0;
       while (result.next()) {
         columns[i] = new ColumnData();
@@ -298,7 +302,7 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
     }
     String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + table + "` ADD COLUMN `" + columnData.getColumnName() + "`  " + type + ";";
     System.out.println("MySqlTransformUtil.createColumn(): " + sql);
-    update(dd, sql);
+    ql.update(dd, sql);
     
     return columnData;
   }
@@ -349,7 +353,7 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
    */
   public boolean doesIndexExist(DatabaseData dd, String table, String indexName) {
     String sql = "SHOW INDEX FROM `" + table + "` FROM `" + dd.getDatabase() + "` WHERE (`Key_name`= '" + indexName + "')";
-    return queryStringAndConvertToBoolean(dd, sql);
+    return ql.queryStringAndConvertToBoolean(dd, sql);
   }
   
   /**
@@ -387,7 +391,7 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
     String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + table + "` " + 
       "ADD " + kind + " INDEX `" + indexName + "`(" + indexColumns + ");";
       
-    update(dd, sql);
+    ql.update(dd, sql);
   }
   
   /**
@@ -398,7 +402,7 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
    */
   public void createIndex_forIdentities(DatabaseData dd, ColumnData[] columnData, String indexName) {
                                          
-    ColumnData[] identities = ColumnData.getColumns_Identities(columnData);
+    ColumnData[] identities = new MySqlColumnLib().getColumns_Identities(columnData);
 
     String indexes = "";
     for (int i = 0; i < identities.length; i++) {
@@ -425,7 +429,7 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
   public void deleteColumn(DatabaseData dd, ColumnData columnData) {
     String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + columnData.getTable() + "` " +
     		"DROP COLUMN `" + columnData.getColumnName() + "`;";
-    update(dd, sql);
+    ql.update(dd, sql);
   }
   
   /**
@@ -444,7 +448,7 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
         sql += ", ";
       }
     }
-    update(dd, sql);
+    ql.update(dd, sql);
   }
   
   /**
@@ -460,7 +464,7 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
     }
     // get all columns of table
     ColumnData[] columnData = queryColumns(dd, table, null);
-    columnData = ColumnData.prune(columnData, pruneColumnData);
+    columnData = new MySqlColumnLib().prune(columnData, pruneColumnData);
     ArrayList<ColumnData> deleteCols = new ArrayList<ColumnData>();
     int i2 = columnData.length - 1; // count down total
     for (int i = 0; i < columnData.length; i++) {
@@ -489,7 +493,7 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
    */
   public long queryColumnCharactersLongestLength(DatabaseData dd, String table, ColumnData column) {
     String sql = "SELECT MAX(LENGTH(`" + column.getColumnName() + "`)) FROM " + dd.getDatabase() + "." + table + ";";
-    return queryLong(dd, sql);
+    return ql.queryLong(dd, sql);
   }
 
   /**
@@ -529,7 +533,7 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
    */
   public void dropTable(DatabaseData dd, String table) {
     String sql = "DROP TABLE IF EXISTS `" + dd.getDatabase() + "`.`" + table + "`;";
-    update(dd, sql);
+    ql.update(dd, sql);
   }
   
   /**
@@ -543,7 +547,7 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
     String sql = "SELECT COUNT(`" + columnData.getColumnName() + "`) AS Total " +
     		"FROM `" + dd.getDatabase() + "`.`" + columnData.getTable() + "` " + 
     		"WHERE (`" + columnData.getColumnName() + "` != '');";
-    int c = MySqlQueryUtil.queryInteger(dd, sql);
+    int c = ql.queryInteger(dd, sql);
     boolean b = true;
     if (c == 0) {
       b = false;
@@ -630,7 +634,7 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
   public void deleteIndex(DatabaseData dd, String table, String indexName) {
     String sql = "DROP INDEX `" + indexName + "` ON `" + table + "`;";
     System.out.println("deleteIndex: " + sql);
-    MySqlQueryUtil.update(dd, sql);
+    ql.update(dd, sql);
   }
   
   /**
@@ -650,7 +654,7 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
       sql += ", " + indexSql;
     }
     System.out.println("Transform: alterColum(): " + sql);
-    MySqlQueryUtil.update(dd, sql);
+    ql.update(dd, sql);
   }
   
   public void alterColumn(DatabaseData dd, ColumnData[] columnData) {
@@ -675,7 +679,7 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
       sql += ", " + indexSql;
     }
     System.out.println("Transform: alterColum(): " + sql);
-    MySqlQueryUtil.update(dd, sql);
+    ql.update(dd, sql);
   }
   
   private String[] checkIndexTextLengths(ColumnData[] columnData, String[] indexes) {
@@ -696,11 +700,11 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
       for (int i=0; i < cols.length; i++) {
         String colname = StringUtil.getValue("`(.*)`", cols[i]);
         System.out.println(colname);
-        int cIndex = ColumnData.searchColumnByName_UsingComparator(columnData, colname);
+        int cIndex = new MySqlColumnLib().searchColumnByName_UsingComparator(columnData, colname);
         ColumnData c = columnData[cIndex];
         newIndex[i] = c; 
       }
-      String csql = ColumnData.getSql_Index_Multi(newIndex);
+      String csql = new MySqlColumnLib().getSql_Index_Multi(newIndex);
       index = index.replaceAll("\\(.*\\)$", "(" + csql + ")");
       System.out.println("replace: " + index);
     }

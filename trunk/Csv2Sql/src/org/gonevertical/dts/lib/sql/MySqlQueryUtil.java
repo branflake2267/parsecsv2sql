@@ -8,7 +8,7 @@ import org.gonevertical.dts.lib.sql.querylib.MySqlQueryLib;
 
 
 public class MySqlQueryUtil {
-
+ /*
   public MySqlQueryUtil() {
   }
   
@@ -72,6 +72,6 @@ public class MySqlQueryUtil {
   public static boolean queryLongAndConvertToBoolean(DatabaseData dd, String sql) {
     return new MySqlQueryLib().queryLongAndConvertToBoolean(dd, sql);
   }
-
+  */
   
 }

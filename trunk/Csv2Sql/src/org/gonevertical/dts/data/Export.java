@@ -11,6 +11,12 @@ import java.sql.Statement;
 
 import org.gonevertical.dts.lib.FileUtil;
 import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
+import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
+import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;
+import org.gonevertical.dts.lib.sql.querylib.QueryLib;
+import org.gonevertical.dts.lib.sql.querymulti.QueryLibFactory;
+import org.gonevertical.dts.lib.sql.transformlib.TransformLib;
+import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
 
 
 public class Export {
@@ -19,6 +25,11 @@ public class Export {
   public static final int EXPORTAS_SQL = 2;
   
   private int exportAs = EXPORTAS_CSV;
+  
+  //supporting libraries
+  private QueryLib ql = null;
+  private TransformLib tl = null;
+  private ColumnLib cl = null;
   
   private DatabaseData src = null;
   
@@ -70,6 +81,21 @@ public class Export {
   public Export(DatabaseData source, File destinationDirectory) {
     this.src = source;
     this.des = destinationDirectory;
+    setSupportingLibraries();
+  }
+  
+  /**
+   * guice injects the libraries needed for the database
+   */
+  private void setSupportingLibraries() {
+    // get query library
+    ql = QueryLibFactory.getLib(src.getDatabaseType());
+    
+    // get column library
+    cl = ColumnLibFactory.getLib(src.getDatabaseType());
+    
+    // get tranformation library
+    tl = TransformLibFactory.getLib(src.getDatabaseType());
   }
   
   public void setAddToFileName(String name) {
@@ -157,12 +183,12 @@ public class Export {
     
     // prune columns?
     if (pruneColumnData != null) {
-      columnData = ColumnData.prune(columnData, pruneColumnData);
+      columnData = cl.prune(columnData, pruneColumnData);
     }
     
     // the primary key column
     if (exportPrimaryKey == false) {
-      columnData = ColumnData.prunePrimaryKey(columnData);
+      columnData = cl.prunePrimaryKey(columnData);
     }
     
     setFile();
@@ -182,7 +208,7 @@ public class Export {
   private void loopData() {
     
     String sql = "SELECT ";
-    sql += ColumnData.getSql_Names(columnData) + " ";
+    sql += cl.getSql_Names(columnData) + " ";
     sql += "FROM `" + table + "` ";
     
     if (whereSql != null) {
@@ -199,7 +225,7 @@ public class Export {
       ResultSet result = select.executeQuery(sql);
       int i = 0;
       while (result.next()) {
-        columnData = ColumnData.getResult(result, columnData);
+        columnData = cl.getResult(result, columnData);
         appendToFile(i);
         i++;
       }
@@ -246,7 +272,7 @@ public class Export {
   private String getHeader() {
     String s = "";
     if (exportAs == EXPORTAS_CSV) {
-      s = ColumnData.getCsv_Names(columnData);
+      s = cl.getCsv_Names(columnData);
     } else if (exportAs == EXPORTAS_SQL) {
       s = showTableCreate() + "\n\n";
     }
@@ -274,16 +300,9 @@ public class Export {
   private String getRows() {
     String s = "";
     if (exportAs == EXPORTAS_CSV) {
-      s = ColumnData.getCsv_Values(columnData);
+      s = cl.getCsv_Values(columnData);
     } else if (exportAs == EXPORTAS_SQL) {
-      
-      // TODO - move this to dependency injection later
-      if (exportServerType == DatabaseData.TYPE_MYSQL) {
-        s = ColumnData.getSql_Insert(columnData);
-      } else if (exportServerType == DatabaseData.TYPE_MSSQL) {
-        s = ColumnData.getSql_Insert_MSSQL(columnData);
-      }
-      
+      s = cl.getSql_Insert(columnData); 
     }
     s += "\n";
     return s;

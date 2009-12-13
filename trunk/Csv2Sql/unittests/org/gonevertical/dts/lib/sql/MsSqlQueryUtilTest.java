@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.gonevertical.dts.data.DatabaseData;
-import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
+import org.gonevertical.dts.lib.sql.querylib.MsSqlQueryLib;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,35 +31,35 @@ public class MsSqlQueryUtilTest {
   @Test
   public void testEscapeString() {
     String value = "mystring\\";
-    String s = MySqlQueryUtil.escape(value);
+    String s = new MsSqlQueryLib().escape(value);
     String sql = "INSERT INTO test_escape SET Value='" + s + "'";
-    long id = MySqlQueryUtil.update(dd, sql);
+    long id = new MsSqlQueryLib().update(dd, sql);
     sql = "SELECT Value FROM test_escape WHERE TestId='" + id + "';";
-    String valueTest = MySqlQueryUtil.queryString(dd, sql);
+    String valueTest = new MsSqlQueryLib().queryString(dd, sql);
     assertEquals(value, valueTest);
   }
 
   @Test
   public void testEscapeInt() {
-    String s = MySqlQueryUtil.escape(1);
+    String s = new MsSqlQueryLib().escape(1);
     String sql = "INSERT INTO test_escape SET Value='" + s + "'";
-    long id = MySqlQueryUtil.update(dd, sql);
+    long id = new MsSqlQueryLib().update(dd, sql);
     sql = "SELECT Value FROM test_escape WHERE TestId='" + id + "';";
-    String valueTest = MySqlQueryUtil.queryString(dd, sql);
+    String valueTest = new MsSqlQueryLib().queryString(dd, sql);
     assertEquals(Integer.toString(1), valueTest);
   }
 
   @Test
   public void testGetResultSetSize() {
     String sql = "SELECT COUNT(*) AS t FROM test_escape;";
-    int count = MySqlQueryUtil.queryInteger(dd, sql);
+    int count = new MsSqlQueryLib().queryInteger(dd, sql);
     sql = "SELECT * FROM test_escape;";
     int resultSize = 0;
     try {
       Connection conn = dd.getConnection();
       Statement select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
-      resultSize = MySqlQueryUtil.queryInteger(dd, sql);
+      resultSize = new MsSqlQueryLib().queryInteger(dd, sql);
       result.close();
       result = null;
       select.close();

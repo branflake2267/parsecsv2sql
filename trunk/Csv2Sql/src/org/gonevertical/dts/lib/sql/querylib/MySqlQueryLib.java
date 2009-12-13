@@ -34,28 +34,16 @@ public class MySqlQueryLib implements QueryLib {
     // TODO - maybe I only need it at end of string????
     // when string looks like this column='value\' or column='value\\'
     //if (s.matches(".*[\\]") == true) {
+    // TODO this needs to be fixed b/c it will send mess up \t\r\n
       s = s.replaceAll("\\\\", "\\\\\\\\");
     //}
     return s;
   }
   
-
-  /**
-   * escape Integer - really of no use but consistency between writing values into sql
-   * 
-   * @param i
-   * @return
-   */
   public String escape(int i) {
     return escape(Integer.toString(i));
   }
   
-  /**
-   * get result set size
-   * 
-   * @param result
-   * @return
-   */
   public int getResultSetSize(ResultSet result) {
     int size = -1;
     try {
@@ -69,13 +57,6 @@ public class MySqlQueryLib implements QueryLib {
     return size;
   }
   
-  /**
-   * query a boolean
-   * 
-   * @param dd
-   * @param sql
-   * @return
-   */
   public boolean queryBoolean(DatabaseData dd, String sql) {
     boolean b = false;
     try {
@@ -97,15 +78,6 @@ public class MySqlQueryLib implements QueryLib {
     return b;
   }
 
-  /**
-   * query a Integer (datasets are so large now, need to focus on larger numbers)
-   * 
-   *  TODO - use queryLong
-   * 
-   * @param location
-   * @param sql
-   * @return
-   */
   public int queryInteger(DatabaseData dd, String sql) {
     int i = 0;
     try {
@@ -148,13 +120,6 @@ public class MySqlQueryLib implements QueryLib {
     return i;
   }
 
-  /**
-   * query a String
-   * 
-   * @param dd
-   * @param sql
-   * @return
-   */
   public String queryString(DatabaseData dd, String sql) {
     String s = null;
     try {
@@ -176,13 +141,6 @@ public class MySqlQueryLib implements QueryLib {
     return s;
   }
 
-  /**
-   * query a double
-   * 
-   * @param dd
-   * @param sql
-   * @return
-   */
   public double queryDouble(DatabaseData dd, String sql) {
     double d = 0.0;
     try {
@@ -227,13 +185,6 @@ public class MySqlQueryLib implements QueryLib {
     return bd;
   }
   
-  /**
-   * 
-   * @param dd
-   * @param sql
-   * @param delimiter
-   * @return
-   */
   public String queryIntegersToCsv(DatabaseData dd, String sql, char delimiter) {
     String csv = null;
     try {
