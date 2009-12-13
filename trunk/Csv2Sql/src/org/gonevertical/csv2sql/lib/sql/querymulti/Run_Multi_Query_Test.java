@@ -4,13 +4,13 @@ package org.gonevertical.csv2sql.lib.sql.querymulti;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-public class Run_Multi_Test {
+public class Run_Multi_Query_Test {
 
   public static void main(String[] args) {
     
     Injector injector = Guice.createInjector(new QueryModule());
     
-    QueryMultiUtil queryLib = injector.getInstance(QueryMultiUtil.class);
+    QueryMulti queryLib = injector.getInstance(QueryMulti.class);
     
     String type = queryLib.getQueryLib_MySql().getType();
     System.out.println("TYPE: " + type);

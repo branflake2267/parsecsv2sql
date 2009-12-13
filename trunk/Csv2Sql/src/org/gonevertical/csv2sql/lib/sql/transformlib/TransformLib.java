@@ -5,6 +5,8 @@ import org.gonevertical.csv2sql.data.DatabaseData;
 
 public interface TransformLib {
 
+  public String getType();
+  
   public String fixTableName(String table);
   
   public void createTable(DatabaseData dd, String table, String primaryKeyName);
