@@ -1,6 +1,6 @@
 package org.gonevertical.csv2sql.lib.sql;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.gonevertical.csv2sql.data.ColumnData;
 import org.gonevertical.csv2sql.data.DatabaseData;

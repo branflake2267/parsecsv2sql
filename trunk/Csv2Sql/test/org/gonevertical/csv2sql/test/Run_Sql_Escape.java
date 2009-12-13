@@ -1,7 +1,5 @@
 package org.gonevertical.csv2sql.test;
 
-import static org.junit.Assert.assertEquals;
-
 import org.gonevertical.csv2sql.data.ColumnData;
 import org.gonevertical.csv2sql.data.DatabaseData;
 import org.gonevertical.csv2sql.lib.sql.MySqlQueryUtil;

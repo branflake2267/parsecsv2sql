@@ -1,6 +1,5 @@
 package org.gonevertical.csv2sql.test;
 
-import java.math.BigDecimal;
 
 public class Run_Text_Regex_Digit {
 

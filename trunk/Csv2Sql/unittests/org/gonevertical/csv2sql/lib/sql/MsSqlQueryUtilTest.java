@@ -1,13 +1,13 @@
 package org.gonevertical.csv2sql.lib.sql;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.gonevertical.csv2sql.data.ColumnData;
 import org.gonevertical.csv2sql.data.DatabaseData;
 import org.junit.After;
 import org.junit.Before;
