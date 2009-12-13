@@ -1,6 +1,6 @@
 package org.gonevertical.csv2sql.test;
 
-import org.gonevertical.csv2sql.lib.text.WordParser;
+import org.gonevertical.dts.lib.text.WordParser;
 
 public class Run_TextParser {
   

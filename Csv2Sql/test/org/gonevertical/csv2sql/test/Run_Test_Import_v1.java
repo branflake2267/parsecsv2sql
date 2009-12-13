@@ -3,13 +3,13 @@ package org.gonevertical.csv2sql.test;
 import java.io.File;
 import java.net.URISyntaxException;
 
-import org.gonevertical.csv2sql.data.DestinationData;
-import org.gonevertical.csv2sql.data.FieldData;
-import org.gonevertical.csv2sql.data.FlatFileSettingsData;
-import org.gonevertical.csv2sql.data.SourceData;
-import org.gonevertical.csv2sql.v1.FileProcessing;
-import org.gonevertical.csv2sql.v1.Optimise;
-import org.gonevertical.csv2sql.v1.SQLProcessing;
+import org.gonevertical.dts.data.DestinationData;
+import org.gonevertical.dts.data.FieldData;
+import org.gonevertical.dts.data.FlatFileSettingsData;
+import org.gonevertical.dts.data.SourceData;
+import org.gonevertical.dts.v1.FileProcessing;
+import org.gonevertical.dts.v1.Optimise;
+import org.gonevertical.dts.v1.SQLProcessing;
 
 
 public class Run_Test_Import_v1 {

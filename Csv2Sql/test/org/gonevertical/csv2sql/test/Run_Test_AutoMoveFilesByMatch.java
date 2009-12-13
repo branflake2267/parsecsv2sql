@@ -2,8 +2,8 @@ package org.gonevertical.csv2sql.test;
 
 import java.io.File;
 
-import org.gonevertical.csv2sql.lib.file.MoveFile;
-import org.gonevertical.csv2sql.lib.file.MoveFileData;
+import org.gonevertical.dts.lib.file.MoveFile;
+import org.gonevertical.dts.lib.file.MoveFileData;
 
 
 public class Run_Test_AutoMoveFilesByMatch {

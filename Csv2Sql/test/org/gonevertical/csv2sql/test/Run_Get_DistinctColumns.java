@@ -1,6 +1,6 @@
 package org.gonevertical.csv2sql.test;
 
-import org.gonevertical.csv2sql.data.ColumnData;
+import org.gonevertical.dts.data.ColumnData;
 
 public class Run_Get_DistinctColumns {
 

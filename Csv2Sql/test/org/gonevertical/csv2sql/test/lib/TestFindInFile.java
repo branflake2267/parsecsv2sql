@@ -2,9 +2,9 @@ package org.gonevertical.csv2sql.test.lib;
 
 import java.io.File;
 
-import org.gonevertical.csv2sql.data.FlatFileSettingsData;
-import org.gonevertical.csv2sql.data.SourceData;
-import org.gonevertical.csv2sql.v1.FileProcessing;
+import org.gonevertical.dts.data.FlatFileSettingsData;
+import org.gonevertical.dts.data.SourceData;
+import org.gonevertical.dts.v1.FileProcessing;
 
 
 public class TestFindInFile {
