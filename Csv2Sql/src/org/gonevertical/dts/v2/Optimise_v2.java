@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.lib.StringUtil;
 import org.gonevertical.dts.lib.datetime.DateTimeParser;
-import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;
 import org.gonevertical.dts.lib.sql.querylib.QueryLib;
@@ -79,7 +78,7 @@ public class Optimise_v2 {
     alterColumns = new ArrayList<ColumnData>();
     
     String where = "`Field` NOT LIKE 'Auto_%'"; // all columns except auto columns
-    columnData = MySqlTransformUtil.queryColumns(destinationData.databaseData, destinationData.table, where);
+    columnData = tl.queryColumns(destinationData.databaseData, destinationData.table, where);
     if (columnData == null) {
       System.out.println("no columns to optimise");
       System.exit(1);
@@ -133,7 +132,7 @@ public class Optimise_v2 {
     alterColumns = new ArrayList<ColumnData>();
     
     String where = "`Field` NOT LIKE 'Auto_%'"; // all columns except auto columns
-    columnData = MySqlTransformUtil.queryColumns(destinationData.databaseData, destinationData.table, where);
+    columnData = tl.queryColumns(destinationData.databaseData, destinationData.table, where);
     if (columnData == null) {
       System.out.println("no columns to optimise");
       System.exit(1);
@@ -222,7 +221,7 @@ public class Optimise_v2 {
 
   private void createTmpDiscoverTable() {
     String tmptable = destinationData.table + "_auto_discover";
-    MySqlTransformUtil.createTable(destinationData.databaseData, tmptable, "Id");
+    tl.createTable(destinationData.databaseData, tmptable, "Id");
     
     ColumnData c0 = new ColumnData(tmptable, "DateCreated", "DATETIME");
     ColumnData c1 = new ColumnData(tmptable, "Column_Name", "VARCHAR(50)");
@@ -232,14 +231,14 @@ public class Optimise_v2 {
     ColumnData c5 = new ColumnData(tmptable, "FieldType", "INTEGER");
     ColumnData c6 = new ColumnData(tmptable, "DecA", "INTEGER");
     ColumnData c7 = new ColumnData(tmptable, "DecB", "INTEGER");
-    MySqlTransformUtil.createColumn(destinationData.databaseData, c0);
-    MySqlTransformUtil.createColumn(destinationData.databaseData, c1);
-    MySqlTransformUtil.createColumn(destinationData.databaseData, c2);
-    MySqlTransformUtil.createColumn(destinationData.databaseData, c3);
-    MySqlTransformUtil.createColumn(destinationData.databaseData, c4);
-    MySqlTransformUtil.createColumn(destinationData.databaseData, c5);
-    MySqlTransformUtil.createColumn(destinationData.databaseData, c6);
-    MySqlTransformUtil.createColumn(destinationData.databaseData, c7);
+    tl.createColumn(destinationData.databaseData, c0);
+    tl.createColumn(destinationData.databaseData, c1);
+    tl.createColumn(destinationData.databaseData, c2);
+    tl.createColumn(destinationData.databaseData, c3);
+    tl.createColumn(destinationData.databaseData, c4);
+    tl.createColumn(destinationData.databaseData, c5);
+    tl.createColumn(destinationData.databaseData, c6);
+    tl.createColumn(destinationData.databaseData, c7);
   }
   
   private int getMaxLength(ColumnData columnData) {
@@ -259,7 +258,7 @@ public class Optimise_v2 {
   
   private void alter(ColumnData columnData, String columnType) {
     
-    boolean isPrimKey = MySqlTransformUtil.queryIsColumnPrimarykey(destinationData.databaseData, columnData);
+    boolean isPrimKey = tl.queryIsColumnPrimarykey(destinationData.databaseData, columnData);
     if (isPrimKey == true) {
       destinationData.debug("alter(): skipping altering primary key: " + columnData.getColumnName());
       return;
@@ -658,7 +657,7 @@ public class Optimise_v2 {
   
   private void formatColumn_ToDateTime(ColumnData columnData, int offset, int limit) {
     
-    ColumnData cpriKey = MySqlTransformUtil.queryPrimaryKey(destinationData.databaseData, columnData.getTable());
+    ColumnData cpriKey = tl.queryPrimaryKey(destinationData.databaseData, columnData.getTable());
     
     String sql = "SELECT " + cpriKey.getColumnName() + ", `" + columnData.getColumnName() + "` " +
     		"FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "` LIMIT " + offset + ", " + limit + ";"; 
@@ -730,7 +729,7 @@ public class Optimise_v2 {
   
   private void formatColumn_ToInt(ColumnData columnData, int offset, int limit) {
 
-    ColumnData cpriKey = MySqlTransformUtil.queryPrimaryKey(destinationData.databaseData, columnData.getTable());
+    ColumnData cpriKey = tl.queryPrimaryKey(destinationData.databaseData, columnData.getTable());
     
     String sql = "SELECT " + cpriKey.getColumnName() + ", `" + columnData.getColumnName() + "` " +
         "FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "` LIMIT " + offset + ", " + limit + ";"; 
@@ -805,7 +804,7 @@ public class Optimise_v2 {
     ColumnData[] columns = new ColumnData[alterColumns.size()];
     alterColumns.toArray(columns);
     
-    MySqlTransformUtil.alterColumn(destinationData.databaseData, columns);
+    tl.alterColumn(destinationData.databaseData, columns);
   }
   
   /**

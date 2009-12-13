@@ -3,8 +3,6 @@ package org.gonevertical.dts.v2;
 import java.util.ArrayList;
 
 import org.gonevertical.dts.data.ColumnData;
-import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
-import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;
 import org.gonevertical.dts.lib.sql.querylib.QueryLib;
@@ -96,7 +94,7 @@ public class Indexing {
     String indexName = "`auto_" + ft + nm + "_"+ i + "`";
     
     // does the index already exist?
-    boolean exists = MySqlTransformUtil.doesIndexExist(destinationData.databaseData, columnData.getTable(), indexName);
+    boolean exists = tl.doesIndexExist(destinationData.databaseData, columnData.getTable(), indexName);
     if (exists == true) {
       return null;
     }

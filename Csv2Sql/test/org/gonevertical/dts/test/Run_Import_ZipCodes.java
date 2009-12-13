@@ -7,7 +7,7 @@ import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.FieldData;
 import org.gonevertical.dts.data.SourceData;
-import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
+import org.gonevertical.dts.lib.sql.transformlib.MySqlTransformLib;
 import org.gonevertical.dts.v2.DestinationData_v2;
 import org.gonevertical.dts.v2.Indexing;
 import org.gonevertical.dts.v2.Optimise_v2;
@@ -74,7 +74,7 @@ public class Run_Import_ZipCodes {
     
     
     
-    ColumnData[] columnData = MySqlTransformUtil.queryColumns(destinationData.databaseData, table, "`FIELD`='latitude'");
+    ColumnData[] columnData = new MySqlTransformLib().queryColumns(destinationData.databaseData, table, "`FIELD`='latitude'");
     Optimise_v2 o = new Optimise_v2(destinationData);
     o.run(columnData);
     
@@ -108,9 +108,9 @@ public class Run_Import_ZipCodes {
     indexColumns[1] = new ColumnData();
     indexColumns[2] = new ColumnData();
     
-    indexColumns[0] = MySqlTransformUtil.queryColumn(destinationData.databaseData, table, "zip_code");
-    indexColumns[1] = MySqlTransformUtil.queryColumn(destinationData.databaseData, table, "state_abbreviation");
-    indexColumns[2] = MySqlTransformUtil.queryColumn(destinationData.databaseData, table, "latitude");
+    indexColumns[0] = new MySqlTransformLib().queryColumn(destinationData.databaseData, table, "zip_code");
+    indexColumns[1] = new MySqlTransformLib().queryColumn(destinationData.databaseData, table, "state_abbreviation");
+    indexColumns[2] = new MySqlTransformLib().queryColumn(destinationData.databaseData, table, "latitude");
     
     Indexing index = new Indexing(destinationData);
     index.runIndexColumns(indexColumns);

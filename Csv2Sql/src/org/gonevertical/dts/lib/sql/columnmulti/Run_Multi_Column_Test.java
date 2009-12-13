@@ -1,8 +1,5 @@
 package org.gonevertical.dts.lib.sql.columnmulti;
 
-import org.gonevertical.dts.lib.sql.querymulti.QueryModule;
-import org.gonevertical.dts.lib.sql.querymulti.QueryMulti;
-
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 

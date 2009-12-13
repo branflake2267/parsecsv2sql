@@ -7,7 +7,7 @@ import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.FieldData;
 import org.gonevertical.dts.data.SourceData;
-import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
+import org.gonevertical.dts.lib.sql.transformlib.MySqlTransformLib;
 import org.gonevertical.dts.v2.DestinationData_v2;
 import org.gonevertical.dts.v2.Indexing;
 import org.gonevertical.dts.v2.ProcessImport;
@@ -87,8 +87,8 @@ public class Run_Import_States {
     indexColumns[0] = new ColumnData();
     indexColumns[1] = new ColumnData();
     
-    indexColumns[0] = MySqlTransformUtil.queryColumn(destinationData.databaseData, table, "Name");
-    indexColumns[1] = MySqlTransformUtil.queryColumn(destinationData.databaseData, table, "TwoLetter");
+    indexColumns[0] = new MySqlTransformLib().queryColumn(destinationData.databaseData, table, "Name");
+    indexColumns[1] = new MySqlTransformLib().queryColumn(destinationData.databaseData, table, "TwoLetter");
     
     Indexing index = new Indexing(destinationData);
     index.runIndexColumns(indexColumns);

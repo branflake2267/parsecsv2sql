@@ -1,7 +1,6 @@
 package org.gonevertical.dts.test;
 
 import org.gonevertical.dts.data.ColumnData;
-import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 import org.gonevertical.dts.lib.sql.columnlib.MySqlColumnLib;
 
 public class Run_Get_DistinctColumns {

@@ -4,8 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
-import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
 import org.gonevertical.dts.lib.sql.querylib.MySqlQueryLib;
+import org.gonevertical.dts.lib.sql.transformlib.MySqlTransformLib;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,8 +20,8 @@ public class MsSqlQueryUtilTest_SqlEscape {
     
     // setup table to actually test inserting into
     ColumnData columnData = new ColumnData("test_escape", "Value", "VARCHAR(100) DEFAULT NULL");
-    MySqlTransformUtil.createTable(dd, "test_escape", "TestId");
-    MySqlTransformUtil.createColumn(dd, columnData);
+    new MySqlTransformLib().createTable(dd, "test_escape", "TestId");
+    new MySqlTransformLib().createColumn(dd, columnData);
     
     //String sql = "DELETE FROM test_escape;";
     //new MySqlQueryLib().update(dd, sql);

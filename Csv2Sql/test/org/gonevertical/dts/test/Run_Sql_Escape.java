@@ -2,9 +2,8 @@ package org.gonevertical.dts.test;
 
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
-import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
-import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
 import org.gonevertical.dts.lib.sql.querylib.MySqlQueryLib;
+import org.gonevertical.dts.lib.sql.transformlib.MySqlTransformLib;
 
 
 public class Run_Sql_Escape {
@@ -15,8 +14,8 @@ public class Run_Sql_Escape {
     
     ColumnData columnData = new ColumnData("test_escape", "Value", "VARCHAR(100) DEFAULT NULL");
     
-    MySqlTransformUtil.createTable(databaseData, "test_escape", "TestId");
-    MySqlTransformUtil.createColumn(databaseData, columnData);
+    new MySqlTransformLib().createTable(databaseData, "test_escape", "TestId");
+    new MySqlTransformLib().createColumn(databaseData, columnData);
     
     String value = "mystring\\\\ \\ "; 
     
