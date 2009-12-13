@@ -10,9 +10,13 @@ import java.util.ArrayList;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.lib.StringUtil;
 import org.gonevertical.dts.lib.datetime.DateTimeParser;
-import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
 import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
-
+import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
+import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;
+import org.gonevertical.dts.lib.sql.querylib.QueryLib;
+import org.gonevertical.dts.lib.sql.querymulti.QueryLibFactory;
+import org.gonevertical.dts.lib.sql.transformlib.TransformLib;
+import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
 
 /**
  * 
@@ -24,6 +28,11 @@ import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
  */
 public class Optimise_v2 {
 
+  //supporting libraries
+  private QueryLib ql = null;
+  private TransformLib tl = null;
+  private ColumnLib cl = null;
+  
   private DestinationData_v2 destinationData = null;
   
   // used to examine the value if its a date, and it can transform it
@@ -45,6 +54,21 @@ public class Optimise_v2 {
   
   public Optimise_v2(DestinationData_v2 destinationData) {
     this.destinationData = destinationData;
+    setSupportingLibraries();
+  }
+  
+  /**
+   * guice injects the libraries needed for the database
+   */
+  private void setSupportingLibraries() {
+    // get query library
+    ql = QueryLibFactory.getLib(destinationData.databaseData.getDatabaseType());
+    
+    // get column library
+    cl = ColumnLibFactory.getLib(destinationData.databaseData.getDatabaseType());
+    
+    // get tranformation library
+    tl = TransformLibFactory.getLib(destinationData.databaseData.getDatabaseType());
   }
   
   /**
@@ -193,7 +217,7 @@ public class Optimise_v2 {
     		"FieldType='" + fieldType + "', " +
     		"DecA='" + deca + "', " +
     		"DecB='" + decb + "';";
-    MySqlQueryUtil.update(destinationData.databaseData, sql);
+    ql.update(destinationData.databaseData, sql);
   }
 
   private void createTmpDiscoverTable() {
@@ -219,9 +243,9 @@ public class Optimise_v2 {
   }
   
   private int getMaxLength(ColumnData columnData) {
-    String sql = ColumnData.getSql_GetMaxCharLength(destinationData.databaseData, columnData);
+    String sql = cl.getSql_GetMaxCharLength(destinationData.databaseData, columnData);
     System.out.println("checking column length: " + sql);
-    int maxCharLength = MySqlQueryUtil.queryInteger(destinationData.databaseData, sql);
+    int maxCharLength = ql.queryInteger(destinationData.databaseData, sql);
     return maxCharLength;
   }
   
@@ -611,7 +635,7 @@ public class Optimise_v2 {
   
   private void formatColumn_ToDateTime(ColumnData columnData) {
     String sql = "SELECT COUNT(*) AS t FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "`;"; 
-    long total = MySqlQueryUtil.queryLong(destinationData.databaseData, sql);
+    long total = ql.queryLong(destinationData.databaseData, sql);
     
     int lim = 1000;
     int totalPages = (int) (total / lim);
@@ -678,14 +702,14 @@ public class Optimise_v2 {
     c[0] = cpriKey;
     c[1] = columnData;
 
-    String sql = ColumnData.getSql_Update(c);
-    MySqlQueryUtil.update(destinationData.databaseData, sql);
+    String sql = cl.getSql_Update(c);
+    ql.update(destinationData.databaseData, sql);
   }
   
   private void formatColumn_ToInt(ColumnData columnData) {
 
     String sql = "SELECT COUNT(*) as t FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "`;";
-    long total = MySqlQueryUtil.queryLong(destinationData.databaseData, sql);
+    long total = ql.queryLong(destinationData.databaseData, sql);
     
     int lim = 1000;
     int totalPages = (int) (total / lim);
@@ -769,8 +793,8 @@ public class Optimise_v2 {
     c[0] = cpriKey;
     c[1] = columnData;
 
-    String sql = ColumnData.getSql_Update(c);
-    MySqlQueryUtil.update(destinationData.databaseData, sql);
+    String sql = cl.getSql_Update(c);
+    ql.update(destinationData.databaseData, sql);
   }
   
   private void alterColumns() {
@@ -805,7 +829,7 @@ public class Optimise_v2 {
   private long getTableRecordCount() {
     String sql = "SELECT COUNT(*) AS t FROM " + destinationData.databaseData.getDatabase() + "." + destinationData.table + ";";
     System.out.println(sql);
-    return MySqlQueryUtil.queryLong(destinationData.databaseData, sql);
+    return ql.queryLong(destinationData.databaseData, sql);
   }
   
   private long getTableDistinctIdentCount() {
@@ -829,7 +853,7 @@ public class Optimise_v2 {
           java.sql.ResultSet.CONCUR_READ_ONLY);
       select.setFetchSize(Integer.MIN_VALUE);
       ResultSet result = select.executeQuery(sql);
-      c = MySqlQueryUtil.getResultSetSize(result);
+      c = ql.getResultSetSize(result);
       select.close();
       result.close();
     } catch (SQLException e) {
@@ -878,7 +902,7 @@ public class Optimise_v2 {
           java.sql.ResultSet.CONCUR_READ_ONLY);
       select.setFetchSize(Integer.MIN_VALUE);
       ResultSet result = select.executeQuery(sql);
-      int index = MySqlQueryUtil.getResultSetSize(result);
+      int index = ql.getResultSetSize(result);
       while (result.next()) {
         processDuplicate(index, result.getInt(1));
         index--;
@@ -968,7 +992,7 @@ public class Optimise_v2 {
     
     System.out.println("sql: " + sql);
     
-    MySqlQueryUtil.update(destinationData.databaseData, sql);
+    ql.update(destinationData.databaseData, sql);
   }
   
 }

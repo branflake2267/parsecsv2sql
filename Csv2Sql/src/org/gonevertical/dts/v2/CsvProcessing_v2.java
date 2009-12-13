@@ -7,16 +7,31 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 import org.gonevertical.dts.data.ColumnData;
+import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.FieldData;
 import org.gonevertical.dts.data.FieldDataComparator;
 import org.gonevertical.dts.data.SourceData;
-import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
 import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
+import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
+import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;
+import org.gonevertical.dts.lib.sql.columnmulti.ColumnModule;
+import org.gonevertical.dts.lib.sql.columnmulti.ColumnMulti;
+import org.gonevertical.dts.lib.sql.querylib.QueryLib;
+import org.gonevertical.dts.lib.sql.querymulti.QueryLibFactory;
+import org.gonevertical.dts.lib.sql.transformlib.TransformLib;
+import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
 
 import com.csvreader.CsvReader;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
 
+  // supporting libraries
+  private QueryLib ql = null;
+  private TransformLib tl = null;
+  private ColumnLib cl = null;
+  
   // csv reader 2.0
   private CsvReader reader = null;
 
@@ -47,6 +62,23 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     if (destinationData.ffsd != null) {
       setData(destinationData.ffsd);  
     }
+    
+    // setup injector libraries
+    setSupportingLibraries();
+  }
+  
+  /**
+   * guice injects the libraries needed for the database
+   */
+  private void setSupportingLibraries() {
+    // get query library
+    ql = QueryLibFactory.getLib(destinationData.databaseData.getDatabaseType());
+    
+    // get column library
+    cl = ColumnLibFactory.getLib(destinationData.databaseData.getDatabaseType());
+    
+    // get tranformation library
+    tl = TransformLibFactory.getLib(destinationData.databaseData.getDatabaseType());
   }
   
   /**
@@ -84,14 +116,14 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
       return;
     }
    
-    String sql = ColumnData.getSql_IdentitiesIndex(destinationData.databaseData, columnData);
+    String sql = cl.getSql_IdentitiesIndex(destinationData.databaseData, columnData);
     if (sql == null) {
       //System.out.println("ERROR: createIdentitiesIndex(): Fix the identities.");
       //System.exit(1);
       System.out.println("skipping identities indexing, probably already created. createIdentitiesIndex()");
       return;
     }
-    MySqlQueryUtil.update(destinationData.databaseData, sql);
+    ql.update(destinationData.databaseData, sql);
   }
 
   /**
@@ -309,7 +341,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     values = preProcessFlatFileValues(index + 1, values);
     
     // add values to columnData
-    columnData = ColumnData.addValues(columnData, values);
+    columnData = cl.addValues(columnData, values);
     
     testColumnValueTypes();
     testColumnValueSizes();
@@ -368,17 +400,17 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
         destinationData.debug("skipping b/c of compare.!!!!!!!!!!!!!!!!!!");
         return;
       }
-      ColumnData[] u = ColumnData.merge(columnData, defaultColumns[1]); // add update column
-      u = ColumnData.merge(u, primaryKeyColumn);
-      sql = ColumnData.getSql_Update(u);
+      ColumnData[] u = cl.merge(columnData, defaultColumns[1]); // add update column
+      u = cl.merge(u, primaryKeyColumn);
+      sql = cl.getSql_Update(u);
     } else { 
-      ColumnData[] i = ColumnData.merge(columnData, defaultColumns[0]); // add insert column
-      sql = ColumnData.getSql_Insert(i);
+      ColumnData[] i = cl.merge(columnData, defaultColumns[0]); // add insert column
+      sql = cl.getSql_Insert(i);
     }
     
     destinationData.debug(rowIndex + ". SAVE(): " + sql);
     
-    MySqlQueryUtil.update(destinationData.databaseData, sql);
+    ql.update(destinationData.databaseData, sql);
     // TODO - deal with truncation error ~~~~~~~~~~~~~~~~~~~~~~~~~~
   }
  
@@ -394,11 +426,11 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     FieldData[] c = destinationData.compareBeforeUpdate;
     for (int i=0; i < c.length; i++) {
       ColumnData forColumnData = new ColumnData(primKeyColumn.getTable(), c[i].destinationField, "TEXT");
-      int index = ColumnData.searchColumnByName_NonComp(columnData, forColumnData);
+      int index = cl.searchColumnByName_NonComp(columnData, forColumnData);
       if (index > -1) {
         String sql = "SELECT " + c[i].destinationField + " FROM " + primKeyColumn.getTable() + " " + where;
         String beforeValue = columnData[index].getValue();
-        String inTableValue = MySqlQueryUtil.queryString(destinationData.databaseData, sql);
+        String inTableValue = ql.queryString(destinationData.databaseData, sql);
         
         if (Integer.parseInt(beforeValue) < Integer.parseInt(inTableValue)) {
           b = true;
@@ -414,7 +446,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    if (destinationData.identityColumns == null) {
      return -1;
    }
-   String idents = ColumnData.getSql_IdentitiesWhere(columnData);
+   String idents = cl.getSql_IdentitiesWhere(columnData);
    if (idents == null || idents.trim().length() == 0) {
      System.out.println("ERROR: doesDataExist(): Can't figure out the identies. exiting. (check delimiter?)");
      //Thread.currentThread().stop();
@@ -422,7 +454,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    }
    String where = " WHERE " + idents;
    String sql = "SELECT `" + destinationData.primaryKeyName + "` FROM `" + destinationData.table + "` " + where;
-   long primaryKeyId = MySqlQueryUtil.queryLong(destinationData.databaseData, sql); 
+   long primaryKeyId = ql.queryLong(destinationData.databaseData, sql); 
    return primaryKeyId; 
   } 
   

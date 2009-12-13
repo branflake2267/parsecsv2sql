@@ -8,7 +8,6 @@ public class Run_Multi_Transform_Test {
 public static void main(String[] args) {
     
     Injector injector = Guice.createInjector(new TransformModule());
-    
     TransformMulti queryLib = injector.getInstance(TransformMulti.class);
     
     String type = queryLib.getTransformLib_MySql().getType();
