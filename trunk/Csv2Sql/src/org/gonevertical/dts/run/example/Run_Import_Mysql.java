@@ -5,7 +5,7 @@ import java.io.File;
 import org.gonevertical.dts.data.DestinationData;
 import org.gonevertical.dts.data.FieldData;
 import org.gonevertical.dts.data.SourceData;
-import org.gonevertical.dts.v1.FileProcessing;
+import org.gonevertical.dts.v1.FileProcessing_V1;
 
 
 public class Run_Import_Mysql {
@@ -58,7 +58,7 @@ public class Run_Import_Mysql {
 		idents[0].destinationField = "UID";
 		dd.identityColumns = idents;
 
-		FileProcessing process = new FileProcessing();
+		FileProcessing_V1 process = new FileProcessing_V1();
 		process.setData(sourceData, dd, matchFields);
 		
 		

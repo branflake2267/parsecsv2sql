@@ -10,9 +10,9 @@ import org.gonevertical.dts.data.SourceData;
 import org.gonevertical.dts.lib.FileUtil;
 
 
-public class FileProcessing {
+public class FileProcessing_V1 {
 
-  private CSVProcessing csvProcess = new CSVProcessing();
+  private CSVProcessing_V1 csvProcess = new CSVProcessing_V1();
 
   // sql items
   private DestinationData desinationData = null;
@@ -33,7 +33,7 @@ public class FileProcessing {
   /**
    * constructor
    */
-  public FileProcessing() {
+  public FileProcessing_V1() {
   }
 
   public void setData(SourceData sourceData) {
@@ -169,7 +169,7 @@ public class FileProcessing {
     }
     
     // set to match a file, not sql import
-    csvProcess.setMode(FlatFileProcessing.MODE_FINDFILEMATCH);
+    csvProcess.setMode(FlatFileProcessing_V1.MODE_FINDFILEMATCH);
     
     File[] files;
     isDirectory = sourceData.file.isDirectory();

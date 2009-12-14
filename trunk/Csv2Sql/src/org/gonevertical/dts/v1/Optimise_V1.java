@@ -18,7 +18,7 @@ import org.gonevertical.dts.lib.datetime.DateTimeParser;
  * @author BDonnelson
  * 
  */
-public class Optimise extends SQLProcessing {
+public class Optimise_V1 extends SQLProcessing_V1 {
 
   // column field type, determined during examine
   private int fieldType = 0;
@@ -49,7 +49,7 @@ public class Optimise extends SQLProcessing {
   /**
    * constructor
    */
-  public Optimise() {
+  public Optimise_V1() {
   }
 
   protected void runOptimise(ColumnData[] columns) {

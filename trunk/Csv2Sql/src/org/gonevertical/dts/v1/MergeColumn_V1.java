@@ -8,7 +8,7 @@ import java.sql.Statement;
 import org.gonevertical.dts.data.DatabaseData;
 
 
-public class MergeColumn extends SQLProcessing {
+public class MergeColumn_V1 extends SQLProcessing_V1 {
   
   public DatabaseData databaseData = null;
   
@@ -24,7 +24,7 @@ public class MergeColumn extends SQLProcessing {
   public String desColumn = null;
 
   
-  public MergeColumn(DatabaseData databaseData) {
+  public MergeColumn_V1(DatabaseData databaseData) {
     this.databaseData = databaseData;
   }
   

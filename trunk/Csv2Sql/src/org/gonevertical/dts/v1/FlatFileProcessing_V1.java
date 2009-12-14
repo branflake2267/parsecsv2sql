@@ -17,7 +17,7 @@ import org.gonevertical.dts.lib.datetime.DateTimeParser;
  * @author branflake2267
  *
  */
-public class FlatFileProcessing {
+public class FlatFileProcessing_V1 {
 
   public final static int MODE_SQLIMPORT = 1;
   
@@ -38,7 +38,7 @@ public class FlatFileProcessing {
   /**
    * constructor
    */
-  public FlatFileProcessing() {
+  public FlatFileProcessing_V1() {
   }
   
   public void setData(FlatFileSettingsData ffsd) {

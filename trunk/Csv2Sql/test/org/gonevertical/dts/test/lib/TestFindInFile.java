@@ -4,7 +4,7 @@ import java.io.File;
 
 import org.gonevertical.dts.data.FlatFileSettingsData;
 import org.gonevertical.dts.data.SourceData;
-import org.gonevertical.dts.v1.FileProcessing;
+import org.gonevertical.dts.v1.FileProcessing_V1;
 
 
 public class TestFindInFile {
@@ -34,7 +34,7 @@ public class TestFindInFile {
     sourceData.file = new File(file);
     
     
-    FileProcessing process = new FileProcessing();
+    FileProcessing_V1 process = new FileProcessing_V1();
     process.setData(ffsd);
     process.setData(sourceData);
     File foundFile = process.findMatchInFile();

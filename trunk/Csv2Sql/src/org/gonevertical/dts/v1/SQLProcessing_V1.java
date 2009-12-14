@@ -27,7 +27,7 @@ import org.gonevertical.dts.data.SortDestinationField;
  * @author branflake2267
  * 
  */
-public class SQLProcessing {
+public class SQLProcessing_V1 {
  
   // index types
   // TODO - moving these to columnData
@@ -65,7 +65,7 @@ public class SQLProcessing {
   /**
    * constructor
    */
-  public SQLProcessing() {
+  public SQLProcessing_V1() {
   }
 
   protected void dropTableOff() {
@@ -1371,7 +1371,7 @@ public class SQLProcessing {
     
     // created the index
     String indexName = "index_auto";
-    createIndex(indexName, indexes, Optimise.INDEXKIND_DEFAULT);
+    createIndex(indexName, indexes, Optimise_V1.INDEXKIND_DEFAULT);
   }
 
   /**
@@ -1394,7 +1394,7 @@ public class SQLProcessing {
     
     // TODO - do for MS too
     String kind = "";
-    if (indexKind == Optimise.INDEXKIND_FULLTEXT) {
+    if (indexKind == Optimise_V1.INDEXKIND_FULLTEXT) {
       kind = "FULLTEXT";
     }
     
@@ -1904,7 +1904,7 @@ public class SQLProcessing {
       return "";
     }
 
-    Optimise optimise = new Optimise();
+    Optimise_V1 optimise = new Optimise_V1();
     optimise.setDestinationData(dd);
     optimise.setMatchFields(matchFields);
     optimise.openConnection();
