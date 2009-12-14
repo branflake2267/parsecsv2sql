@@ -33,6 +33,8 @@ public interface TransformLib {
   
   public boolean doesIndexExist(DatabaseData dd, String table, String indexName);
   
+  public void createIndex(DatabaseData dd, String table, String indexName, String indexColumns, int indexKind);
+  
   public void createIndex_forIdentities(DatabaseData dd, ColumnData[] columnData, String indexName);
   
   public void deleteColumn(DatabaseData dd, ColumnData columnData);
@@ -59,6 +61,13 @@ public interface TransformLib {
   
   public void alterColumn(DatabaseData dd, ColumnData[] columnData);
  
+  /**
+   * show create index
+   * 
+   * @param dd
+   * @param columnData
+   * @return
+   */
   public String[] showCreateIndex(DatabaseData dd, ColumnData columnData);
   
   

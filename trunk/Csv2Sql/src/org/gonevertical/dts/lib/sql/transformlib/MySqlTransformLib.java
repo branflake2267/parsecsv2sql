@@ -16,7 +16,7 @@ import org.gonevertical.dts.lib.sql.columnlib.MySqlColumnLib;
 import org.gonevertical.dts.lib.sql.querylib.MySqlQueryLib;
 
 
-public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
+public class MySqlTransformLib implements TransformLib {
 
   private MySqlQueryLib ql = new MySqlQueryLib();
   
@@ -37,10 +37,10 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
     }
     table = table.trim();
 
-    table = table.replaceAll("#", "_Num");
-    table = table.replaceAll("%", "_per");
-    table = table.replaceAll(".", "_");
-    table = table.replaceAll(" ", "_");
+    table = table.replaceAll("[#]", "_num");
+    table = table.replaceAll("[%]", "_per");
+    table = table.replaceAll("[.]", "_");
+    table = table.replaceAll("[\040]", "_");
     
     table = table.replaceAll("[^\\w]", "");
     table = table.replaceAll("[\r\n\t]", "");
@@ -471,7 +471,8 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
 
       System.out.println(i2 + ". checking column is Empty?: " + columnData[i].getColumnName() + " for data.");
       
-      if (doesColumnContainData(dd, columnData[i]) == false) {
+      if (doesColumnContainData(dd, columnData[i]) == false && 
+          queryIsColumnPrimarykey(dd, columnData[i]) == false) {
         deleteCols.add(columnData[i]);
       }
 
@@ -546,8 +547,9 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
   public boolean doesColumnContainData(DatabaseData dd, ColumnData columnData) {
     String sql = "SELECT COUNT(`" + columnData.getColumnName() + "`) AS Total " +
     		"FROM `" + dd.getDatabase() + "`.`" + columnData.getTable() + "` " + 
-    		"WHERE (`" + columnData.getColumnName() + "` != '');";
-    int c = ql.queryInteger(dd, sql);
+    		"WHERE (`" + columnData.getColumnName() + "` != '' OR " +
+    				"`" + columnData.getColumnName() + "` IS NOT NULL);";
+    long c = ql.queryLong(dd, sql);
     boolean b = true;
     if (c == 0) {
       b = false;
@@ -673,7 +675,7 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
       }
     }
     
-    sqlIndexRestore = checkIndexTextLengths(columnData, sqlIndexRestore);
+    sqlIndexRestore = checkIndexTextLengths(dd, columnData, sqlIndexRestore);
     String indexSql = StringUtil.toCsv_NoQuotes(sqlIndexRestore);
     if (indexSql != null) {
       sql += ", " + indexSql;
@@ -682,17 +684,16 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
     ql.update(dd, sql);
   }
   
-  private String[] checkIndexTextLengths(ColumnData[] columnData, String[] indexes) {
+  private String[] checkIndexTextLengths(DatabaseData dd, ColumnData[] columnData, String[] indexes) {
     for (int i=0; i < indexes.length; i++) {
-      indexes[i] = checkIndexTextLength(columnData, indexes[i]);
+      indexes[i] = checkIndexTextLength(dd, columnData, indexes[i]);
     }
     return indexes;
   }
 
-  private String checkIndexTextLength(ColumnData[] columnData, String index) {
+  private String checkIndexTextLength(DatabaseData dd, ColumnData[] columnData, String index) {
     
     System.out.println("index: " + index);
-    // ADD INDEX `auto_identities` (`series_id`,`period`(330),`value`(330))
     if (index.contains(",") == true) {
       String colstr = StringUtil.getValue("\\((.*)\\)$", index);
       String[] cols = colstr.split(",");
@@ -701,8 +702,12 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
         String colname = StringUtil.getValue("`(.*)`", cols[i]);
         System.out.println(colname);
         int cIndex = new MySqlColumnLib().searchColumnByName_UsingComparator(columnData, colname);
-        ColumnData c = columnData[cIndex];
-        newIndex[i] = c; 
+        if (cIndex > -1) {
+          ColumnData c = columnData[cIndex];
+          newIndex[i] = c;
+        } else {
+          newIndex[i] = new MySqlTransformLib().queryColumn(dd, columnData[0].getTable(), colname);
+        }
       }
       String csql = new MySqlColumnLib().getSql_Index_Multi(newIndex);
       index = index.replaceAll("\\(.*\\)$", "(" + csql + ")");
@@ -724,13 +729,9 @@ public class MySqlTransformLib extends MySqlQueryUtil implements TransformLib {
       Matcher m = p.matcher(showCreateTable);
       while (m.find()) {
         String index = m.group();
-        
         // if the index was a text and
         index = changeIndexFromTextToVarchar(columnData, index);
-        
-        
         indexes.add(index);
- 
       }
     } catch (Exception e) {
       e.printStackTrace();
