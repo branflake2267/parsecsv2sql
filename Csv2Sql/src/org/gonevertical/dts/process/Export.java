@@ -1,4 +1,4 @@
-package org.gonevertical.dts.data;
+package org.gonevertical.dts.process;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -9,6 +9,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.gonevertical.dts.data.ColumnData;
+import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.lib.FileUtil;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;
