@@ -79,6 +79,9 @@ public class ColumnData {
   // set with static constant above
   private int changeCase = 0;
 
+  // test the value type matches Sql Type throw
+  private boolean testTypeThrow = false;
+  
   /**
    * constructor
    */
@@ -161,7 +164,8 @@ public class ColumnData {
 
     // the next only affect given types
     // if type is int, check to be sure its an int
-    if (columnType.toLowerCase().contains("int") == true | columnType.toLowerCase().contains("dec") == true) {
+    if (columnType.toLowerCase().contains("int") == true | 
+        columnType.toLowerCase().contains("dec") == true) {
       v = getValueAsInt(value);
     }
 
@@ -169,9 +173,30 @@ public class ColumnData {
     if (columnType.toLowerCase().contains("datetime") == true) {
       v = getValueAsDateTime(value);
     }
-
+    
+    if (v != null && v.trim().length() == 0) {
+      v = null;
+    }
 
     return v;
+  }
+  
+  /**
+   * get a value that hasn't been tranformed
+   * @return
+   */
+  public String getValueRaw() {
+    return this.value;
+  }
+  
+  /**
+   * does the value(string) fit the sql type
+   * @return
+   */
+  public boolean getTestTypeThrow() {
+    testTypeThrow = false;
+    getValue();
+    return testTypeThrow;
   }
 
   /**
@@ -193,6 +218,7 @@ public class ColumnData {
         value = dtp.getDateMysql(value);
         if (dtp.isDate == false) {
           value = null;
+          testTypeThrow = true;
         }
       }
     }
@@ -227,6 +253,7 @@ public class ColumnData {
           value = bd.toString();
         } catch (NumberFormatException e) {
           value = "0";
+          testTypeThrow = true;
         }
       }
     } else if (columnType.toLowerCase().contains("dec") == true) {
@@ -249,6 +276,7 @@ public class ColumnData {
           value = bd.toString();
         } catch (NumberFormatException e) {
           value = "0";
+          testTypeThrow = true;
         }
       }
     }

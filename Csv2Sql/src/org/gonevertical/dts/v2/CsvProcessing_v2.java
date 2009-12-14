@@ -10,6 +10,7 @@ import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.FieldData;
 import org.gonevertical.dts.data.FieldDataComparator;
 import org.gonevertical.dts.data.SourceData;
+import org.gonevertical.dts.lib.csv.Csv;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;
 import org.gonevertical.dts.lib.sql.querylib.QueryLib;
@@ -26,6 +27,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   private TransformLib tl = null;
   private ColumnLib cl = null;
   
+  private Csv csv = null;
+  
   // csv reader 2.0
   private CsvReader csvRead = null;
 
@@ -33,10 +36,10 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   private File file = null;
   
   // data source
-  private SourceData sourceData = null;
+  private SourceData sd = null;
   
   // data destination
-  private DestinationData_v2 destinationData = null;
+  private DestinationData_v2 dd = null;
 
   // columns being imported 
   private ColumnData[] columnData = null;
@@ -49,8 +52,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    * constructor
    */
   public CsvProcessing_v2(SourceData sourceData, DestinationData_v2 destinationData) {
-    this.sourceData = sourceData;
-    this.destinationData = destinationData;
+    this.sd = sourceData;
+    this.dd = destinationData;
     
     // preprocess these settings
     if (destinationData.ffsd != null) {
@@ -65,9 +68,10 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    * guice injects the libraries needed for the database
    */
   private void setSupportingLibraries() {
-    ql = QueryLibFactory.getLib(destinationData.databaseData.getDatabaseType());
-    cl = ColumnLibFactory.getLib(destinationData.databaseData.getDatabaseType());
-    tl = TransformLibFactory.getLib(destinationData.databaseData.getDatabaseType());
+    ql = QueryLibFactory.getLib(dd.databaseData.getDatabaseType());
+    cl = ColumnLibFactory.getLib(dd.databaseData.getDatabaseType());
+    tl = TransformLibFactory.getLib(dd.databaseData.getDatabaseType());
+    csv = new Csv();
   }
   
   /**
@@ -89,7 +93,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     createDefaultFields();
     
     // get and create columns
-    createColumns();
+    setupColumns();
 
     //markColumnsThatAreIdents();
      
@@ -101,18 +105,18 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   }
   
   private void createIdentitiesIndex() {
-    if (destinationData.identityColumns == null) {
+    if (dd.identityColumns == null) {
       return;
     }
    
-    String sql = cl.getSql_IdentitiesIndex(destinationData.databaseData, columnData);
+    String sql = cl.getSql_IdentitiesIndex(dd.databaseData, columnData);
     if (sql == null) {
       //System.out.println("ERROR: createIdentitiesIndex(): Fix the identities.");
       //System.exit(1);
       System.out.println("skipping identities indexing, probably already created. createIdentitiesIndex()");
       return;
     }
-    ql.update(destinationData.databaseData, sql);
+    ql.update(dd.databaseData, sql);
   }
 
   /**
@@ -139,70 +143,16 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    * open file and start reading it
    */
   private void openFileAndRead() {
-    
-    try {
-      if (Character.toString(sourceData.delimiter) == null) {
-        System.out.println("openFileAndRead: You forgot to set a delimiter. Exiting.");
-        System.exit(1);
-      }
-    } catch (Exception e1) {
-      System.out.println("openFileAndRead: You forgot to set a delimiter. Exiting.");
-      e1.printStackTrace();
-      System.exit(1);
-    }
-    
-    try {     
-      csvRead = new CsvReader(file.toString(), sourceData.delimiter);
-    } catch (FileNotFoundException e) {
-      System.err.println("CSV Reader, Could not open CSV Reader");
-      e.printStackTrace();
-    }
+    csvRead = csv.open(file, sd.delimiter);
   }
   
   /**
-   * create columns from csv
+   * setup columns from csv header
    */
-  private void createColumns() {
-    columnData = getColumnsFromCsv();
-    tl.createColumn(destinationData.databaseData, columnData);
-  }
-  
-  /**
-   * create default columns
-   */
-  private void createDefaultFields() {
-    defaultColumns = new ColumnData[2];
-    defaultColumns[0] = new ColumnData();
-    defaultColumns[1] = new ColumnData();
-    
-    defaultColumns[0].setTable(destinationData.table);
-    defaultColumns[0].setColumnName(destinationData.dateCreated);
-    defaultColumns[0].setType("DATETIME DEFAULT NULL");
-    defaultColumns[0].setValueAsFunction("NOW()");
-   
-    defaultColumns[1].setTable(destinationData.table);
-    defaultColumns[1].setColumnName(destinationData.dateUpdated);
-    defaultColumns[1].setType("DATETIME DEFAULT NULL");
-    defaultColumns[1].setValueAsFunction("NOW()");
-    
-    tl.createColumn(destinationData.databaseData, defaultColumns);
-  }
-
-  /**
-   * get columns from csv
-   * 
-   * @return
-   */
-  private ColumnData[] getColumnsFromCsv() {
-    ColumnData[] columnData = null;	
-    try {
-      csvRead.readHeaders();
-      columnData = createColumnsFromCsvHeader(csvRead.getHeaders());
-    } catch (IOException e) {
-      System.out.println("couln't read columns");
-      e.printStackTrace();
-    }
-    return columnData;
+  private void setupColumns() {
+    String[] columns = csv.getColumns(csvRead);
+    columnData = processColumnsToColumnData(columns);
+    tl.createColumn(dd.databaseData, columnData);
   }
   
   /**
@@ -214,11 +164,11 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    * @param header
    * @return
    */
-  private ColumnData[] createColumnsFromCsvHeader(String[] header) {
+  private ColumnData[] processColumnsToColumnData(String[] header) {
     ColumnData[] columnData = new ColumnData[header.length];
     for(int i=0; i < header.length; i++) {
       columnData[i] = new ColumnData();
-      columnData[i].setTable(destinationData.table);
+      columnData[i].setTable(dd.table);
      
       // is this column used for identity
       if (isThisColumnUsedForIdentity(columnData[i], header[i])) {
@@ -231,8 +181,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
       // change Column Name by using Field matching
       header[i] = changeColumnName(header[i]);
       
-      if (destinationData != null && 
-          destinationData.firstRowHasNoFieldNames == true && 
+      if (dd != null && 
+          dd.firstRowHasNoFieldNames == true && 
           i < header.length - 1) { 
         columnData[i].setColumnName(" "); // this will change into 'c0','c1',... column names
       } else {
@@ -241,6 +191,27 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
       
     }
     return columnData;
+  }
+  
+  /**
+   * create default columns
+   */
+  private void createDefaultFields() {
+    defaultColumns = new ColumnData[2];
+    defaultColumns[0] = new ColumnData();
+    defaultColumns[1] = new ColumnData();
+    
+    defaultColumns[0].setTable(dd.table);
+    defaultColumns[0].setColumnName(dd.dateCreated);
+    defaultColumns[0].setType("DATETIME DEFAULT NULL");
+    defaultColumns[0].setValueAsFunction("NOW()");
+   
+    defaultColumns[1].setTable(dd.table);
+    defaultColumns[1].setColumnName(dd.dateUpdated);
+    defaultColumns[1].setType("DATETIME DEFAULT NULL");
+    defaultColumns[1].setValueAsFunction("NOW()");
+    
+    tl.createColumn(dd.databaseData, defaultColumns);
   }
   
   /**
@@ -254,7 +225,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    */
   private boolean isThisColumnUsedForIdentity(ColumnData columnData, String headerValue) {
     // find the destination field by comparing source field
-    int index = FieldData.getSourceFieldIndex(destinationData.identityColumns, headerValue);
+    int index = FieldData.getSourceFieldIndex(dd.identityColumns, headerValue);
     
     // no matches found in field data
     if (index < 0) {
@@ -271,16 +242,16 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    * @return columnName
    */
   private String changeColumnName(String columnName) {
-    if (destinationData.changeColumn == null) {
+    if (dd.changeColumn == null) {
       return columnName;
     }
     Comparator<FieldData> searchByComparator = new FieldDataComparator();
-    Arrays.sort(destinationData.changeColumn);
+    Arrays.sort(dd.changeColumn);
     FieldData searchFor = new FieldData();
     searchFor.sourceField = columnName;
-    int index = Arrays.binarySearch(destinationData.changeColumn, searchFor, searchByComparator);
+    int index = Arrays.binarySearch(dd.changeColumn, searchFor, searchByComparator);
     if (index > -1) {
-      columnName = destinationData.changeColumn[index].destinationField;
+      columnName = dd.changeColumn[index].destinationField;
     }
     return columnName;
   }
@@ -294,7 +265,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     rowIndex = 0;
     
     // when the first row is data, need to move up one row to start
-    if (destinationData != null && destinationData.firstRowHasNoFieldNames == true) {
+    if (dd != null && dd.firstRowHasNoFieldNames == true) {
       rowIndex--;
     }
     
@@ -303,7 +274,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
         process(rowIndex, csvRead);
         
         // stop early
-        if (destinationData != null && destinationData.stopAtRow == rowIndex) {
+        if (dd != null && dd.stopAtRow == rowIndex) {
           return;
         }
         rowIndex++;
@@ -343,33 +314,32 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     save();
   }
   
+  /**
+   * test the value type will fit into the sql type
+   */
   private void testColumnValueTypes() {
+    
     for (int i=0; i < columnData.length; i++) {
-      String columnType = columnData[i].getType();
-      String v = columnData[i].getValue();
-      if (columnType.toLowerCase().contains("int") == true) {
-        long n = 0;
-        if (v == null) {
-          columnData[i].setValue(n);
-        } else if (v.trim().length() == 0) {
-          columnData[i].setValue(n);
-        } else {
-          try {
-            Integer.parseInt(v);
-          } catch (NumberFormatException e) {
-            // alter back to text
-            columnData[i].setType("TEXT DEFAULT NULL");
-            tl.alterColumn(destinationData.databaseData, columnData[i]);
-          }
-        }
+      String vraw = columnData[i].getValue();
+      boolean testTypeThrown = columnData[i].getTestTypeThrow();
+      columnData[i].setValue(vraw);
+      
+      // alter back to text
+      if (testTypeThrown == true) {
+        columnData[i].setType("TEXT DEFAULT NULL");
+        tl.alterColumn(dd.databaseData, columnData[i]);
       }
+   
     }
+    
   }
 
-  
+  /**
+   * does the values lengths fit into sql column, so not to truncate
+   */
   private void testColumnValueSizes() {
     for (int i=0; i < columnData.length; i++) {
-      columnData[i].alterColumnSizeBiggerIfNeedBe(destinationData.databaseData);
+      columnData[i].alterColumnSizeBiggerIfNeedBe(dd.databaseData);
     }
   }
 
@@ -383,14 +353,14 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     String sql = "";
     if (primaryKeyId > 0) {
       ColumnData primaryKeyColumn = new ColumnData();
-      primaryKeyColumn.setTable(destinationData.table);
+      primaryKeyColumn.setTable(dd.table);
       primaryKeyColumn.setIsPrimaryKey(true);
-      primaryKeyColumn.setColumnName(destinationData.primaryKeyName);
+      primaryKeyColumn.setColumnName(dd.primaryKeyName);
       primaryKeyColumn.setValue(primaryKeyId);
       
       boolean skip = compareBefore(columnData, primaryKeyColumn);
       if (skip == true) {
-        destinationData.debug("skipping b/c of compare.!!!!!!!!!!!!!!!!!!");
+        dd.debug("skipping b/c of compare.!!!!!!!!!!!!!!!!!!");
         return;
       }
       ColumnData[] u = cl.merge(columnData, defaultColumns[1]); // add update column
@@ -401,34 +371,43 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
       sql = cl.getSql_Insert(i);
     }
     
-    destinationData.debug(rowIndex + ". SAVE(): " + sql);
+    dd.debug(rowIndex + ". SAVE(): " + sql);
     
-    ql.update(destinationData.databaseData, sql);
+    ql.update(dd.databaseData, sql);
     // TODO - deal with truncation error ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // TODO - truncation should rarely happen here, b/c this is tested for earlier.
+    // TODO - set loggin
   }
  
+  /**
+   * run a comparison on the columndata before saving it
+   * 
+   * @param columnData
+   * @param primKeyColumn
+   * @return
+   */
   private boolean compareBefore(ColumnData[] columnData, ColumnData primKeyColumn) {
     
-    if (destinationData.compareBeforeUpdate == null) {
+    if (dd.compareBeforeUpdate == null) {
       return false;
     }
     boolean b = false;
     
     String where = " WHERE `" + primKeyColumn.getColumnName() + "`='" + primKeyColumn.getValue() + "'";
     
-    FieldData[] c = destinationData.compareBeforeUpdate;
+    FieldData[] c = dd.compareBeforeUpdate;
     for (int i=0; i < c.length; i++) {
       ColumnData forColumnData = new ColumnData(primKeyColumn.getTable(), c[i].destinationField, "TEXT");
       int index = cl.searchColumnByName_NonComp(columnData, forColumnData);
       if (index > -1) {
         String sql = "SELECT " + c[i].destinationField + " FROM " + primKeyColumn.getTable() + " " + where;
         String beforeValue = columnData[index].getValue();
-        String inTableValue = ql.queryString(destinationData.databaseData, sql);
+        String inTableValue = ql.queryString(dd.databaseData, sql);
         
         if (Integer.parseInt(beforeValue) < Integer.parseInt(inTableValue)) {
           b = true;
         }
-        destinationData.debug("CsvProcessing_v2.compareBefore(): forTable:" + destinationData.table + ": before: " + beforeValue + " < inTable: " + inTableValue + " result: " + b);
+        dd.debug("CsvProcessing_v2.compareBefore(): forTable:" + dd.table + ": before: " + beforeValue + " < inTable: " + inTableValue + " result: " + b);
       }
     }
     
@@ -436,18 +415,17 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   }
   
   private long doesDataExist() {
-   if (destinationData.identityColumns == null) {
+   if (dd.identityColumns == null) {
      return -1;
    }
    String idents = cl.getSql_IdentitiesWhere(columnData);
    if (idents == null || idents.trim().length() == 0) {
      System.out.println("ERROR: doesDataExist(): Can't figure out the identies. exiting. (check delimiter?)");
-     //Thread.currentThread().stop();
-     // TODO - what if?
+     // TODO - what if? Should we continue???? 
    }
    String where = " WHERE " + idents;
-   String sql = "SELECT `" + destinationData.primaryKeyName + "` FROM `" + destinationData.table + "` " + where;
-   long primaryKeyId = ql.queryLong(destinationData.databaseData, sql); 
+   String sql = "SELECT `" + dd.primaryKeyName + "` FROM `" + dd.table + "` " + where;
+   long primaryKeyId = ql.queryLong(dd.databaseData, sql); 
    return primaryKeyId; 
   } 
   
@@ -469,7 +447,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    * create destination table
    */
   private void createTable() {
-    tl.createTable(destinationData.databaseData, destinationData.table, destinationData.primaryKeyName);
+    tl.createTable(dd.databaseData, dd.table, dd.primaryKeyName);
   }
   
   
@@ -485,7 +463,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     
     int extendCount = 0;
     
-    if (destinationData != null && destinationData.setSrcFileIntoColumn == true) {
+    if (dd != null && dd.setSrcFileIntoColumn == true) {
      extendCount++; 
     }
     
@@ -497,7 +475,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     }
     
     int b = values.length;
-    if (destinationData != null && destinationData.setSrcFileIntoColumn) {
+    if (dd != null && dd.setSrcFileIntoColumn) {
       c[b] = "SrcFile";
       b++;
     }
@@ -516,7 +494,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     
     int extendCount = 0;
     
-    if (destinationData != null && destinationData.setSrcFileIntoColumn == true) {
+    if (dd != null && dd.setSrcFileIntoColumn == true) {
      extendCount++; 
     }
     
@@ -528,7 +506,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     }
     
     int b = values.length;
-    if (destinationData != null && destinationData.setSrcFileIntoColumn) {
+    if (dd != null && dd.setSrcFileIntoColumn) {
       v[b] = file.getAbsolutePath();
       b++;
     }
@@ -549,8 +527,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   
   private ColumnData[] stopAtColumnsCount(ColumnData[] columns) {
     int c = columns.length;
-    if (destinationData != null && destinationData.stopAtColumnCount > 1 && columns.length > destinationData.stopAtColumnCount) {
-      c = destinationData.stopAtColumnCount;
+    if (dd != null && dd.stopAtColumnCount > 1 && columns.length > dd.stopAtColumnCount) {
+      c = dd.stopAtColumnCount;
     }
     ColumnData[] b = new ColumnData[c];
     for (int i=0; i < c; i++) {
@@ -563,8 +541,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     
     int c = values.length;
     
-    if (destinationData != null && destinationData.stopAtColumnCount > 1 && values.length > destinationData.stopAtColumnCount) {
-      c = destinationData.stopAtColumnCount;
+    if (dd != null && dd.stopAtColumnCount > 1 && values.length > dd.stopAtColumnCount) {
+      c = dd.stopAtColumnCount;
     }
     
     String[] b = new String[c];
@@ -576,12 +554,12 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   
   
   private void markColumnsThatAreIdents() {
-    if (destinationData.identityColumns == null) {
+    if (dd.identityColumns == null) {
       return;
     }
     for (int i=0; i < columnData.length; i++) {
-      for (int b=0; b < destinationData.identityColumns.length; b++) {
-        if (columnData[i].getColumnName().toLowerCase().equals(destinationData.identityColumns[b].destinationField) == true) {
+      for (int b=0; b < dd.identityColumns.length; b++) {
+        if (columnData[i].getColumnName().toLowerCase().equals(dd.identityColumns[b].destinationField) == true) {
           columnData[i].setIdentity(true);
         }
       }
