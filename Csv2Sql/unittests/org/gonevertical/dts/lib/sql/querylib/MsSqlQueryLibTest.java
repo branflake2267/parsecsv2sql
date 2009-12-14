@@ -34,6 +34,8 @@ public class MsSqlQueryLibTest {
   @After
   public void tearDown() throws Exception {
     dd = null;
+    ql = null;
+    tl = null;
   }
 
   @Test

@@ -293,9 +293,9 @@ public class CSVProcessing extends FlatFileProcessing {
       cols[i] = new ColumnData();
       
       if (dd != null && dd.firstRowHasNoFieldNames == true && i < columns.length-1) { //skip extended columns
-        cols[i].column = " "; // this will change into 'c0','c1',... column names
+        cols[i].setName(" "); // this will change into 'c0','c1',... column names
       } else {
-        cols[i].column = columns[i];
+        cols[i].setName(columns[i]);
       }
       
     }

@@ -436,7 +436,7 @@ public class SQLProcessing {
       while (result.next()) {
 
         columns[i] = new ColumnData();
-        columns[i].column = result.getString(1);
+        columns[i].setName(result.getString(1));
         columns[i].setType(result.getString(2));
 
         i++;
@@ -495,7 +495,7 @@ public class SQLProcessing {
       ResultSet result = select.executeQuery(query);
       while (result.next()) {
         ColumnData col = new ColumnData();
-        col.column = result.getString(1);
+        col.setName(result.getString(1));
         col.setType(result.getString(2));
 
         c.add(col);
@@ -619,10 +619,10 @@ public class SQLProcessing {
 
     ColumnData[] cols = new ColumnData[columns.length];
     for (int i = 0; i < columns.length; i++) {
-      createColumn(columns[i].column);
+      createColumn(columns[i].getName());
 
       cols[i] = new ColumnData();
-      cols[i] = getColumn(columns[i].column);
+      cols[i] = getColumn(columns[i].getName());
       
       if (dd.stopAtColumnCount > 1 && dd.stopAtColumnCount == i) {
         break;
@@ -666,18 +666,18 @@ public class SQLProcessing {
 
       if (columns[i] == null) {
         columns[i] = new ColumnData();
-        columns[i].column = "c" + i;
-      } else if (columns[i].column.length() == 0
-          || columns[i].column.matches("[\040]*")) {
-        columns[i].column = "c" + i;
+        columns[i].setName("c" + i);
+      } else if (columns[i].getName().length() == 0
+          || columns[i].getName().matches("[\040]*")) {
+        columns[i].setName("c" + i);
       }
 
-      String column = columns[i].column;
+      String column = columns[i].getName();
       column = replaceToMatchingColumn(column); // replace with matching column
                                                 // name
       column = fixName(column); // fix column name if need be, make it sql
                                 // friendly
-      columns[i].column = column;
+      columns[i].setName(column);
       aColumns.add(columns[i]);
     }
 
@@ -1259,7 +1259,7 @@ public class SQLProcessing {
     String vs = "";
     for (int i = 0; i < columns.length; i++) {
 
-      String c = columns[i].column;
+      String c = columns[i].getName();
       if (c.length() > 0) {
         cs += "[" + c + "]";
         try {
@@ -1293,7 +1293,7 @@ public class SQLProcessing {
       String c = "";
       String v = "";
 
-      c = columns[i].column;
+      c = columns[i].getName();
 
       try {
         v = values[i];
@@ -1609,7 +1609,7 @@ public class SQLProcessing {
     int index = -1;
     for (int i = 0; i < columns.length; i++) {
 
-      if (columns[i].column.equals(key)) {
+      if (columns[i].getName().equals(key)) {
         index = i;
         break;
       }
@@ -1683,7 +1683,7 @@ public class SQLProcessing {
       String c = "";
       String v = "";
 
-      c = columns[i].column;
+      c = columns[i].getName();
 
       try {
         v = values[i];
@@ -1720,7 +1720,7 @@ public class SQLProcessing {
       String c = "";
       String v = "";
 
-      c = columns[i].column;
+      c = columns[i].getName();
 
       try {
         v = values[i];
@@ -1785,9 +1785,9 @@ public class SQLProcessing {
     for (int i = 0; i < columns.length; i++) {
 
       System.out.println(i2 + ". checking column is Empty?: "
-          + columns[i].column + " for data.");
-      if (getColumnHaveStuff(columns[i].column) == false) {
-        deleteColumn(columns[i].column);
+          + columns[i].getName() + " for data.");
+      if (getColumnHaveStuff(columns[i].getName()) == false) {
+        deleteColumn(columns[i].getName());
       }
 
       // count down
@@ -1892,7 +1892,7 @@ public class SQLProcessing {
       }
       resize = columns[i].testSizeOfValue(value);
       if (resize > 0) {
-        String type = resizeColumnLength(columns[i].column, columns[i].columnType, resize);
+        String type = resizeColumnLength(columns[i].getName(), columns[i].columnType, resize);
         columns[i].setType(type);
       }
     }
@@ -1956,8 +1956,8 @@ public class SQLProcessing {
    */
   private ColumnData createReversedColumn(ColumnData c) {
     
-    String srcColumn = c.column;
-    String dstColumn = c.column + "__Reverse";
+    String srcColumn = c.getName();
+    String dstColumn = c.getName() + "__Reverse";
     String type = c.columnType;
     createColumn(dstColumn, type);
     
@@ -1980,7 +1980,7 @@ public class SQLProcessing {
     
     // send back reverse column name for indexing
     ColumnData rtn = c;
-    rtn.column = dstColumn;
+    rtn.setName(dstColumn);
     return rtn;
   }
   

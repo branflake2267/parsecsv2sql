@@ -281,16 +281,16 @@ public class Optimise extends SQLProcessing {
         fieldLength = 0;
   
         // console
-        System.out.println(i2 + ". Analyzing column: " + columns[i].column);
+        System.out.println(i2 + ". Analyzing column: " + columns[i].getName());
   
         // analyze column
-        analyzeColumn(columns[i].column);
+        analyzeColumn(columns[i].getName());
   
         // get type that was determined by analyzeColumn
         String columnType = getColumnType();
   
         // alter column
-        alterColumn(columns[i].column, columnType);
+        alterColumn(columns[i].getName(), columnType);
       }
       
       i2--;
@@ -899,8 +899,8 @@ public class Optimise extends SQLProcessing {
     
     for (int i=0; i < columns.length; i++) {
       if (columns[i] != null) {
-        String indexName = "auto_" + type + columns[i].column ;
-        String column = "`" + columns[i].column + "`";
+        String indexName = "auto_" + type + columns[i].getName() ;
+        String column = "`" + columns[i].getName() + "`";
         createIndex(indexName, column, indexKind);
       }
     }

@@ -35,9 +35,11 @@ public class ColumnData {
   // when using multiple columns for identity, for similarity matching
   private boolean usedForIdentity = false;
 
-  // column name
-  // TODO public access to this var is deprecated, changing to method access
-  public String column = "";
+  /**
+   * column name
+   * TODO public access to this var is deprecated, changing to method access
+   */
+  public String name = "";
 
   private String columnAsSql = null;
 
@@ -262,22 +264,26 @@ public class ColumnData {
     return l;
   }
 
+  public String getName() {
+    return name;
+  }
+  
   public String getColumnName() {
-    return column;
+    return name;
   }
 
   public void setColumnAsSql() {
-    if (column.toLowerCase().matches(".*[\040]as[\040].*") == false) {
+    if (name.toLowerCase().matches(".*[\040]as[\040].*") == false) {
       return;
     }
 
     // save (select *...) as sql
-    columnAsSql = column;
+    columnAsSql = name;
 
     String regex = ".*[\040]as[\040](.*)";
-    String c = StringUtil.getValue(regex, column.toLowerCase());
+    String c = StringUtil.getValue(regex, name.toLowerCase());
     if (c != null) {  
-      column = c.trim();
+      name = c.trim();
     }
 
   }
@@ -286,9 +292,12 @@ public class ColumnData {
     return columnAsSql;
   }
 
+  public void setName(String name) {
+    setColumnName(name);
+  }
 
-  public void setColumnName(String columnName) {
-    this.column = columnName;
+  public void setColumnName(String name) {
+    this.name = name;
     setColumnAsSql(); // in case it has sql AS in it
   }
 
@@ -616,17 +625,17 @@ public class ColumnData {
    * fix the column name < 64 and characters that are SQL friendly
    */
   public void fixName() {
-    if (column.length() > 64) {
-      column = column.substring(0, 63);
+    if (name.length() > 64) {
+      name = name.substring(0, 63);
     }
-    column = column.trim();
-    column = column.replaceAll("#", "_Num");
-    column = column.replaceAll("%", "_per");
-    column = column.replaceAll("\\.", "_");
-    column = column.replaceAll(" ", "_");
-    column = column.replaceAll("[^\\w]", "");
-    column = column.replaceAll("[\r\n\t]", "");
-    column = column.replaceAll("(\\W)", "");
+    name = name.trim();
+    name = name.replaceAll("#", "_Num");
+    name = name.replaceAll("%", "_per");
+    name = name.replaceAll("\\.", "_");
+    name = name.replaceAll(" ", "_");
+    name = name.replaceAll("[^\\w]", "");
+    name = name.replaceAll("[\r\n\t]", "");
+    name = name.replaceAll("(\\W)", "");
   }
 
   /**
