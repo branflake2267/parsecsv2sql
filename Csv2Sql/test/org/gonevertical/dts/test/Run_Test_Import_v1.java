@@ -7,9 +7,9 @@ import org.gonevertical.dts.data.DestinationData;
 import org.gonevertical.dts.data.FieldData;
 import org.gonevertical.dts.data.FlatFileSettingsData;
 import org.gonevertical.dts.data.SourceData;
-import org.gonevertical.dts.v1.FileProcessing;
-import org.gonevertical.dts.v1.Optimise;
-import org.gonevertical.dts.v1.SQLProcessing;
+import org.gonevertical.dts.v1.FileProcessing_V1;
+import org.gonevertical.dts.v1.Optimise_V1;
+import org.gonevertical.dts.v1.SQLProcessing_V1;
 
 
 public class Run_Test_Import_v1 {
@@ -105,7 +105,7 @@ public class Run_Test_Import_v1 {
    * import the flat file into sql
    */
   private static void importData() {
-    FileProcessing p = new FileProcessing();
+    FileProcessing_V1 p = new FileProcessing_V1();
     p.setData(ffsd);
     p.setData(sourceData, dd, matchFields);
   }
@@ -120,7 +120,7 @@ public class Run_Test_Import_v1 {
     dd.optimise_TextOnly = true; // only optimise text columns
     
     // optimise the data structure
-    Optimise o = new Optimise();
+    Optimise_V1 o = new Optimise_V1();
     try {
       o.setDestinationData(dd);
     } catch (Exception e) {
@@ -148,7 +148,7 @@ public class Run_Test_Import_v1 {
     String[] c2 = new String[1];
     c2[0] = "l";
 
-    Optimise o = new Optimise();
+    Optimise_V1 o = new Optimise_V1();
     try {
       o.setDestinationData(dd);
     } catch (Exception e) {
@@ -168,7 +168,7 @@ public class Run_Test_Import_v1 {
       sql = "DELETE FROM " + dd.table + " WHERE (dt= '') OR (dt IS NULL)";
     }
 
-    SQLProcessing p = new SQLProcessing();
+    SQLProcessing_V1 p = new SQLProcessing_V1();
     try {
       p.setDestinationData(dd);
     } catch (Exception e) {
@@ -181,7 +181,7 @@ public class Run_Test_Import_v1 {
   
   private static void deleteDuplicates() {
     
-    Optimise o = new Optimise();
+    Optimise_V1 o = new Optimise_V1();
     try {
       o.setDestinationData(dd);
     } catch (Exception e) {

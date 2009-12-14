@@ -5,8 +5,8 @@ import java.io.File;
 import org.gonevertical.dts.data.DestinationData;
 import org.gonevertical.dts.data.FieldData;
 import org.gonevertical.dts.data.SourceData;
-import org.gonevertical.dts.v1.FileProcessing;
-import org.gonevertical.dts.v1.Optimise;
+import org.gonevertical.dts.v1.FileProcessing_V1;
+import org.gonevertical.dts.v1.Optimise_V1;
 
 
 public class Run_Import_MsSql {
@@ -131,7 +131,7 @@ public class Run_Import_MsSql {
 		matchFields[16].sourceField = "Mast Ord#";
 		matchFields[16].destinationField = "TTN2";
 
-		FileProcessing process = new FileProcessing();
+		FileProcessing_V1 process = new FileProcessing_V1();
 		process.setData(sourceData, destinationData, matchFields);
 	}
 	
@@ -139,7 +139,7 @@ public class Run_Import_MsSql {
 	 * optimise the table in the end
 	 */
 	private static void runOptimise() {
-		Optimise o = new Optimise();
+		Optimise_V1 o = new Optimise_V1();
 		try {
 			o.setDestinationData(destinationData);
 		} catch (Exception e) {

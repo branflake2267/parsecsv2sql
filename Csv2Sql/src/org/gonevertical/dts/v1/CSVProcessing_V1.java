@@ -10,7 +10,7 @@ import org.gonevertical.dts.data.FieldData;
 
 import com.csvreader.CsvReader;
 
-public class CSVProcessing extends FlatFileProcessing {
+public class CSVProcessing_V1 extends FlatFileProcessing_V1 {
 
   // work on this file
   private File file = null;
@@ -22,7 +22,7 @@ public class CSVProcessing extends FlatFileProcessing {
   private CsvReader reader = null;
 
   // sql methods
-  private Optimise sql = new Optimise();
+  private Optimise_V1 sql = new Optimise_V1();
 
   // destination data settings, used in first column processing
   private DestinationData dd = null;
@@ -32,7 +32,7 @@ public class CSVProcessing extends FlatFileProcessing {
   /**
    * constructor
    */
-  public CSVProcessing() {
+  public CSVProcessing_V1() {
   }
   
   /**
