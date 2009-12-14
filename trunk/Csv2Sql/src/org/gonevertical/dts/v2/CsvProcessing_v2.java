@@ -27,7 +27,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   private ColumnLib cl = null;
   
   // csv reader 2.0
-  private CsvReader reader = null;
+  private CsvReader csvRead = null;
 
   // work on this file
   private File file = null;
@@ -65,13 +65,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    * guice injects the libraries needed for the database
    */
   private void setSupportingLibraries() {
-    // get query library
     ql = QueryLibFactory.getLib(destinationData.databaseData.getDatabaseType());
-    
-    // get column library
     cl = ColumnLibFactory.getLib(destinationData.databaseData.getDatabaseType());
-    
-    // get tranformation library
     tl = TransformLibFactory.getLib(destinationData.databaseData.getDatabaseType());
   }
   
@@ -122,7 +117,9 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
 
   /**
    * look for match only
-   * 
+   *   
+   *   TODO - finish method - this needs to find a match
+   *   
    * @param fileIndex
    * @param file
    * @return
@@ -133,7 +130,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     // open the csv file for reading
     openFileAndRead();
 
-    // TODO - finish
+    // compare version 1 
     
     return false;
   }
@@ -155,7 +152,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     }
     
     try {     
-      reader = new CsvReader(file.toString(), sourceData.delimiter);
+      csvRead = new CsvReader(file.toString(), sourceData.delimiter);
     } catch (FileNotFoundException e) {
       System.err.println("CSV Reader, Could not open CSV Reader");
       e.printStackTrace();
@@ -199,8 +196,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   private ColumnData[] getColumnsFromCsv() {
     ColumnData[] columnData = null;	
     try {
-      reader.readHeaders();
-      columnData = createColumnsFromCsvHeader(reader.getHeaders());
+      csvRead.readHeaders();
+      columnData = createColumnsFromCsvHeader(csvRead.getHeaders());
     } catch (IOException e) {
       System.out.println("couln't read columns");
       e.printStackTrace();
@@ -234,7 +231,9 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
       // change Column Name by using Field matching
       header[i] = changeColumnName(header[i]);
       
-      if (destinationData != null && destinationData.firstRowHasNoFieldNames == true && i < header.length - 1) { 
+      if (destinationData != null && 
+          destinationData.firstRowHasNoFieldNames == true && 
+          i < header.length - 1) { 
         columnData[i].setColumnName(" "); // this will change into 'c0','c1',... column names
       } else {
         columnData[i].setColumnName(header[i]);
@@ -300,8 +299,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     }
     
     try {
-      while (reader.readRecord()) {
-        process(rowIndex, reader);
+      while (csvRead.readRecord()) {
+        process(rowIndex, csvRead);
         
         // stop early
         if (destinationData != null && destinationData.stopAtRow == rowIndex) {
