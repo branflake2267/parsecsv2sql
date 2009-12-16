@@ -26,8 +26,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 import org.gonevertical.dts.lib.csv.Csv;
+import org.gonevertical.dts.test.Run_Test_Import_v1;
 import org.odftoolkit.odfdom.OdfFileDom;
 
 import org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument;
@@ -69,61 +71,71 @@ public class Export_Oo {
     app.run();
   }
 
-  String outputFileName;
-  OdfSpreadsheetDocument outputDocument;
-  OdfFileDom contentDom;	// the document object model for content.xml
-  OdfFileDom stylesDom;	// the document object model for styles.xml
+  private String outputFileName;
+  private OdfSpreadsheetDocument outputDocument;
+  private OdfFileDom contentDom;	// the document object model for content.xml
+  private OdfFileDom stylesDom;	// the document object model for styles.xml
   // the office:automatic-styles element in content.xml
-  OdfOfficeAutomaticStyles contentAutoStyles;
+  private OdfOfficeAutomaticStyles contentAutoStyles;
   // the office:styles element in styles.xml
-  OdfOfficeStyles stylesOfficeStyles;
+  private OdfOfficeStyles stylesOfficeStyles;
   // Save the automatically generated style names
-  String columnStyleName;
+  private String columnStyleName;
   //String rowStyleName;
-  String headingStyleName;
-  String noaaTimeStyleName;
-  String noaaDateStyleName;
-  String noaaTempStyleName;
+  private String headingStyleName;
+  private String noaaTimeStyleName;
+  private String noaaDateStyleName;
+  private String noaaTempStyleName;
   // the office:spreadsheet element in the content.xml file
-  OdfOfficeSpreadsheet officeSpreadsheet;
+  private OdfOfficeSpreadsheet officeSpreadsheet;
 
   // csv reader
   private Csv csv = new Csv();
   private CsvReader csvRead = null;
-  
+
   public void run() {
 
-    String sfile1 = "/Users/branflake2267/Documents/workspace/Csv2Sql/data/import/oo_1.txt";
-    String sfile2 = "/Users/branflake2267/Documents/workspace/Csv2Sql/data/import/oo_2.txt";
-    String sfile3 = "/Users/branflake2267/Documents/workspace/Csv2Sql/data/import/oo_3.txt";
-    
+    File executionlocation = null;
+    try {
+      executionlocation = new File(Run_Test_Import_v1.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+    } catch (URISyntaxException e) {
+      e.printStackTrace();
+    }
+    String execPath = executionlocation.getParent();
+
+    String dir = execPath + "/data/";
+
+    String sfile1 = dir + "import/oo_1.txt";
+    String sfile2 = dir + "import/oo_2.txt";
+    String sfile3 = dir + "import/oo_3.txt";
+
     File file1 = new File(sfile1);
     File file2 = new File(sfile2);
     File file3 = new File(sfile3);
-    
-    outputFileName = "/Users/branflake2267/Documents/workspace/Csv2Sql/data/export/export_oo_test.ods";
+
+    outputFileName = dir + "export/export_oo_test.ods";
 
     SpreadSheetData[] sheet = new SpreadSheetData[3];
     sheet[0] = new SpreadSheetData("IdThings", file1, ",".charAt(0));
     sheet[1] = new SpreadSheetData("Shop", file2, ",".charAt(0));
     sheet[2] = new SpreadSheetData("Elements", file3, ",".charAt(0));
-    
-    
+
+
     setupOutputDocument();
 
     if (outputDocument != null) {
       cleanOutDocument();
       addAutomaticStyles();
       //createTable("Sheet1", new File(inputFileName), ",".charAt(0));
-      
+
       createTables(sheet);
-      
+
       saveOutputDocument();
     }
 
     System.out.println("Finished");
   }
-  
+
   public void createTables(SpreadSheetData[] sheet) {
     for (int i=0; i < sheet.length; i++) {
       OdfTable table = createTable(sheet[i].getSheetName(), sheet[i].getFile(), sheet[i].getDelimiter());
@@ -178,15 +190,15 @@ public class Export_Oo {
 
   public OdfTable createTable(String sheetName, File file, char delimiter) {
     openFileAndRead(file, delimiter);
-    
+
     OdfTable table = new OdfTable(contentDom);
     table.setAttribute("table:name", sheetName);
-   
+
     // header columns
     String[] columns = getColumns();
     OdfTableRow row = getHeaderRow(contentDom, columns);
     table.appendRow(row);
-    
+
     try {
       while (csvRead.readRecord()) {
         String[] data = null;
@@ -195,7 +207,7 @@ public class Export_Oo {
         } catch (IOException e) {
           e.printStackTrace();
         }
-        
+
         OdfTableRow rowData = getDataRow(contentDom, data);
         table.appendRow(rowData);
       }
@@ -203,10 +215,10 @@ public class Export_Oo {
       System.out.println("Error: Can't loop through data!");
       e.printStackTrace();
     }
-    
+
     return table;
   }
-  
+
   private OdfTableRow getHeaderRow(OdfFileDom contentDom, String[] columns) {
     OdfTableRow row = new OdfTableRow(contentDom);
     for (int i=0; i < columns.length; i++) {
@@ -214,7 +226,7 @@ public class Export_Oo {
     }
     return row;
   }
-  
+
   private OdfTableRow getDataRow(OdfFileDom contentDom, String[] data) {
     OdfTableRow row = new OdfTableRow(contentDom);
     for (int i=0; i < data.length; i++) {
