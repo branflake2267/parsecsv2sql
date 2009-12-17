@@ -30,16 +30,17 @@ public class FileUtil {
     FileInputStream fis = null;
     BufferedInputStream bis = null;
     DataInputStream dis = null;
-
     int i = 0;
     try {
       fis = new FileInputStream(file);
       bis = new BufferedInputStream(fis);
       dis = new DataInputStream(bis);
-      //BufferedReader br = new BufferedReader(new InputStreamReader(dis));
+      BufferedReader br = new BufferedReader(new InputStreamReader(dis));
       while (dis.available() != 0) {
+        br.readLine();
         i++;
       }
+      br.close();
       fis.close();
       bis.close();
       dis.close();
@@ -224,7 +225,7 @@ public class FileUtil {
   
   public void createDirectory(String path) {
     
-    if (path == null && path.length() == 0) {
+    if (path == null | path.length() == 0) {
       System.out.println("createDirectory path was null");
       return;
     }
@@ -261,7 +262,6 @@ public class FileUtil {
     String sdelimiter = Character.toString(delimiter);
     matchHeaderValues = matchHeaderValues.replaceAll(sdelimiter, "");
 
-    
     CsvReader reader = null;
     try {     
       reader = new CsvReader(file.toString(), delimiter);
