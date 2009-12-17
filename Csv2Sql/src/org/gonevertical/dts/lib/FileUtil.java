@@ -1,11 +1,15 @@
 package org.gonevertical.dts.lib;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,23 +34,15 @@ public class FileUtil {
     int i = 0;
     try {
       fis = new FileInputStream(file);
-
-      // Here BufferedInputStream is added for fast reading.
       bis = new BufferedInputStream(fis);
       dis = new DataInputStream(bis);
-
-      // dis.available() returns 0 if the file does not have more lines.
+      //BufferedReader br = new BufferedReader(new InputStreamReader(dis));
       while (dis.available() != 0) {
-        dis.readLine();
-        //System.out.println(dis.readLine());
         i++;
       }
-
-      // dispose all the resources after using them.
       fis.close();
       bis.close();
       dis.close();
-
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     } catch (IOException e) {
@@ -66,19 +62,21 @@ public class FileUtil {
     FileInputStream fis = null;
     BufferedInputStream bis = null;
     DataInputStream dis = null;
+    BufferedReader br = null;
     boolean found = false;
     try {
       fis = new FileInputStream(file);
       bis = new BufferedInputStream(fis);
       dis = new DataInputStream(bis);
+      br = new BufferedReader(new InputStreamReader(dis));
       while (dis.available() != 0) {
-        // TODO - change method to get line
-        String s = dis.readLine();
+        String s = br.readLine();
         found = StringUtil.findMatch(regex, s);
         if (found == true) {
           break;
         }
       }
+      br.close();
       fis.close();
       bis.close();
       dis.close();
@@ -88,6 +86,49 @@ public class FileUtil {
       e.printStackTrace();
     }
     return found;
+  }
+  
+  /**
+   * do a line by line regex replace, like taking out the dollar sign in the file
+   * 
+   * @param file
+   * @param regexFind
+   * @param regexReplace
+   * @return
+   */
+  public int replaceInFile(File file, String regexFind, String regexReplace) {
+    String tmpName = file.getAbsolutePath() + file.getName() + ".tmp";
+    FileInputStream fis = null;
+    BufferedInputStream bis = null;
+    DataInputStream dis = null;
+    BufferedReader br = null;
+    int i = 0;
+    try {
+      fis = new FileInputStream(file);
+      bis = new BufferedInputStream(fis);
+      dis = new DataInputStream(bis);
+      br = new BufferedReader(new InputStreamReader(dis));
+      FileWriter fstream = new FileWriter(tmpName);
+      BufferedWriter out = new BufferedWriter(fstream);
+      while (dis.available() != 0) {
+        String s = br.readLine();
+        s.replaceAll(regexFind, regexFind);
+        out.write(s);
+        i++;
+      }
+      br.close();
+      fis.close();
+      bis.close();
+      dis.close();
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    file.delete();
+    File rf = new File(tmpName);
+    rf.renameTo(file);
+    return i;
   }
  
   /**
