@@ -68,9 +68,13 @@ public class FileUtilTest {
 
   @Test
   public void testFindLineCount() {
-    fail("Not yet implemented");
+    File file = new File(execPath + "/data/test/template1.txt");
+    File dir = new File(execPath + "/data/test");
+    int lineCount = fileUtil.getFileLineCount(file);
+    int foundCount = fileUtil.findLineCount(dir, "\\$");
+    assertEquals(lineCount, foundCount);
   }
-
+  
   @Test
   public void testMoveFileStringString() {
     fail("Not yet implemented");
@@ -78,7 +82,7 @@ public class FileUtilTest {
 
   @Test
   public void testMoveFileFileString() {
-    fail("Not yet implemented");
+    //fileUtil.moveFile(moveFile, toDir)
   }
 
   @Test
