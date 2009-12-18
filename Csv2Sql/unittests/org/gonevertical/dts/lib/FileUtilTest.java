@@ -43,17 +43,27 @@ public class FileUtilTest {
 
   @Test
   public void testFindInFile() {
-    fail("Not yet implemented");
+    File file = new File(execPath + "/data/test/template1.txt");
+    boolean found = fileUtil.findInFile(file, "\\$");
+    assertEquals(true, found);
   }
 
   @Test
   public void testReplaceInFile() {
-    fail("Not yet implemented");
+    File from = new File(execPath + "/data/test/template1.txt");
+    File to = new File(execPath + "/data/test/replaceinfile.txt");
+    fileUtil.copyFile(from, to);
+    fileUtil.replaceInFile(to, "\\$", "_");
+    boolean found = fileUtil.findInFile(to, "\\$");
+    assertEquals(false, found);
   }
 
   @Test
   public void testFindInDir() {
-    fail("Not yet implemented");
+    File file = new File(execPath + "/data/test");
+    File found = fileUtil.findInDir(file, "\\$");
+    File actualFile = new File(execPath + "/data/test/template1.txt");
+    assertEquals(actualFile, found);
   }
 
   @Test
@@ -108,6 +118,11 @@ public class FileUtilTest {
 
   @Test
   public void testGetNewFileName() {
+    fail("Not yet implemented");
+  }
+  
+  @Test
+  public void testcopyFile() {
     fail("Not yet implemented");
   }
 
