@@ -170,7 +170,7 @@ public class FileUtil {
   }
   
   /**
-   * find a line count of a file with a particular regex value in a file
+   * find a line count of a file with a particular regex value in a directory
    * 
    * @param dir
    * @param regex
@@ -195,6 +195,7 @@ public class FileUtil {
     
     return linecount;
   }
+ 
   
   /**
    * move file to new directory, and it will change the file name if one exists already
