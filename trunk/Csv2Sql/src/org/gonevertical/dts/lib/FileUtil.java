@@ -7,6 +7,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -27,6 +28,10 @@ public class FileUtil {
    * @return
    */
   public int getFileLineCount(File file) {
+    if (file == null) {
+      System.out.println("Error: Your file was null.");
+      return 0;
+    }
     FileInputStream fis = null;
     DataInputStream dis = null;
     int i = 0;
@@ -50,13 +55,17 @@ public class FileUtil {
   }
   
   /**
-   * find regex value in a file
+   * find first regex value in a file
    * 
    * @param file
    * @param regex
    * @return
    */
   public boolean findInFile(File file, String regex) {
+    if (file == null) {
+      System.out.println("Error: Your file was null.");
+      return false;
+    }
     FileInputStream fis = null;
     BufferedInputStream bis = null;
     DataInputStream dis = null;
@@ -94,13 +103,16 @@ public class FileUtil {
    * @param regexReplace
    * @return
    */
-  public int replaceInFile(File file, String regexFind, String regexReplace) {
+  public void replaceInFile(File file, String regexFind, String regexReplace) {
+    if (file == null) {
+      System.out.println("Error: Your file was null.");
+      return;
+    }
     String tmpName = file.getAbsolutePath() + file.getName() + ".tmp";
     FileInputStream fis = null;
     BufferedInputStream bis = null;
     DataInputStream dis = null;
     BufferedReader br = null;
-    int i = 0;
     try {
       fis = new FileInputStream(file);
       bis = new BufferedInputStream(fis);
@@ -110,9 +122,8 @@ public class FileUtil {
       BufferedWriter out = new BufferedWriter(fstream);
       String s = null;
       while ((s = br.readLine()) != null) {
-        s = s.replaceAll(regexFind, regexFind);
+        s = s.replaceAll(regexFind, regexReplace);
         out.write(s);
-        i++;
       }
       br.close();
       fis.close();
@@ -126,11 +137,10 @@ public class FileUtil {
     file.delete();
     File rf = new File(tmpName);
     rf.renameTo(file);
-    return i;
   }
  
   /**
-   * find a file with a regex value
+   * find a file with the first value
    * 
    * @param dir
    * @param regex
@@ -139,6 +149,7 @@ public class FileUtil {
   public File findInDir(File dir, String regex) {
     
     if (dir.isDirectory() == false) {
+      System.out.println("Error: dir is supposed to be a directory, not a file.");
       return null;
     }
     
@@ -146,10 +157,12 @@ public class FileUtil {
     
     File foundFile = null;
     for (int i=0; i < files.length; i++) {
-      boolean found = findInFile(files[i], regex);
-      if (found == true) {
-        foundFile = files[i];
-        break;
+      if (files[i].isFile() == true) {
+        boolean found = findInFile(files[i], regex);
+        if (found == true) {
+          foundFile = files[i];
+          break;
+        }
       }
     }
     
@@ -164,7 +177,11 @@ public class FileUtil {
    * @return
    */
   public int findLineCount(File dir, String regex) {
-   
+    if (dir.isDirectory() == false) {
+      System.out.println("Error: dir is supposed to be a directory, not a file.");
+      return 0;
+    }
+    
     // first find the file we want
     File foundFile = findInDir(dir, regex);
     
@@ -389,5 +406,38 @@ public class FileUtil {
     }
     return newFileName;
   }
+
+  /**
+   * copy file 
+   * 
+   * @param inputFile
+   * @param outputFile
+   */
+  public void copyFile(File inputFile, File outputFile) {
+    FileReader in = null;
+    try {
+      in = new FileReader(inputFile);
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    }
+    FileWriter out = null;
+    try {
+      out = new FileWriter(outputFile);
+      int c;
+      while ((c = in.read()) != -1) {
+        out.write(c);
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    try {
+      in.close();
+      out.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+  
   
 }
