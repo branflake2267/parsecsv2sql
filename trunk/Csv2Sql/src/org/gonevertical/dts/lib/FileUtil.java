@@ -28,21 +28,18 @@ public class FileUtil {
    */
   public int getFileLineCount(File file) {
     FileInputStream fis = null;
-    BufferedInputStream bis = null;
     DataInputStream dis = null;
     int i = 0;
     try {
       fis = new FileInputStream(file);
-      bis = new BufferedInputStream(fis);
-      dis = new DataInputStream(bis);
+      dis = new DataInputStream(fis);
       BufferedReader br = new BufferedReader(new InputStreamReader(dis));
-      while (dis.available() != 0) {
-        br.readLine();
+      String s = null;
+      while ((s = br.readLine()) != null) {
         i++;
       }
       br.close();
       fis.close();
-      bis.close();
       dis.close();
     } catch (FileNotFoundException e) {
       e.printStackTrace();
@@ -70,8 +67,8 @@ public class FileUtil {
       bis = new BufferedInputStream(fis);
       dis = new DataInputStream(bis);
       br = new BufferedReader(new InputStreamReader(dis));
-      while (dis.available() != 0) {
-        String s = br.readLine();
+      String s = null;
+      while ((s = br.readLine()) != null) {
         found = StringUtil.findMatch(regex, s);
         if (found == true) {
           break;
@@ -111,9 +108,9 @@ public class FileUtil {
       br = new BufferedReader(new InputStreamReader(dis));
       FileWriter fstream = new FileWriter(tmpName);
       BufferedWriter out = new BufferedWriter(fstream);
-      while (dis.available() != 0) {
-        String s = br.readLine();
-        s.replaceAll(regexFind, regexFind);
+      String s = null;
+      while ((s = br.readLine()) != null) {
+        s = s.replaceAll(regexFind, regexFind);
         out.write(s);
         i++;
       }
