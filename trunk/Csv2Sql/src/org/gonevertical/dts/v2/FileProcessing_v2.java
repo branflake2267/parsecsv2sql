@@ -89,6 +89,11 @@ public class FileProcessing_v2 {
         // process this file
         csvProcess.parseFile(i, files[i]);
         
+        // first time optimisation will cause this to happen
+        if (csvProcess.getReturnToOptimise() == true) {
+          csvProcess.parseFile(i, files[i]);
+        }
+        
         // move file to folder when done processing
         moveFileWhenDone(files[i]);
         c++;
