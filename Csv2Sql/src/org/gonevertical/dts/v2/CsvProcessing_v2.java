@@ -48,6 +48,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   
   private int rowIndex = 0;
   
+  private boolean returnToOptimise = false;
+  
   /**
    * constructor
    */
@@ -272,6 +274,12 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     try {
       while (csvRead.readRecord()) {
         process(rowIndex, csvRead);
+        
+        // optimise early - this will cause a
+        if (dd != null && dd.optimise == true && dd.optimise_RecordsToExamine == rowIndex) {
+          returnToOptimise = true;
+          return;
+        }
         
         // stop early
         if (dd != null && dd.stopAtRow == rowIndex) {
@@ -564,6 +572,16 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
         }
       }
     }
+  }
+  
+  /**
+   * do we need to start over after early optimisation?
+   * @return
+   */
+  public boolean getReturnToOptimise() {
+    boolean r = returnToOptimise;
+    returnToOptimise = false;
+    return r;
   }
   
 }
