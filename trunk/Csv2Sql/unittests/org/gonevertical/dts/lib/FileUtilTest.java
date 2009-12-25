@@ -53,7 +53,7 @@ public class FileUtilTest {
     File from = new File(execPath + "/data/test/template1.txt");
     File to = new File(execPath + "/data/test/replaceinfile.txt");
     fileUtil.copyFile(from, to);
-    fileUtil.replaceInFile(to, "\\$", "_");
+    fileUtil.replaceInFileByLine(to, "\\$", "_");
     boolean found = fileUtil.findInFile(to, "\\$");
     assertEquals(false, found);
   }

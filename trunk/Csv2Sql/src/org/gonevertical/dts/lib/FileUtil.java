@@ -103,7 +103,7 @@ public class FileUtil {
    * @param regexReplace
    * @return
    */
-  public void replaceInFile(File file, String regexFind, String regexReplace) {
+  public void replaceInFileByLine(File file, String regexFind, String regexReplace) {
     if (file == null) {
       System.out.println("Error: Your file was null.");
       return;
@@ -138,7 +138,7 @@ public class FileUtil {
     File rf = new File(tmpName);
     rf.renameTo(file);
   }
- 
+   
   /**
    * find a file with the first value
    * 
