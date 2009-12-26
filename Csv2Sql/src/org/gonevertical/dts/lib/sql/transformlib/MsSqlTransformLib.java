@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
+import org.gonevertical.dts.data.UserDbData;
 import org.gonevertical.dts.lib.StringUtil;
 import org.gonevertical.dts.lib.sql.columnlib.MsSqlColumnLib;
 import org.gonevertical.dts.lib.sql.querylib.MsSqlQueryLib;
@@ -780,6 +781,25 @@ public class MsSqlTransformLib implements TransformLib {
   public String getType() {
     return "MsSql";
   }
+
+  public void createUser(DatabaseData dd, UserDbData userData) {
+    // TODO Auto-generated method stub
+    
+  }
+
+  public void createUser(DatabaseData dd, String userName, String password,
+      String host) {
+    // TODO Auto-generated method stub
+    
+  }
+
+  public boolean doesUserExist(DatabaseData dd, String userName,
+      String password, String host) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+
   
   
 }

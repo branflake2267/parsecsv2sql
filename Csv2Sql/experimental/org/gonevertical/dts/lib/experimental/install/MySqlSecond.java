@@ -10,8 +10,10 @@ import java.io.OutputStream;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.lib.FileUtil;
 import org.gonevertical.dts.lib.ShellUtil;
+import org.gonevertical.dts.lib.sql.transformlib.MySqlTransformLib;
 
 /**
  * set a second instance up of mysql on ubuntu
@@ -21,18 +23,21 @@ import org.gonevertical.dts.lib.ShellUtil;
  */
 public class MySqlSecond {
 
+  private MySqlTransformLib tl = new MySqlTransformLib();
   private FileUtil fu = new FileUtil();
   private ShellUtil st = new ShellUtil();
   
   private int instanceNumber = 2;
   
   public MySqlSecond() {
-    
   }
   
+  /**
+   * run as root
+   */
   public void run() {
     
-    // inferred 
+    // inferred for the moment
     // TODO - is there a first instance of MySql?
     // TODO - is there a mysql user? I suppose so since its instance already
     // TODO - is instance running?
@@ -64,13 +69,28 @@ public class MySqlSecond {
     // set the service to run on boot
     setNewService();
     
-    // TODO start new instance
+    // start new instance
     startNewInstance();
     
-    // TODO add debian maintance user from FILE: /etc/init.d/mysql2/debian.cnf
+    // add debian maintance user from FILE: /etc/init.d/mysql2/debian.cnf
+    createDebianUser();
     
+    // TODO - deal with root no password user
+
   }
   
+  /**
+   * create debian user - using the root no password
+   */
+  private void createDebianUser() {
+    File file = new File("/etc/mysql" + instanceNumber + "/debian.cnf");
+    String host = "localhost";
+    String username = getProperty(file, "user");
+    String password = getProperty(file, "password");
+    DatabaseData dd = new DatabaseData(DatabaseData.TYPE_MYSQL, "localhost", getPort(), "root", "", "mysql");
+    tl.createUser(dd, username, password, host);
+  }
+
   private void startNewInstance() {
     String cmd = "/etc/init.d/mysql" + instanceNumber + " start &";
     st.exec(cmd);
@@ -124,8 +144,7 @@ public class MySqlSecond {
     File file = new File("/etc/mysql" + instanceNumber+"/my.cnf");
     
     // set port  3306 to 3307
-    String sNewPort = Integer.toString(3305 + instanceNumber); 
-    changeProperty(file, "port", sNewPort);
+    changeProperty(file, "port", getPort());
     
     // set datadir /var/lib/mysql to /var/lib/mysql2
     changeProperty(file, "datadir", "/var/lib/mysql" + instanceNumber);
@@ -141,6 +160,11 @@ public class MySqlSecond {
     
     // regex entire properties file /etc/init.d/mysql to /etc/init.d/mysql
     fu.replaceInFileByLine(file, "/mysql", "/mysql"+instanceNumber);
+  }
+  
+  private String getPort() {
+    String sNewPort = Integer.toString(3305 + instanceNumber); 
+    return sNewPort;
   }
   
   /**
@@ -213,7 +237,7 @@ public class MySqlSecond {
     int len;
     try {
       while ((len = in.read(buf)) > 0) {
-          out.write(buf, 0, len);
+        out.write(buf, 0, len);
       }
     } catch (IOException e) {
       e.printStackTrace();
@@ -230,19 +254,30 @@ public class MySqlSecond {
     }
   }
   
-  private void changeProperty(File file, String property, String value) {
+  private void changeProperty(File file, String key, String value) {
     PropertiesConfiguration config = null;
     try {
       config = new PropertiesConfiguration(file);
     } catch (ConfigurationException e) {
       e.printStackTrace();
     }
-    config.setProperty(property, value);
+    config.setProperty(key, value);
     try {
       config.save();
     } catch (ConfigurationException e) {
       e.printStackTrace();
     }
+  }
+  
+  private String getProperty(File file, String key) {
+    PropertiesConfiguration config = null;
+    try {
+      config = new PropertiesConfiguration(file);
+    } catch (ConfigurationException e) {
+      e.printStackTrace();
+    }
+    String value = (String) config.getProperty(key);
+    return value;
   }
   
 }

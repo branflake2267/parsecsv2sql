@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
+import org.gonevertical.dts.data.UserDbData;
 import org.gonevertical.dts.lib.StringUtil;
 import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
 import org.gonevertical.dts.lib.sql.columnlib.MySqlColumnLib;
@@ -782,5 +783,31 @@ public class MySqlTransformLib implements TransformLib {
     return "MySql";
   }
   
+  public void createUser(DatabaseData dd, UserDbData userData) {
+    String userName = userData.getUserName();
+    String password = userData.getPassword();
+    String[] host = userData.getHost();
+    if (userName == null || password == null) {
+      return;
+    }
+    for (int i=0; i < host.length; i++) {
+      createUser(dd, userData.getUserName(), userData.getPassword(), host[i]);
+    }
+  }
+  
+  public void createUser(DatabaseData dd, String userName, String password, String host) {
+    boolean exists = doesUserExist(dd, userName, password, host);
+    if (exists == true) {
+      return;
+    }
+    String sql = "CREATE USER '" + userName + "'@'" + host + "' IDENTIFIED BY '" + password + "';";
+    ql.update(dd, sql);
+  }
+  
+  public boolean doesUserExist(DatabaseData dd, String userName, String password, String host) {
+    String sql = "SELECT COUNT(*) AS t FROM `mysql`.`user` " +
+    		"WHERE `User`='" + userName + "' AND `Host`='" + host + "';";
+    return ql.queryBoolean(dd, sql);
+  }
   
 }
