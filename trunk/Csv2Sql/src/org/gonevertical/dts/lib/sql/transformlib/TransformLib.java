@@ -2,6 +2,7 @@ package org.gonevertical.dts.lib.sql.transformlib;
 
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
+import org.gonevertical.dts.data.UserDbData;
 
 public interface TransformLib {
 
@@ -70,6 +71,10 @@ public interface TransformLib {
    */
   public String[] showCreateIndex(DatabaseData dd, ColumnData columnData);
   
+  public void createUser(DatabaseData dd, UserDbData userData);
   
+  public void createUser(DatabaseData dd, String userName, String password, String host);
+  
+  public boolean doesUserExist(DatabaseData dd, String userName, String password, String host);
   
 }

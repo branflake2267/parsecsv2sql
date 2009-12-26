@@ -535,6 +535,16 @@ public class MySqlTransformLibTest {
   public void testGetType() {
     // no need to do this
   }
+  
+  @Test
+  public void testCreateUser() {
+    fail("This needs to be finished");
+  }
+  
+  @Test
+  public void testDoesUserExist() {
+    fail("This needs to be finished");
+  }
 
 }
 
