@@ -76,6 +76,7 @@ public class MySqlSecond {
     createDebianUser();
     
     // TODO - deal with root no password user
+    // TODO - start cluster stuff for second instance?
 
   }
   
@@ -198,7 +199,11 @@ public class MySqlSecond {
   }
   
   private void copyConfFiles() {
-    String command = "cp -R /etc/mysql /etc/mysql" + instanceNumber;
+    String dir = "/etc/mysql" + instanceNumber;
+    File fdir = new File(dir);
+    fdir.mkdir();
+    
+    String command = "cp -R /etc/mysql " + dir;
     try {
       Runtime.getRuntime().exec(command);
     } catch (IOException e) {
