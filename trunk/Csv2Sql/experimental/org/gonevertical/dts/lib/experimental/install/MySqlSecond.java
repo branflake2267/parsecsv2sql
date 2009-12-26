@@ -11,6 +11,7 @@ import java.io.OutputStream;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.gonevertical.dts.lib.FileUtil;
+import org.gonevertical.dts.lib.ShellUtil;
 
 /**
  * set a second instance up of mysql on ubuntu
@@ -21,6 +22,7 @@ import org.gonevertical.dts.lib.FileUtil;
 public class MySqlSecond {
 
   private FileUtil fu = new FileUtil();
+  private ShellUtil st = new ShellUtil();
   
   private int instanceNumber = 2;
   
@@ -30,49 +32,115 @@ public class MySqlSecond {
   
   public void run() {
     
-    // TODO - is there a first instance?
-    // TODO - is there a mysql user? I suppose so since its instance #2
+    // inferred 
+    // TODO - is there a first instance of MySql?
+    // TODO - is there a mysql user? I suppose so since its instance already
+    // TODO - is instance running?
     
-    // FILE: etc/mysql/*
+    // copy conf files
     copyConfFiles();
     
-    // FILE: /etc/init.d/mysql
+    // copy service conf files
     copyServiceFile();
     
     // setup new my.cnf attributes
-    setMyCnf2();
+    setMySqlConf();
+    
+    // setup the cluster service stuff
+    setMysqlConfNd();
     
     // setup new debian attributes
-    setDebianCnf2();
+    setDebianConf();
     
-    // setup service
-    setInitService();
+    // setup service conf
+    setServiceConf();
     
-    // TODO set apparmor
+    // TODO set apparmor - finish this later
+    setApparmorConf();
     
-    // TODO setup debian maintance user from FILE: /etc/init.d/mysql2/debian.cnf - have to run as root
+    // init data dir
+    setNewDataDir();
     
-    // 
+    // set the service to run on boot
+    setNewService();
     
-    // rc.d - set /etc/init.d/mysql2 to load on boot
+    // TODO start new instance
+    startNewInstance();
+    
+    // TODO add debian maintance user from FILE: /etc/init.d/mysql2/debian.cnf
+    
   }
   
+  private void startNewInstance() {
+    String cmd = "/etc/init.d/mysql" + instanceNumber + " start &";
+    st.exec(cmd);
+  }
+
   /**
-   * set port, socket, datadir in /etc/init.d/mysql2/*
-   * in: /etc/init.d/mysql2
+   * setup new service
+   */
+  private void setNewService() {
+    String cmd = "update-rc.d /etc/init.d/mysql"  + instanceNumber + " defaults";
+    st.exec(cmd);
+  }
+
+  /**
+   * init the new data directory
+   */
+  private void setNewDataDir() {
+    String cmd = "mysql_install_db --user:mysql --datadir:/var/lib/mysql" + instanceNumber;
+    st.exec(cmd);
+  }
+
+  private void setApparmorConf() {
+    File file = new File("/etc/apparmor.d/usr.sbin.mysqld");
+    
+    // TODO add /et/mysql2/*.pem r,
+    // TODO add /etc/mysql2/conf.d r,
+    // TODO add /etc/mysql2/conf.d/ r,
+    // TODO add /etc/mysql2/my.cnf r,
+    // TODO add /var/run/mysqld/mysqld2.pid w,
+    // TODO add /var/run/mysqld/mysqld2.sock w,
+  }
+
+  private void setMysqlConfNd() {
+    File file = new File("/etc/init.d/mysql-ndb" + instanceNumber+"");
+    
+    // set CONF and export...
+    fu.replaceInFileByLine(file, "/mysql/", "/mysql" + instanceNumber + "/");
+    
+    file = new File("/etc/init.d/mysql-ndb-mgm" + instanceNumber+"");
+    
+    // set CONF and export
+    fu.replaceInFileByLine(file, "/mysql/", "/mysql" + instanceNumber + "/");
+  }
+
+  /**
+   * set my.cnf attributes
+   *
    * FILE: /etc/init.d/mysql2/my.cnf
    */
-  private void setMyCnf2() {
+  private void setMySqlConf() {
+    File file = new File("/etc/mysql" + instanceNumber+"/my.cnf");
     
-
-    // TODO set port
-    // TODO set socket
-    // TODO set datadir
-    // TODO set pid-file
-    // TODO log_bin
+    // set port  3306 to 3307
+    String sNewPort = Integer.toString(3305 + instanceNumber); 
+    changeProperty(file, "port", sNewPort);
+    
+    // set datadir /var/lib/mysql to /var/lib/mysql2
+    changeProperty(file, "datadir", "/var/lib/mysql" + instanceNumber);
+    
+    // set socket /var/run/mysqld/mysqld.sock to /var/run/mysqld/mysqld2.sock
+    changeProperty(file, "socket", "/var/run/mysqld/mysqld" + instanceNumber + ".sock");
+    
+    // set pid-file /var/run/mysqld/mysqld.pid to /var/run/mysqld/mysqld2.pid
+    changeProperty(file, "socket", "/var/run/mysqld/mysqld" + instanceNumber + ".pid");
+    
+    // log_bin /var/log/mysql/mysql-bin.log to /var/log/mysql/mysql-bin2.log
+    fu.replaceInFileByLine(file, "/mysql-bin.log", "/mysql-bin" + instanceNumber + ".log");
     
     // regex entire properties file /etc/init.d/mysql to /etc/init.d/mysql
-    fu.replaceInFileByLine(new File("/etc/mysql"+instanceNumber+"/my.cnf"), "/mysql", "/mysql"+instanceNumber);
+    fu.replaceInFileByLine(file, "/mysql", "/mysql"+instanceNumber);
   }
   
   /**
@@ -80,11 +148,14 @@ public class MySqlSecond {
    * 
    * FILE: /etc/mysql/debian-start.cnf
    */
-  private void setDebianCnf2() {
-    // FILE: /etc/init.d/mysql2/debian-start
+  private void setDebianConf() {
+    File file = new File("/etc/mysql" + instanceNumber + "/debian-start.cnf");
     
-    // TODO set socket from /var/run/mysqld/mysqld.sock to /var/run/mysqld/mysqld2.sock
-    // TODO set regex /etc/mysql to /etc/mysql2 
+    // set socket from /var/run/mysqld/mysqld.sock to /var/run/mysqld/mysqld2.sock
+    fu.replaceInFileByLine(file, "/mysqld.sock", "/mysqld" + instanceNumber + ".sock");
+    
+    // set regex /etc/mysql to /etc/mysql2
+    fu.replaceInFileByLine(file, "/mysql", "/mysql"+instanceNumber);
   }
   
   /**
@@ -92,14 +163,14 @@ public class MySqlSecond {
    * 
    *  FILE: /etc/init.d/mysql2
    */
-  private void setInitService() {
-    // TODO set CONF=/etc/mysql/my.cnf to CONF=/etc/mysql2/my.cnf
-    // TODO set MYADMIN="/usr/bin/mysqladmin --defaults-file=/etc/mysql2/debian.cnf" 
+  private void setServiceConf() {
+    File file = new File("/etc/init.d/mysql" + instanceNumber);
     
+    // set MYADMIN="/usr/bin/mysqladmin --defaults-file=/etc/mysql/debian.cnf" 
+    // set CONF=/etc/mysql/my.cnf to CONF=/etc/mysql2/my.cnf
     // set by regex: /etc/mysql to /etc/mysql2
     // set by regex: /etc/init.d/mysql to /etc/init.d/mysql2
-    fu.replaceInFileByLine(new File("/etc/init.d/mysql"+instanceNumber), "/mysql", "/mysql"+instanceNumber);
-    
+    fu.replaceInFileByLine(file, "/mysql", "/mysql" + instanceNumber);
   }
   
   private void copyConfFiles() {
@@ -138,8 +209,6 @@ public class MySqlSecond {
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     }
-
-    // Transfer bytes from in to out
     byte[] buf = new byte[1024];
     int len;
     try {
@@ -162,23 +231,18 @@ public class MySqlSecond {
   }
   
   private void changeProperty(File file, String property, String value) {
-    
     PropertiesConfiguration config = null;
     try {
       config = new PropertiesConfiguration(file);
     } catch (ConfigurationException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
     config.setProperty(property, value);
     try {
       config.save();
     } catch (ConfigurationException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
-
-    
   }
   
 }
