@@ -23,6 +23,10 @@ import org.gonevertical.dts.lib.sql.transformlib.MySqlTransformLib;
  */
 public class MySqlSecond {
 
+  public static void main(String[] args) {
+	  new MySqlSecond().run();
+  }
+	
   private MySqlTransformLib tl = new MySqlTransformLib();
   private FileUtil fu = new FileUtil();
   private ShellUtil st = new ShellUtil();
@@ -38,6 +42,7 @@ public class MySqlSecond {
   public void run() {
     
     // inferred for the moment
+	// TODO is this ubuntu?
     // TODO - is there a first instance of MySql?
     // TODO - is there a mysql user? I suppose so since its instance already
     // TODO - is instance running?
@@ -199,11 +204,12 @@ public class MySqlSecond {
   }
   
   private void copyConfFiles() {
-    String dir = "/etc/mysql" + instanceNumber;
-    File fdir = new File(dir);
+    String newDir = "/etc/mysql" + instanceNumber + "";
+    File fdir = new File(newDir);
     fdir.mkdir();
     
-    String command = "cp -R /etc/mysql " + dir;
+    String command = "cp -R /etc/mysql/. " + newDir + "";
+    System.out.println(command);
     try {
       Runtime.getRuntime().exec(command);
     } catch (IOException e) {
