@@ -6,17 +6,16 @@
 	<classpathentry kind="src" path="src_office"/>
 	<classpathentry kind="src" path="experimental"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/Users/branflake2267/Documents/workspace/classpath/mysql-connector-java-5.1.10/mysql-connector-java-5.1.10-bin.jar"/>
-	<classpathentry kind="lib" path="/Users/branflake2267/Documents/workspace/classpath/sqljdbc_2.0/enu/sqljdbc4.jar"/>
-	<classpathentry kind="lib" path="/Users/branflake2267/Documents/workspace/classpath/javacsv2.0/javacsv.jar"/>
-	<classpathentry kind="lib" path="/Users/branflake2267/Documents/workspace/classpath/commons-lang-2.4/commons-lang-2.4.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/mysql-connector-java-5.1.10/mysql-connector-java-5.1.10-bin.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/sqljdbc_2.0/enu/sqljdbc4.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/javacsv2.0/javacsv.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/commons-lang-2.4/commons-lang-2.4.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="/Users/branflake2267/Documents/workspace/classpath/guice-2.0/guice-2.0.jar"/>
-	<classpathentry kind="lib" path="/Users/branflake2267/Documents/workspace/classpath/odfdom-0.7.5-binary/odfdom.jar"/>
-	<classpathentry kind="lib" path="/Users/branflake2267/Documents/workspace/classpath/xerces-2_9_1/xercesImpl.jar"/>
-	<classpathentry kind="lib" path="/Users/branflake2267/Documents/workspace/classpath/jodconverter-2.2.2/lib/jodconverter-2.2.2.jar"/>
-	<classpathentry kind="lib" path="/Users/branflake2267/Documents/workspace/classpath/jodconverter-2.2.2/docs/jodconverter-2.2.2-javadoc.jar"/>
-	<classpathentry kind="lib" path="/Users/branflake2267/Documents/workspace/classpath/commons-configuration-1.6/commons-configuration-1.6-javadoc.jar"/>
-	<classpathentry kind="lib" path="/Users/branflake2267/Documents/workspace/classpath/commons-configuration-1.6/commons-configuration-1.6.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/guice-2.0/guice-2.0.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/odfdom-0.7.5-binary/odfdom.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/xerces-2_9_1/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/jodconverter-2.2.2/lib/jodconverter-2.2.2.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/commons-configuration-1.6/commons-configuration-1.6.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/commons-configuration-1.6/commons-configuration-1.6-javadoc.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
