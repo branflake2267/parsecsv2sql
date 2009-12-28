@@ -108,7 +108,7 @@ public class FileUtil {
       System.out.println("Error: Your file was null.");
       return;
     }
-    String tmpName = file.getAbsolutePath() + file.getName() + ".tmp";
+    String tmpName = file.getAbsolutePath() + ".tmp";
     FileInputStream fis = null;
     BufferedInputStream bis = null;
     DataInputStream dis = null;
@@ -123,8 +123,10 @@ public class FileUtil {
       String s = null;
       while ((s = br.readLine()) != null) {
         s = s.replaceAll(regexFind, regexReplace);
-        out.write(s);
+        out.write(s + "\n");
       }
+      out.close();
+      fstream.close();
       br.close();
       fis.close();
       bis.close();
@@ -134,9 +136,9 @@ public class FileUtil {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    file.delete();
     File rf = new File(tmpName);
     rf.renameTo(file);
+    //file.delete();
   }
    
   /**
