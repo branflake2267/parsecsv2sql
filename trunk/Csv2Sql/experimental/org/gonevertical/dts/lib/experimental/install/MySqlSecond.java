@@ -93,7 +93,7 @@ public class MySqlSecond {
     String host = "localhost";
     String username = getProperty(file, "user");
     String password = getProperty(file, "password");
-    DatabaseData dd = new DatabaseData(DatabaseData.TYPE_MYSQL, "localhost", getPort(), "root", "", "mysql");
+    DatabaseData dd = new DatabaseData(DatabaseData.TYPE_MYSQL, "localhost", getPort(), "test", "test#", "mysql");
     tl.createUser(dd, username, password, host);
   }
 
@@ -165,7 +165,7 @@ public class MySqlSecond {
     fu.replaceInFileByLine(file, "/mysql-bin.log", "/mysql-bin" + instanceNumber + ".log");
     
     // regex entire properties file /etc/init.d/mysql to /etc/init.d/mysql
-    fu.replaceInFileByLine(file, "/mysql", "/mysql"+instanceNumber);
+    fu.replaceInFileByLine(file, "/mysql", "/mysql" + instanceNumber);
   }
   
   private String getPort() {
@@ -219,19 +219,30 @@ public class MySqlSecond {
   
   private void copyServiceFile() {
     File src = new File("/etc/init.d/mysql");
-    File dst = new File("/etc/intid.d/mysql" + instanceNumber);
+    File dst = new File("/etc/init.d/mysql" + instanceNumber);
     copyFile(src, dst);
     
     src = new File("/etc/init.d/mysql-ndb");
-    dst = new File("/etc/intid.d/mysql-ndb" + instanceNumber);
+    dst = new File("/etc/init.d/mysql-ndb" + instanceNumber);
     copyFile(src, dst);
     
     src = new File("/etc/init.d/mysql-ndb-mgm");
-    dst = new File("/etc/intid.d/mysql-ndb-mgm" + instanceNumber);
+    dst = new File("/etc/init.d/mysql-ndb-mgm" + instanceNumber);
     copyFile(src, dst);
   }
    
   private void copyFile(File src, File dst) {
+    if (src.exists() == false) {
+      System.out.println("skipping file copy: " + src.getAbsolutePath());
+      return;
+    }
+    if (dst.exists() == false) {
+      try {
+        dst.createNewFile();
+      } catch (IOException e1) {
+        e1.printStackTrace();
+      }
+    }
     InputStream in = null;
     try {
       in = new FileInputStream(src);
@@ -266,6 +277,12 @@ public class MySqlSecond {
   }
   
   private void changeProperty(File file, String key, String value) {
+    String regexFind = key + ".*?=.*";
+    String regexReplace = key + " = " + value;
+    fu.replaceInFileByLine(file, regexFind, regexReplace);
+  }
+  
+  private void changeProperty_old(File file, String key, String value) {
     PropertiesConfiguration config = null;
     try {
       config = new PropertiesConfiguration(file);
@@ -291,4 +308,9 @@ public class MySqlSecond {
     return value;
   }
   
+  private void createNewFile(File file) {
+    String sfile = file.getAbsolutePath();
+    String cmd = "touch " + sfile;
+    st.exec(cmd);
+  }
 }
