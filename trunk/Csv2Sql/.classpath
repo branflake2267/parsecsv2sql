@@ -17,5 +17,10 @@
 	<classpathentry kind="lib" path="/opt/classpath/jodconverter-2.2.2/lib/jodconverter-2.2.2.jar"/>
 	<classpathentry kind="lib" path="/opt/classpath/commons-configuration-1.6/commons-configuration-1.6.jar"/>
 	<classpathentry kind="lib" path="/opt/classpath/commons-configuration-1.6/commons-configuration-1.6-javadoc.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/apache-log4j-1.2.15/log4j-1.2.15.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/commons-logging-1.1.1/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/commons-logging-1.1.1/commons-logging-1.1.1-javadoc.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/commons-collections-3.2.1/commons-collections-3.2.1.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/commons-collections-3.2.1/commons-collections-3.2.1-javadoc.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

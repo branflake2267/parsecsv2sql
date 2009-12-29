@@ -65,10 +65,10 @@ public class ColumnData {
   private String valueIsFunction = null;
 
   // true:overwrite any value false:only update on blank
-  private boolean overwriteOnlyWhenBlank = true;
+  private boolean overwriteOnlyWhenBlank = false;
 
   // true: if a zero shows up its ok to overwrite
-  private boolean overwriteOnlyWhenZero = true;
+  private boolean overwriteOnlyWhenZero = false;
 
   // set the value using regex
   private String regex = null;
