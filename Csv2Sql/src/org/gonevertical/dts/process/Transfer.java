@@ -813,9 +813,6 @@ public class Transfer {
   
   private void merge() {
     
-    // TODO - what no values exist on the other end?
-
-    
     for (int i=0; i < columnData_src.length; i++) {
       
       boolean onlyOverwriteBlank = columnData_des[i].getOverwriteWhenBlank();
@@ -835,10 +832,7 @@ public class Transfer {
         
       } else if (onlyOverwriteBlank == false | onlyOverwriteZero == false) {
         columnData_des[i].setValue(columnData_src[i].getValue());
-        
       } 
-
-      
     }
    
   }
