@@ -17,27 +17,59 @@ public class ColumnDataTest {
   }
 
   @Test
-  public void testColumnData() {
-    fail("Not yet implemented");
-  }
-
-  @Test
   public void testColumnDataStringStringString() {
-    fail("Not yet implemented");
+    String columnTable = "table";
+    String columnName = "field";
+    String columnType = "VARCHAR(25) DEFAULT NULL";
+    ColumnData c = new ColumnData(columnTable, columnName, columnType);
+    
+    String rtable = c.getTable();
+    String rname = c.getName();
+    String rtype = c.getType();
+    
+    assertEquals(columnTable, rtable);
+    assertEquals(columnName, rname);
+    assertEquals(columnType.toLowerCase(), rtype);
   }
 
   @Test
   public void testSetValueString() {
-    fail("Not yet implemented");
+    String columnTable = "table";
+    String columnName = "field";
+    String columnType = "VARCHAR(25) DEFAULT NULL";
+    String value = "abcdefghijklmnopqrs";
+    ColumnData c = new ColumnData(columnTable, columnName, columnType);
+    c.setValue(value);
+    String rvalue = c.getValue();
+    assertEquals(value, rvalue);
+    value = null;
+    c.setValue(value);
+    rvalue = c.getValue();
+    assertEquals(value, rvalue);
+    value = "";
+    c.setValue(value);
+    rvalue = c.getValue();
+    assertEquals(null, rvalue);
   }
 
   @Test
   public void testSetValueLong() {
-    fail("Not yet implemented");
+    String columnTable = "table";
+    String columnName = "field";
+    String columnType = "VARCHAR(25) DEFAULT NULL";
+    long value = 1234567890;
+    ColumnData c = new ColumnData(columnTable, columnName, columnType);
+    c.setValue(value);
+    long rvalue = Long.parseLong(c.getValue());
+    assertEquals(value, rvalue);
   }
 
   @Test
   public void testGetValue() {
+    // TODO - get value varchar
+    // TODO - get value datetime
+    // TODO - get value null
+    // TODO - get value ""
     fail("Not yet implemented");
   }
 
