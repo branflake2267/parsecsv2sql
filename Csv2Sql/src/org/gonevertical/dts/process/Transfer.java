@@ -82,6 +82,7 @@ public class Transfer {
   private int index = 0;
   
   private String srcWhere = null;
+  private boolean insertSrcToDest;
   
   /**
    * Transfer data object setup 
@@ -477,7 +478,7 @@ public class Transfer {
    */
   private void process() {
     
-    // TODO - what if no values exist on the other end
+    // compare values on other end if there are some, other wise do nothing
     getDestinationValuesToCompareWith(columnData_src, columnData_des);
     
     if (columnData_src_oneToMany != null && columnData_src_oneToMany.length > 0) {
@@ -677,6 +678,7 @@ public class Transfer {
    * get dest values
    */
   private void getDestinationValuesToCompareWith(ColumnData[] src, ColumnData[] des) {
+    insertSrcToDest = false;
     
     // TODO asumming that the primary key is the same
     String srcPrimKeyValue = cl_src.getPrimaryKey_Value(src);
@@ -713,8 +715,9 @@ public class Transfer {
     
     if (b == false) {
       for (int i=0; i < des.length; i++) {
+        String s = null;
         des[i].setValue("");
-        b = true;
+        insertSrcToDest = true;
       }
     }
   }
@@ -755,7 +758,8 @@ public class Transfer {
     }
     
     if (b == false) {
-      des.setValue("");
+      String s = null;
+      des.setValue(s);
     }
     
   }
@@ -800,6 +804,7 @@ public class Transfer {
   private void merge() {
     
     // TODO - what no values exist on the other end?
+
     
     for (int i=0; i < columnData_src.length; i++) {
       
@@ -812,12 +817,17 @@ public class Transfer {
         desValue = "";
       }
       
-      if ( (onlyOverwriteBlank == true && (desValue.equals("null") | desValue.length() == 0)) | 
-          (onlyOverwriteZero == true && (desValue.equals("null") | desValue.length() == 0 | desValue.equals("0"))) ) { // write when blank
+      if ( 
+          (onlyOverwriteBlank == true && (desValue == null | desValue.length() == 0)) | 
+          (onlyOverwriteZero == true && (desValue == null | desValue.length() == 0 | desValue.equals("0"))) 
+         ) { // only overwrite when dest values are blank
         columnData_des[i].setValue(columnData_src[i].getValue());
+        
       } else if (onlyOverwriteBlank == false | onlyOverwriteZero == false) {
         columnData_des[i].setValue(columnData_src[i].getValue());
-      }
+        
+      } 
+
       
     }
    
