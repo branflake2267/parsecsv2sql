@@ -480,7 +480,7 @@ public class Transfer {
    */
   private void process() {
     
-    // compare values on other end if there are some, other wise do nothing
+    // compare src values to the dst values, for overwrite policy
     getDestinationValuesForComparison();
     
     if (columnData_src_oneToMany != null && columnData_src_oneToMany.length > 0) {
@@ -493,7 +493,7 @@ public class Transfer {
     if (columnData_src_oneToMany != null && columnData_src_oneToMany.length > 0) {
       merge_OneToMany();
     }
-    
+           
     save();
     
     // save one to many
