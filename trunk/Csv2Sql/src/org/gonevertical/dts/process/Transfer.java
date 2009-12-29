@@ -219,7 +219,7 @@ public class Transfer {
     columnData_des = new ColumnData[columnData_src.length];
     for(int i=0; i < columnData_src.length; i++) {
       columnData_des[i] = new ColumnData();
-      columnData_des[i] = columnData_src[i];
+      columnData_des[i] = (ColumnData) columnData_src[i].clone();
       columnData_des[i].setTable(tableTo);
     }
   }
@@ -348,7 +348,6 @@ public class Transfer {
         // get values 
         for (int i=0; i < columnData_src.length; i++) {
           String value = result.getString(columnData_src[i].getColumnName());
-          // TODO - change the way values are gotten, by the column type?? can't remember what this means
           columnData_src[i].setValue(value);
         }
         
@@ -441,6 +440,7 @@ public class Transfer {
     
     System.out.println("sql: " + sql);
     
+    // TODO - remove read forward
     try {
       Connection conn = database_src.getConnection();
       Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
@@ -451,7 +451,9 @@ public class Transfer {
         // get values 
         for (int i=0; i < columnData_src.length; i++) {
           String value = result.getString(columnData_src[i].getColumnName());
-          // TODO - change the way values are gotten, by the column type
+          if (value != null && value.trim().length() == 0) {
+            value = null;
+          }
           columnData_src[i].setValue(value);
         }
         
@@ -479,7 +481,7 @@ public class Transfer {
   private void process() {
     
     // compare values on other end if there are some, other wise do nothing
-    getDestinationValuesToCompareWith(columnData_src, columnData_des);
+    getDestinationValuesForComparison();
     
     if (columnData_src_oneToMany != null && columnData_src_oneToMany.length > 0) {
       getDestinationValuesToCompareWith_OneToMany(columnData_src_oneToMany, columnData_des_oneToMany);
@@ -528,7 +530,7 @@ public class Transfer {
     }
     
     String sql = "";
-    if (onetoId > 0) { // update?
+    if (onetoId > 0) { // update
       
       datafields += ",DateUpdated=NOW()";
       String where = "(`" + oneToManyTablePrimaryKey.getColumnName() + "`='" + onetoId + "')";
@@ -560,7 +562,7 @@ public class Transfer {
     return id;
   }
   
-  // TODO - this is MYSQL specific - make it not specific
+  // TODO - this is MYSQL specific - make it not specific using guice
   private String getOneToManySqlWhere(ColumnData columnData, HashMap<String,String> hardOneToMany) {
 
     String whereHard = "";
@@ -623,7 +625,18 @@ public class Transfer {
       String column = columnData_des[i].getColumnName();
       String value = columnData_des[i].getValue();
       
-      sql += "`" + column + "`='" +  ql_src.escape(value) + "'";
+      if (value != null && value.trim().length() == 0) {
+        value = null;
+      }
+      
+      String svalue = "";
+      if (value == null) {
+        svalue = "NULL";
+      } else {
+        svalue = "'" +  ql_src.escape(value) + "'";
+      }
+      
+      sql += "`" + column + "`=" + svalue;
       if (i < columnData_des.length -1) {
         sql += ",";
       }
@@ -675,20 +688,19 @@ public class Transfer {
   }
   
   /**
-   * get dest values
+   * get dest values for comparison agianst the source data
    */
-  private void getDestinationValuesToCompareWith(ColumnData[] src, ColumnData[] des) {
+  private void getDestinationValuesForComparison() {
     insertSrcToDest = false;
     
     // TODO asumming that the primary key is the same
-    String srcPrimKeyValue = cl_src.getPrimaryKey_Value(src);
-    String desPrimKeyColName = cl_des.getPrimaryKey_Name(des);
-    
-    String where = "(`" + desPrimKeyColName + "`='" +  ql_src.escape(srcPrimKeyValue) + "')";
+    String srcPrimKeyValue = cl_src.getPrimaryKey_Value(columnData_src);
+    String desPrimKeyColName = cl_des.getPrimaryKey_Name(columnData_des);
     
     oneToMany_RelationshipSql = "`" + desPrimKeyColName + "`='" +  ql_src.escape(srcPrimKeyValue) + "'"; 
     
-    String sql = "SELECT * FROM " + tableTo + " WHERE " + where + ";";
+    String sql = "SELECT * FROM " + tableTo + " WHERE " +
+      "(`" + desPrimKeyColName + "`='" +  ql_src.escape(srcPrimKeyValue) + "')";
     
     //System.out.println("getDestinationValuesToCompareWith(): " + sql);
     
@@ -699,9 +711,9 @@ public class Transfer {
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
 
-        for (int i=0; i < des.length; i++) {
-          String value = result.getString(des[i].getColumnName());
-          des[i].setValue(value);
+        for (int i=0; i < columnData_des.length; i++) {
+          String value = result.getString(columnData_des[i].getColumnName());
+          columnData_des[i].setValue(value);
           b = true;
         }
         
@@ -714,9 +726,9 @@ public class Transfer {
     }
     
     if (b == false) {
-      for (int i=0; i < des.length; i++) {
+      for (int i=0; i < columnData_des.length; i++) {
         String s = null;
-        des[i].setValue("");
+        columnData_des[i].setValue(s);
         insertSrcToDest = true;
       }
     }
@@ -732,7 +744,6 @@ public class Transfer {
     for (int i=0; i < src.length; i++) {
       getDestinationValuesToCompareWith_OneToMany(where, src[i], des[i]);
     }
-    
   }
 
   private void getDestinationValuesToCompareWith_OneToMany(String where, ColumnData src, ColumnData des) {
@@ -745,7 +756,6 @@ public class Transfer {
       Statement select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
-        
         String value = result.getString(des.getColumnName());
         des.setValue(value);
         b = true;

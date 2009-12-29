@@ -214,6 +214,9 @@ public class DateTimeParser {
     } else if (checkforFormat_datetime24hr3() == true ) { // `yyyy-mm-dd` only
       s = df.format(date);
       isDate = true;
+    } else if (checkforFormat_datetime24hr4() == true ) {
+      s = df.format(date);
+      isDate = true;
     } else if (checkforFormat_engDateString() == true ) {
       s = df.format(date);
       isDate = true;
@@ -273,6 +276,9 @@ public class DateTimeParser {
       s = df.format(date);
       isDate = true;
     } else if (checkforFormat_datetime24hr3() == true ) { // `yyyy-mm-dd` only
+      s = df.format(date);
+      isDate = true;
+    } else if (checkforFormat_datetime24hr4() == true ) {
       s = df.format(date);
       isDate = true;
     } else if (checkforFormat_engDateString() == true ) {
@@ -734,6 +740,59 @@ public class DateTimeParser {
   private boolean checkforFormat_datetime24hr2() {
 
     String re = "^([0-9]{4})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})$";
+    Pattern p = Pattern.compile(re);
+    Matcher m = p.matcher(datetime);
+    boolean found = m.find();
+
+    int month = 0;
+    int day = 0;
+    int year = 0;
+    int hour = 0;
+    int minutes = 0;
+    int seconds = 0;
+    if (found == true) {
+      String yy = m.group(1);
+      String mm = m.group(2);
+      String dd = m.group(3);
+      String hh = m.group(4);
+      String min = m.group(5);
+      String ss = m.group(6);
+      
+      if (mm == null | dd == null | yy == null | hh == null | min == null | ss == null) {
+        return false;
+      }
+      
+      month = getMonth(mm) - 1;
+      day = getDay(dd);
+      year = getYear(yy);
+      hour = Integer.parseInt(hh);
+      minutes = Integer.parseInt(min);
+      seconds = Integer.parseInt(ss);
+       
+    } else {
+      return false;
+    }
+    
+    Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.DAY_OF_MONTH, day);
+    cal.set(Calendar.MONTH, month);
+    cal.set(Calendar.YEAR, year);
+    cal.set(Calendar.HOUR_OF_DAY, hour);
+    cal.set(Calendar.MINUTE, minutes);
+    cal.set(Calendar.SECOND, seconds);
+
+    date = cal.getTime();
+
+    return found;
+  }
+  
+  /**
+   * 2009-12-31 00:00:00.0 - this format comes up when getting 
+   * @return
+   */
+  private boolean checkforFormat_datetime24hr4() {
+
+    String re = "^([0-9]{4})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})\\.[0-9]+$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
     boolean found = m.find();

@@ -8,7 +8,7 @@ import org.gonevertical.dts.lib.datetime.DateTimeParser;
 import org.gonevertical.dts.lib.sql.transformlib.MySqlTransformLib;
 
 
-public class ColumnData {
+public class ColumnData implements Cloneable {
 
   // change value case
   public final static int CHANGECASE_LOWER = 1;
@@ -741,7 +741,12 @@ public class ColumnData {
     return resize;
   }
 
-
-
+  public Object clone() {
+    try {
+      return super.clone();
+    } catch (CloneNotSupportedException e) {
+      throw new InternalError(e.toString());
+    }
+  }
 
 }
