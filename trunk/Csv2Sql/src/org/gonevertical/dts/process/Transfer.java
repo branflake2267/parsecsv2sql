@@ -83,7 +83,9 @@ public class Transfer {
   private int index = 0;
   
   private String srcWhere = null;
-  private boolean insertSrcToDest;
+  
+  // this will skip comparing dest columns
+  private boolean compareDestValues = true;
   
   /**
    * Transfer data object setup 
@@ -692,13 +694,24 @@ public class Transfer {
    * get dest values for comparison agianst the source data
    */
   private void getDestinationValuesForComparison() {
-    insertSrcToDest = false;
+
+    if (oneToMany_RelationshipSql == null && oneToMany != null) {
+      setOneToManySqlRelationship();
+    }
     
+    // this will skip comparing dest values, saving time, and just moving the data to dest regardless of overwrite policy
+    if (compareDestValues == false) {
+        for (int i=0; i < columnData_des.length; i++) {
+          String s = null;
+          columnData_des[i].setValue(s);
+        }
+      return;
+    }
+    
+    // TODO do I need to keep getting the keys, or save them in class var
     // TODO asumming that the primary key is the same
     String srcPrimKeyValue = cl_src.getPrimaryKey_Value(columnData_src);
     String desPrimKeyColName = cl_des.getPrimaryKey_Name(columnData_des);
-    
-    oneToMany_RelationshipSql = "`" + desPrimKeyColName + "`='" +  ql_src.escape(srcPrimKeyValue) + "'"; 
     
     String sql = "SELECT * FROM " + tableTo + " WHERE " +
       "(`" + desPrimKeyColName + "`='" +  ql_src.escape(srcPrimKeyValue) + "')";
@@ -730,9 +743,14 @@ public class Transfer {
       for (int i=0; i < columnData_des.length; i++) {
         String s = null;
         columnData_des[i].setValue(s);
-        insertSrcToDest = true;
       }
     }
+  }
+  
+  private void setOneToManySqlRelationship() {
+    String srcPrimKeyValue = cl_src.getPrimaryKey_Value(columnData_src);
+    String desPrimKeyColName = cl_des.getPrimaryKey_Name(columnData_des);
+    oneToMany_RelationshipSql = "`" + desPrimKeyColName + "`='" +  ql_src.escape(srcPrimKeyValue) + "'"; 
   }
   
   private void getDestinationValuesToCompareWith_OneToMany(ColumnData[] src, ColumnData[] des) {
@@ -821,10 +839,12 @@ public class Transfer {
       
       String desValue = columnData_des[i].getValue();
       
+      // TODO get rid of this - needs testing
       if (desValue == null) {
         desValue = "";
       }
       
+      // overwrite dest policy defined here
       if ( 
           (onlyOverwriteBlank == true && (desValue == null | desValue.length() == 0)) | 
           (onlyOverwriteZero == true && (desValue == null | desValue.length() == 0 | desValue.equals("0"))) 
@@ -863,6 +883,10 @@ public class Transfer {
     }
    
     //System.out.println("Pause");
+  }
+
+  public void setCompareDestValues(boolean b) {
+    this.compareDestValues = b;
   }
   
 }
