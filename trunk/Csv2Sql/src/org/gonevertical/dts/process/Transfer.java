@@ -24,6 +24,7 @@ import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
  * 
  * TODO - do i want to add multple idents as the solution of transfering from source with no autoincrement?
  * TODO - how to transfer from source with no auto increment
+ * TODO - be able transform strings to sentence case  HELLO THERE to Hello there.
  * 
  * @author design
  *
