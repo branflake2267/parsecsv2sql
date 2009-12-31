@@ -147,7 +147,11 @@ public class DestinationData_v2 {
     long endTime = System.currentTimeMillis();
     long howLong = endTime - millisecondsStart;
     long seconds = (long) (howLong * .001);
-    System.out.println("milliseconds: " + howLong + " seconds: " + seconds);
+    long min = 0;
+    if (seconds > 60) {
+      min = (long) (seconds / 60);
+    }
+    System.out.println("milliseconds: " + howLong + " seconds: " + seconds + " minutes: " + min);
   }
   
   public void getElapsedTime(long millisecondsStart) {
