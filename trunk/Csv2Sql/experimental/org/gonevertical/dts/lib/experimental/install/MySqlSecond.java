@@ -60,7 +60,8 @@ public class MySqlSecond {
     setMysqlConfNd();
     
     // setup new debian attributes
-    setDebianConf();
+    setDebianStart();
+    setDebianCnf();
     
     // setup service conf
     setServiceConf();
@@ -91,6 +92,8 @@ public class MySqlSecond {
   private void createDebianUser() {
     File file = new File("/etc/mysql" + instanceNumber + "/debian.cnf");
     String host = "localhost";
+    
+    // TODO - get property
     String username = getProperty(file, "user");
     String password = getProperty(file, "password");
     DatabaseData dd = new DatabaseData(DatabaseData.TYPE_MYSQL, "localhost", getPort(), "test", "test#", "mysql");
@@ -98,9 +101,15 @@ public class MySqlSecond {
   }
 
   private void startNewInstance() {
-    String cmd = "/etc/init.d/mysql" + instanceNumber + " start &";
-    st.exec(cmd);
+	String file = "/etc/init.d/mysql" + instanceNumber;
+	
+	String cmd1 = "chmod 755 " + file;
+	st.exec(cmd1);
+	
+    String cmd2 = file + " start &";
+    st.exec(cmd2);
   }
+  
 
   /**
    * setup new service
@@ -132,13 +141,17 @@ public class MySqlSecond {
   private void setMysqlConfNd() {
     File file = new File("/etc/init.d/mysql-ndb" + instanceNumber+"");
     
+    if (file.exists() == false) {
+    	return;
+    }
+    
     // set CONF and export...
-    fu.replaceInFileByLine(file, "/mysql/", "/mysql" + instanceNumber + "/");
+    fu.replaceInFileByLine(file, "/etc/mysql/", "/etc/mysql" + instanceNumber + "/");
     
     file = new File("/etc/init.d/mysql-ndb-mgm" + instanceNumber+"");
     
     // set CONF and export
-    fu.replaceInFileByLine(file, "/mysql/", "/mysql" + instanceNumber + "/");
+    fu.replaceInFileByLine(file, "/etc//mysql/", "/etc/mysql" + instanceNumber + "/");
   }
 
   /**
@@ -165,9 +178,14 @@ public class MySqlSecond {
     fu.replaceInFileByLine(file, "/mysql-bin.log", "/mysql-bin" + instanceNumber + ".log");
     
     // regex entire properties file /etc/init.d/mysql to /etc/init.d/mysql
-    fu.replaceInFileByLine(file, "/mysql", "/mysql" + instanceNumber);
+    fu.replaceInFileByLine(file, "/etc/mysql ", "/etc/mysql" + instanceNumber + " ");
+    fu.replaceInFileByLine(file, "/etc/mysql/", "/etc/mysql" + instanceNumber + "/");
   }
   
+  /**
+   * TODO - is the port already taken???
+   * @return
+   */
   private String getPort() {
     String sNewPort = Integer.toString(3305 + instanceNumber); 
     return sNewPort;
@@ -176,16 +194,22 @@ public class MySqlSecond {
   /**
    * setup the debain start attributes
    * 
-   * FILE: /etc/mysql/debian-start.cnf
+   * FILE: /etc/mysql/debian-start
    */
-  private void setDebianConf() {
-    File file = new File("/etc/mysql" + instanceNumber + "/debian-start.cnf");
+  private void setDebianStart() {
+    File file = new File("/etc/mysql" + instanceNumber + "/debian-start");
     
     // set socket from /var/run/mysqld/mysqld.sock to /var/run/mysqld/mysqld2.sock
     fu.replaceInFileByLine(file, "/mysqld.sock", "/mysqld" + instanceNumber + ".sock");
     
     // set regex /etc/mysql to /etc/mysql2
-    fu.replaceInFileByLine(file, "/mysql", "/mysql"+instanceNumber);
+    fu.replaceInFileByLine(file, "/etc/mysql", "/etc/mysql"+instanceNumber);
+  }
+  
+  private void setDebianCnf() {
+	File file = new File("/etc/mysql" + instanceNumber + "/debian.cnf");
+	//fu.replaceInFileByLine(file, "/mysqld\\.sock", "/mysqld" + instanceNumber + ".sock");
+	changeProperty(file, "socket", "/var/run/mysqld/mysqld" + instanceNumber + ".sock");
   }
   
   /**
@@ -200,7 +224,8 @@ public class MySqlSecond {
     // set CONF=/etc/mysql/my.cnf to CONF=/etc/mysql2/my.cnf
     // set by regex: /etc/mysql to /etc/mysql2
     // set by regex: /etc/init.d/mysql to /etc/init.d/mysql2
-    fu.replaceInFileByLine(file, "/mysql", "/mysql" + instanceNumber);
+    fu.replaceInFileByLine(file, "/mysql ", "/mysql" + instanceNumber + " ");
+    fu.replaceInFileByLine(file, "/mysql/", "/mysql" + instanceNumber + "/");
   }
   
   private void copyConfFiles() {
