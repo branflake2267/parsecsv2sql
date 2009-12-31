@@ -22,11 +22,11 @@ import org.gonevertical.dts.lib.sql.transformlib.MySqlTransformLib;
  *
  */
 public class MySqlSecond {
-
+  
   public static void main(String[] args) {
-	  new MySqlSecond().run();
+    new MySqlSecond().run();
   }
-	
+  
   private MySqlTransformLib tl = new MySqlTransformLib();
   private FileUtil fu = new FileUtil();
   private ShellUtil st = new ShellUtil();
@@ -42,7 +42,7 @@ public class MySqlSecond {
   public void run() {
     
     // inferred for the moment
-	// TODO is this ubuntu?
+    // TODO is this ubuntu?
     // TODO - is there a first instance of MySql?
     // TODO - is there a mysql user? I suppose so since its instance already
     // TODO - is instance running?
@@ -66,14 +66,17 @@ public class MySqlSecond {
     // create new data dir
     createNewDataDir();
     
+    // init data dir
+    setNewDataDir();
+    
+    // create new place to put pid and socket
+    createSocketPidDir();
+    
     // setup service conf
     setServiceConf();
     
     // TODO set apparmor - finish this later
     setApparmorConf();
-    
-    // init data dir
-    setNewDataDir();
     
     // set the service to run on boot
     setNewService();
@@ -86,7 +89,12 @@ public class MySqlSecond {
     
     // TODO - deal with root no password user
     // TODO - start cluster stuff for second instance?
-
+    
+  }
+  
+  private void createSocketPidDir() {
+    File file = new File("/var/run/mysqld" + instanceNumber);
+    file.mkdir();
   }
   
   /**
@@ -102,45 +110,45 @@ public class MySqlSecond {
     DatabaseData dd = new DatabaseData(DatabaseData.TYPE_MYSQL, "localhost", getPort(), "test", "test#", "mysql");
     tl.createUser(dd, username, password, host);
   }
-
+  
   private void startNewInstance() {
-	String file = "/etc/init.d/mysql" + instanceNumber;
-	
-	String cmd1 = "chmod 755 " + file;
-	st.exec(cmd1);
-	
+    String file = "/etc/init.d/mysql" + instanceNumber;
+    
+    String cmd1 = "chmod 755 " + file;
+    st.exec_output(cmd1);
+    
     String cmd2 = file + " start &";
-    st.exec(cmd2);
+    st.exec_output(cmd2);
   }
   
-
+  
   /**
    * setup new service
    */
   private void setNewService() {
     String cmd = "update-rc.d /etc/init.d/mysql"  + instanceNumber + " defaults";
-    st.exec(cmd);
+    //st.exec_output(cmd);
   }
-
+  
   private void createNewDataDir() {
-	File file = new File("/var/lib/mysql" + instanceNumber);
-	file.mkdir();
-	
-	String sfile = file.getAbsolutePath();
-	String cmd = "chown -R mysql " + sfile;
-	String cmd2 = "chgrp -R mysql " + sfile;
-	st.exec(cmd);
-	st.exec(cmd2);
+    File file = new File("/var/lib/mysql" + instanceNumber);
+    file.mkdir();
+    
+    String sfile = file.getAbsolutePath();
+    String cmd = "chown -R mysql " + sfile;
+    String cmd2 = "chgrp -R mysql " + sfile;
+    st.exec_output(cmd);
+    st.exec_output(cmd2);
   }
   
   /**
    * init the new data directory
    */
   private void setNewDataDir() {
-    String cmd = "mysql_install_db --user:mysql --datadir:/var/lib/mysql" + instanceNumber;
-    st.exec(cmd);
+    String cmd = "/usr/bin/mysql_install_db --user:mysql --datadir:/var/lib/mysql" + instanceNumber;
+    st.exec_output(cmd);
   }
-
+  
   private void setApparmorConf() {
     File file = new File("/etc/apparmor.d/usr.sbin.mysqld");
     
@@ -151,12 +159,12 @@ public class MySqlSecond {
     // TODO add /var/run/mysqld/mysqld2.pid w,
     // TODO add /var/run/mysqld/mysqld2.sock w,
   }
-
+  
   private void setMysqlConfNd() {
     File file = new File("/etc/init.d/mysql-ndb" + instanceNumber+"");
     
     if (file.exists() == false) {
-    	return;
+      return;
     }
     
     // set CONF and export...
@@ -165,9 +173,9 @@ public class MySqlSecond {
     file = new File("/etc/init.d/mysql-ndb-mgm" + instanceNumber+"");
     
     // set CONF and export
-    fu.replaceInFileByLine(file, "/etc//mysql/", "/etc/mysql" + instanceNumber + "/");
+    fu.replaceInFileByLine(file, "/etc/mysql/", "/etc/mysql" + instanceNumber + "/");
   }
-
+  
   /**
    * set my.cnf attributes
    *
@@ -183,10 +191,10 @@ public class MySqlSecond {
     changeProperty(file, "datadir", "/var/lib/mysql" + instanceNumber);
     
     // set socket /var/run/mysqld/mysqld.sock to /var/run/mysqld/mysqld2.sock
-    changeProperty(file, "socket", "/var/run/mysqld/mysqld" + instanceNumber + ".sock");
+    changeProperty(file, "socket", "/var/run/mysqld" + instanceNumber + "/mysqld.sock");
     
     // set pid-file /var/run/mysqld/mysqld.pid to /var/run/mysqld/mysqld2.pid
-    changeProperty(file, "pid-file", "/var/run/mysqld/mysqld" + instanceNumber + ".pid");
+    changeProperty(file, "pid-file", "/var/run/mysqld" + instanceNumber + "/mysqld.pid");
     
     // log_bin /var/log/mysql/mysql-bin.log to /var/log/mysql/mysql-bin2.log
     fu.replaceInFileByLine(file, "/mysql-bin.log", "/mysql-bin" + instanceNumber + ".log");
@@ -214,16 +222,18 @@ public class MySqlSecond {
     File file = new File("/etc/mysql" + instanceNumber + "/debian-start");
     
     // set socket from /var/run/mysqld/mysqld.sock to /var/run/mysqld/mysqld2.sock
-    fu.replaceInFileByLine(file, "/mysqld.sock", "/mysqld" + instanceNumber + ".sock");
+    //fu.replaceInFileByLine(file, "/mysqld.sock", "/mysqld" + instanceNumber + ".sock");
+    // set socket /var/run/mysqld/mysqld.sock to /var/run/mysqld/mysqld2.sock
+    changeProperty(file, "socket", "/var/run/mysqld" + instanceNumber + "/mysqld.sock");
     
     // set regex /etc/mysql to /etc/mysql2
     fu.replaceInFileByLine(file, "/etc/mysql", "/etc/mysql"+instanceNumber);
   }
   
   private void setDebianCnf() {
-	File file = new File("/etc/mysql" + instanceNumber + "/debian.cnf");
-	//fu.replaceInFileByLine(file, "/mysqld\\.sock", "/mysqld" + instanceNumber + ".sock");
-	changeProperty(file, "socket", "/var/run/mysqld/mysqld" + instanceNumber + ".sock");
+    File file = new File("/etc/mysql" + instanceNumber + "/debian.cnf");
+    //fu.replaceInFileByLine(file, "/mysqld\\.sock", "/mysqld" + instanceNumber + ".sock");
+    changeProperty(file, "socket", "/var/run/mysqld" + instanceNumber + "/mysqld.sock");
   }
   
   /**
@@ -249,11 +259,7 @@ public class MySqlSecond {
     
     String command = "cp -R /etc/mysql/. " + newDir + "";
     System.out.println(command);
-    try {
-      Runtime.getRuntime().exec(command);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    st.exec_output(command);
   }
   
   private void copyServiceFile() {
@@ -269,7 +275,7 @@ public class MySqlSecond {
     dst = new File("/etc/init.d/mysql-ndb-mgm" + instanceNumber);
     copyFile(src, dst);
   }
-   
+  
   private void copyFile(File src, File dst) {
     if (src.exists() == false) {
       System.out.println("skipping file copy: " + src.getAbsolutePath());
@@ -350,6 +356,6 @@ public class MySqlSecond {
   private void createNewFile(File file) {
     String sfile = file.getAbsolutePath();
     String cmd = "touch " + sfile;
-    st.exec(cmd);
+    st.exec_output(cmd);
   }
 }
