@@ -63,7 +63,7 @@ public class Run_Import_ZipCodes_All {
     destinationData.setData(databaseData, changeColumns, identities, table);
     
     // Settings
-    destinationData.dropTable = true;
+    destinationData.dropTable = false;
     destinationData.optimise = true;
     destinationData.debug = 1;
     destinationData.optimise_RecordsToExamine = 300;
