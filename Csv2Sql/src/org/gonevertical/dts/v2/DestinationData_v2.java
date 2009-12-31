@@ -44,6 +44,7 @@ public class DestinationData_v2 {
 
   // how many records to examine for optimisation of the column data
   // records are examine randomly over this many records
+  // pause at row count and optimise then continue
   public int optimise_RecordsToExamine = 10000;
 
   // when Examining the data, examine the recores in the column it randomly
@@ -84,7 +85,7 @@ public class DestinationData_v2 {
   public boolean moveFileToDone = false;
   
   // stop at column, don't process any columns over this count. 0 process all
-  public int stopAtColumnCount = 0;
+  public int stopProcessingAtRowCount = 0;
   
   public int stopAtRow = -1;
   

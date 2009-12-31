@@ -21,6 +21,8 @@ public class FileProcessing_v2 {
   // destination data point
   private DestinationData_v2 desinationData = null;
 
+  private boolean returnToOptimise;
+
   /**
    * constructor
    */
@@ -91,7 +93,8 @@ public class FileProcessing_v2 {
         
         // first time optimisation will cause this to happen
         if (csvProcess.getReturnToOptimise() == true) {
-          csvProcess.parseFile(i, files[i]);
+          returnToOptimise = true;
+          return;
         }
         
         // move file to folder when done processing
@@ -221,6 +224,12 @@ public class FileProcessing_v2 {
       System.out.println("Dropping Table");
       tl.dropTable(desinationData.databaseData, desinationData.table);
     }
+  }
+  
+  public boolean getReturnOnOptimise() {
+    boolean r = returnToOptimise;
+    returnToOptimise = false;
+    return r;
   }
   
 }
