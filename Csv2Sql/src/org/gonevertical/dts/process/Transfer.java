@@ -87,6 +87,8 @@ public class Transfer {
   // this will skip comparing dest columns
   private boolean compareDestValues = true;
   
+  private long limitOffset = 100;
+  
   /**
    * Transfer data object setup 
    * 
@@ -172,9 +174,6 @@ public class Transfer {
     
     index = 0;
     
-    database_src.openConnection();
-    database_des.openConnection();
-
     if (mode == MODE_TRANSFER_ALL) {
       setColumnData_All();
     } else if (mode == MODE_TRANSFER_ONLY) {
@@ -194,9 +193,6 @@ public class Transfer {
     } else if (mode == MODE_MASH) {
       processSrc_Mash();
     }
-    
-    database_src.closeConnection();
-    database_des.closeConnection();
     
   }
 
@@ -288,21 +284,21 @@ public class Transfer {
     System.out.println("sql" + sql);
     long total = ql_src.queryLong(database_src, sql);
     
-    int lim = 1000;
-    int totalPages = (int) (total / lim);
+    long lim = limitOffset;
+    long totalPages = (total / lim);
     if (totalPages == 0) {
       totalPages = 1;
     }
 
-    int offset = 0;
-    int limit = 0;
+    long offset = 0;
+    long limit = 0;
     for (int i=0; i < totalPages; i++) {
       if (i==0) {
         offset = 0;
-        limit = 1000;
+        limit = lim;
       } else {
-        offset = ((i+1)*1000) - 1000;
-        limit = ((i+1)*1000);
+        offset = ((i + 1 )* lim) - lim;
+        limit = lim;
       }
       
       processSrc(offset, limit);
@@ -310,7 +306,7 @@ public class Transfer {
     
   }
   
-  private void processSrc(int offset, int limit) {
+  private void processSrc(long offset, long limit) {
 
     ColumnData primKey = cl_src.getPrimaryKey_ColumnData(columnData_src);
     String where = "";
@@ -342,9 +338,11 @@ public class Transfer {
     
     System.out.println("sql: " + sql);
     
+    Connection conn = null;
+    Statement select = null;
     try {
-      Connection conn = database_src.getConnection();
-      Statement select = conn.createStatement();
+      conn = database_src.getConnection();
+      select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
 
@@ -366,9 +364,16 @@ public class Transfer {
       }
       result.close();
       select.close();
+      conn.close();
+      result = null;
+      select = null;
+      conn = null;
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
+    } finally {
+      conn = null;
+      select = null;
     }
   }
   
@@ -411,18 +416,22 @@ public class Transfer {
     
     System.out.println("sql: " + sql);
     
+    Connection conn = null;
+    Statement select = null;
     try {
-      Connection conn = database_des.getConnection();
-      Statement select = conn.createStatement();
+      conn = database_des.getConnection();
+      select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
-
         String getKeyValue = result.getString(1);
-
         processSrc_Mash(getKeyValue);
       }
       result.close();
       select.close();
+      conn.close();
+      result = null;
+      select = null;
+      conn = null;
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
@@ -443,11 +452,11 @@ public class Transfer {
     
     System.out.println("sql: " + sql);
     
-    // TODO - remove read forward
+    Connection conn = null;
+    Statement select = null;
     try {
-      Connection conn = database_src.getConnection();
-      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
-      select.setFetchSize(Integer.MIN_VALUE); // read row by row
+      conn = database_src.getConnection();
+      select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
 
@@ -472,6 +481,10 @@ public class Transfer {
       }
       result.close();
       select.close();
+      conn.close();
+      result = null;
+      select = null;
+      conn = null;
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
@@ -719,9 +732,11 @@ public class Transfer {
     //System.out.println("getDestinationValuesToCompareWith(): " + sql);
     
     boolean b = false;
+    Connection conn = null;
+    Statement select = null;
     try {
-      Connection conn = database_des.getConnection();
-      Statement select = conn.createStatement();
+      conn = database_des.getConnection();
+      select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
 
@@ -734,6 +749,10 @@ public class Transfer {
       }
       result.close();
       select.close();
+      conn.close();
+      result = null;
+      select = null;
+      conn = null;
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
@@ -770,9 +789,11 @@ public class Transfer {
     String sql = "SELECT * FROM " + des.getTable() + " WHERE " + where + ";";
     
     boolean b = false;
+    Connection conn = null;
+    Statement select = null;
     try {
-      Connection conn = database_des.getConnection();
-      Statement select = conn.createStatement();
+      conn = database_des.getConnection();
+      select = conn.createStatement();
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
         String value = result.getString(des.getColumnName());
@@ -781,6 +802,10 @@ public class Transfer {
       }
       result.close();
       select.close();
+      conn.close();
+      result = null;
+      select = null;
+      conn = null;
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
