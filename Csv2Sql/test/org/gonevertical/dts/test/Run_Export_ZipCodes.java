@@ -26,7 +26,7 @@ public class Run_Export_ZipCodes {
     DatabaseData database_src = new DatabaseData(DatabaseData.TYPE_MYSQL, "ark", "3306", "test", "test#", "system");
     String table = "zipcodes";
     String whereSql = null;
-    String limitSql = "LIMIT 0,1000";
+    String limitSql = null; // limitSql="LIMIT 0,101";
     
     // destination
     File desDir = new File(dir);
