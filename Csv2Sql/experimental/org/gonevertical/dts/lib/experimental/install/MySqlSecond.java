@@ -63,6 +63,9 @@ public class MySqlSecond {
     setDebianStart();
     setDebianCnf();
     
+    // create new data dir
+    createNewDataDir();
+    
     // setup service conf
     setServiceConf();
     
@@ -119,6 +122,17 @@ public class MySqlSecond {
     st.exec(cmd);
   }
 
+  private void createNewDataDir() {
+	File file = new File("/var/lib/mysql" + instanceNumber);
+	file.mkdir();
+	
+	String sfile = file.getAbsolutePath();
+	String cmd = "chown -R mysql " + sfile;
+	String cmd2 = "chgrp -R mysql " + sfile;
+	st.exec(cmd);
+	st.exec(cmd2);
+  }
+  
   /**
    * init the new data directory
    */
@@ -172,7 +186,7 @@ public class MySqlSecond {
     changeProperty(file, "socket", "/var/run/mysqld/mysqld" + instanceNumber + ".sock");
     
     // set pid-file /var/run/mysqld/mysqld.pid to /var/run/mysqld/mysqld2.pid
-    changeProperty(file, "socket", "/var/run/mysqld/mysqld" + instanceNumber + ".pid");
+    changeProperty(file, "pid-file", "/var/run/mysqld/mysqld" + instanceNumber + ".pid");
     
     // log_bin /var/log/mysql/mysql-bin.log to /var/log/mysql/mysql-bin2.log
     fu.replaceInFileByLine(file, "/mysql-bin.log", "/mysql-bin" + instanceNumber + ".log");
