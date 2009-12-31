@@ -535,8 +535,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   
   private ColumnData[] stopAtColumnsCount(ColumnData[] columns) {
     int c = columns.length;
-    if (dd != null && dd.stopAtColumnCount > 1 && columns.length > dd.stopAtColumnCount) {
-      c = dd.stopAtColumnCount;
+    if (dd != null && dd.stopProcessingAtRowCount > 1 && columns.length > dd.stopProcessingAtRowCount) {
+      c = dd.stopProcessingAtRowCount;
     }
     ColumnData[] b = new ColumnData[c];
     for (int i=0; i < c; i++) {
@@ -549,8 +549,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     
     int c = values.length;
     
-    if (dd != null && dd.stopAtColumnCount > 1 && values.length > dd.stopAtColumnCount) {
-      c = dd.stopAtColumnCount;
+    if (dd != null && dd.stopProcessingAtRowCount > 1 && values.length > dd.stopProcessingAtRowCount) {
+      c = dd.stopProcessingAtRowCount;
     }
     
     String[] b = new String[c];

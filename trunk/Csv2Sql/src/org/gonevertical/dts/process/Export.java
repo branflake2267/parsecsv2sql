@@ -260,7 +260,7 @@ public class Export {
     checkFileSize();
     
     // DEBUG
-    System.out.println("DEBUG OUT: " + s);
+    System.out.println(i + ". DEBUG OUT: " + s);
     
     writeFile(s);
   }
