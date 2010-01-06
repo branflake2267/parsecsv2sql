@@ -52,8 +52,8 @@ public class Transfer {
   private DatabaseData database_des = null;
   
   // transfering from table to table
-  private String tableFrom = null;
-  private String tableTo = null;
+  private String tableLeft = null;
+  private String tableRight = null;
   
   // table identity fields established so not to create duplicates
   private FieldData[] identFields = null;
@@ -121,23 +121,23 @@ public class Transfer {
    */
   public void transferAllFields(String fromTable, String toTable) {
     this.mode = MODE_TRANSFER_ALL;
-    this.tableFrom = fromTable;
-    this.tableTo = toTable;
+    this.tableLeft = fromTable;
+    this.tableRight = toTable;
     start();
   }
   
   public void transferOnlyMappedFields(String fromTable, String toTable, FieldData[] mappedFields) {
     this.mode = MODE_TRANSFER_ONLY;
-    this.tableFrom = fromTable;
-    this.tableTo = toTable;
+    this.tableLeft = fromTable;
+    this.tableRight = toTable;
     this.mappedFields = mappedFields;
     start();
   }
   
   public void mashSrc(String fromTable, String toTable, FieldData[] mappedFields) {
     this.mode = MODE_MASH;
-    this.tableFrom = fromTable;
-    this.tableTo = toTable;
+    this.tableLeft = fromTable;
+    this.tableRight = toTable;
     this.mappedFields = mappedFields;
     start();
   }
@@ -160,8 +160,8 @@ public class Transfer {
    */
   public void transferOnlyMappedFields(String fromTable, String toTable, FieldData[] mappedFields, FieldData[] oneToMany) {
     this.mode = MODE_TRANSFER_ONLY;
-    this.tableFrom = fromTable;
-    this.tableTo = toTable;
+    this.tableLeft = fromTable;
+    this.tableRight = toTable;
     this.mappedFields = mappedFields;
     this.oneToMany  = oneToMany;
     start();
@@ -201,7 +201,7 @@ public class Transfer {
    */
   private void createDestTable() {
     String primaryKeyName = cl_src.getPrimaryKey_Name(columnData_src);
-    tl_des.createTable(database_des, tableTo, primaryKeyName);
+    tl_des.createTable(database_des, tableRight, primaryKeyName);
   }
   
   private void createColumns() {
@@ -213,13 +213,13 @@ public class Transfer {
   }
   
   private void setColumnData_All() {
-    columnData_src = tl_src.queryColumns(database_src, tableFrom, null);
+    columnData_src = tl_src.queryColumns(database_src, tableLeft, null);
     
     columnData_des = new ColumnData[columnData_src.length];
     for(int i=0; i < columnData_src.length; i++) {
       columnData_des[i] = new ColumnData();
       columnData_des[i] = (ColumnData) columnData_src[i].clone();
-      columnData_des[i].setTable(tableTo);
+      columnData_des[i].setTable(tableRight);
     }
   }
   
@@ -243,14 +243,14 @@ public class Transfer {
       columnData_src[i] = new ColumnData();
       columnData_des[i] = new ColumnData();
       
-      columnData_src[i].setTable(tableFrom);
+      columnData_src[i].setTable(tableLeft);
       columnData_src[i].setColumnName(mappedFields[i].sourceField);
       columnData_src[i].setIsPrimaryKey(mappedFields[i].isPrimaryKey);
       columnData_src[i].setOverwriteWhenBlank(mappedFields[i].onlyOverwriteBlank);
       columnData_src[i].setOverwriteWhenZero(mappedFields[i].onlyOverwriteZero);
       columnData_src[i].setRegex(mappedFields[i].regexSourceField);
       
-      columnData_des[i].setTable(tableTo);
+      columnData_des[i].setTable(tableRight);
       columnData_des[i].setColumnName(mappedFields[i].destinationField);
       columnData_des[i].setIsPrimaryKey(mappedFields[i].isPrimaryKey);
       columnData_des[i].setOverwriteWhenBlank(mappedFields[i].onlyOverwriteBlank);
@@ -280,7 +280,7 @@ public class Transfer {
   
   private void processSrc() {
     
-    String sql = "SELECT COUNT(*) AS t FROM `" + tableFrom + "`;";
+    String sql = "SELECT COUNT(*) AS t FROM `" + tableLeft + "`;";
     System.out.println("sql" + sql);
     long total = ql_src.queryLong(database_src, sql);
     
@@ -326,7 +326,7 @@ public class Transfer {
     }
     
     String sql = "";
-    sql = "SELECT " + columnCsv + " " + columnCsv2 + " FROM " + tableFrom + " ";
+    sql = "SELECT " + columnCsv + " " + columnCsv2 + " FROM " + tableLeft + " ";
     sql += where;
     sql += getSrcWhere();
     sql += " LIMIT " + offset + ", " + limit + ";";
@@ -379,7 +379,7 @@ public class Transfer {
   
   private void processSrc_Mash() {
 
-    String sql = "SELECT COUNT(*) AS t FROM `" + tableFrom + "`;"; 
+    String sql = "SELECT COUNT(*) AS t FROM `" + tableLeft + "`;"; 
     long total = ql_src.queryLong(database_src, sql);
     
     int lim = 1000;
@@ -409,7 +409,7 @@ public class Transfer {
     ColumnData keyDes = cl_des.getPrimaryKey_ColumnData(columnData_des);
     
     String sql = "";
-    sql = "SELECT " + keyDes.getColumnName() + " FROM " + tableTo + " ";
+    sql = "SELECT " + keyDes.getColumnName() + " FROM " + tableRight + " ";
     sql += where;
     sql += getSrcWhere();
     sql += " LIMIT " + offset + ", " + limit + ";";
@@ -446,7 +446,7 @@ public class Transfer {
     //ColumnData keyDes = ColumnData.getPrimaryKey_ColumnData(columnData_des);
     
     String sql = "";
-    sql = "SELECT " + columnCsv + " FROM " + tableFrom + " ";
+    sql = "SELECT " + columnCsv + " FROM " + tableLeft + " ";
     sql += "WHERE " + keySrc.getColumnName() + " = '" + keyValueDes + "' ";
     sql += getSrcWhere();
     
@@ -605,12 +605,12 @@ public class Transfer {
       if (cl_des.doesColumnNameExist(columnData_des, "DateUpdated") == false) {
         //fields += ",DateUpdated=NOW()";
       }
-      sql = "UPDATE " + tableTo + " SET " + fields + " WHERE " + where; 
+      sql = "UPDATE " + tableRight + " SET " + fields + " WHERE " + where; 
     } else { // insert
       if (cl_des.doesColumnNameExist(columnData_des, "DateCreated") == false) {
         //fields += ",DateCreated=NOW()";
       }
-      sql = "INSERT INTO " + tableTo + " SET " + fields;
+      sql = "INSERT INTO " + tableRight + " SET " + fields;
     }
 
     System.out.println(index + ". SAVE: " + sql);
@@ -726,7 +726,7 @@ public class Transfer {
     String srcPrimKeyValue = cl_src.getPrimaryKey_Value(columnData_src);
     String desPrimKeyColName = cl_des.getPrimaryKey_Name(columnData_des);
     
-    String sql = "SELECT * FROM " + tableTo + " WHERE " +
+    String sql = "SELECT * FROM " + tableRight + " WHERE " +
       "(`" + desPrimKeyColName + "`='" +  ql_src.escape(srcPrimKeyValue) + "')";
     
     //System.out.println("getDestinationValuesToCompareWith(): " + sql);
@@ -820,13 +820,13 @@ public class Transfer {
 
   private long doIdentsExistAlready(DatabaseData databaseData) {
    
-    ColumnData primaryKey = tl_des.queryPrimaryKey(database_des, tableTo);
+    ColumnData primaryKey = tl_des.queryPrimaryKey(database_des, tableRight);
     
     if (primaryKey == null) {
       return 0;
     }
     
-    String sql = "Select `" + primaryKey.getColumnName() + "` FROM " + tableTo + " WHERE "  + getSqlIdent();
+    String sql = "Select `" + primaryKey.getColumnName() + "` FROM " + tableRight + " WHERE "  + getSqlIdent();
     
    //System.out.println("\texist: " + sql);
     
