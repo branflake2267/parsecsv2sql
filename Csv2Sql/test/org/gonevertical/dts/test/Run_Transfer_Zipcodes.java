@@ -3,11 +3,11 @@ package org.gonevertical.dts.test;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.process.Transfer;
 
-public class Run_Transfer_Zipcods {
+public class Run_Transfer_Zipcodes {
   
   public static void main(String[] args) {
     
-    new Run_Transfer_Zipcods().run();
+    new Run_Transfer_Zipcodes().run();
     
   }
 
