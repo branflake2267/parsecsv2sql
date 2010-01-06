@@ -80,7 +80,7 @@ public class Transfer {
   // hard code values in on a one to many records
   private ArrayList<HashMap<String,String>> hardOneToMany = new ArrayList<HashMap<String,String>>();
   
-  private int index = 0;
+  private long index = 0;
   
   private String srcWhere = null;
   
@@ -283,6 +283,8 @@ public class Transfer {
     String sql = "SELECT COUNT(*) AS t FROM `" + tableLeft + "`;";
     System.out.println("sql" + sql);
     long total = ql_src.queryLong(database_src, sql);
+    
+    index = total;
     
     long lim = limitOffset;
     long totalPages = (total / lim);
@@ -619,7 +621,7 @@ public class Transfer {
     
     ql_des.update(database_des, sql, false);
     
-    index++;
+    index--;
   }
   
   private void testColumnValueSizes(ColumnData[] columnData) {
