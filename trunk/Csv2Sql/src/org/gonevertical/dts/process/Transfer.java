@@ -636,7 +636,7 @@ public class Transfer {
       sql = "INSERT INTO " + tableRight + " SET " + fields;
     }
 
-    System.out.println(index + ". SAVE: " + sql);
+    System.out.println(index + ". SAVE: " + sql.substring(0,10));
     
     testColumnValueSizes(columnData_des);
     
