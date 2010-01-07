@@ -1,5 +1,7 @@
 package org.gonevertical.dts.process;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -80,14 +82,20 @@ public class Transfer {
   // hard code values in on a one to many records
   private ArrayList<HashMap<String,String>> hardOneToMany = new ArrayList<HashMap<String,String>>();
   
-  private long index = 0;
-  
+  // filter your query
   private String srcWhere = null;
   
   // this will skip comparing dest columns
   private boolean compareDestValues = true;
   
+  // total count query
+  private long total = 0;
+  
+  // query this many records at a time
   private long limitOffset = 100;
+	
+  // at index
+  private long index = 0;
   
   /**
    * Transfer data object setup 
@@ -279,7 +287,7 @@ public class Transfer {
   }
   
   private void processSrc() {
-    
+  	
   	String where = "";
   	if (where != null && where.length() > 0) {
   		where = " WHERE " + srcWhere;
@@ -287,19 +295,26 @@ public class Transfer {
   	
     String sql = "SELECT COUNT(*) AS t FROM `" + tableLeft + "`" + where;
     System.out.println("sql" + sql);
-    long total = ql_src.queryLong(database_src, sql);
+    total = ql_src.queryLong(database_src, sql);
     
     index = total;
     
+    loopThroughPages();
+  }
+  
+  private void loopThroughPages() {
+    
     long lim = limitOffset;
-    long totalPages = (total / lim);
-    if (totalPages == 0) {
-      totalPages = 1;
+    BigDecimal tp = new BigDecimal(0);
+    if (total > 0) {
+    	tp = new BigDecimal(total).divide(new BigDecimal(lim)).setScale(0, RoundingMode.UP);	
+    } else {
+    	tp = new BigDecimal(1);
     }
-
+    
     long offset = 0;
     long limit = 0;
-    for (int i=0; i < totalPages; i++) {
+    for (int i=0; i < tp.intValue(); i++) {
       if (i==0) {
         offset = 0;
         limit = lim;
@@ -309,6 +324,7 @@ public class Transfer {
       }
       
       processSrc(offset, limit);
+      //System.out.println("offset: " + offset + " limit: " + limit);
     }
     
   }
