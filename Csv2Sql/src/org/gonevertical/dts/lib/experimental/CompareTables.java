@@ -87,7 +87,7 @@ public class CompareTables {
   	} else {
   		match = "FALSE";
   	}
-  	System.out.println("LeftTable: " + leftTable + " left: " + left + " RightTable: "+ rightTable + " right: " + right + " " + match);
+  	System.out.println("LeftTable: " + leftTable + " left: " + left + " RightTable: "+ rightTable + " right: " + right + " " + match + " offby: " + (left-right));
   }
   
   private void checkTableCount(String table) {
@@ -102,7 +102,7 @@ public class CompareTables {
   	} else {
   		match = "FALSE";
   	}
-  	System.out.println("table: " + table + " left: " + left + " right: " + right + " " + match);
+  	System.out.println("table: " + table + " left: " + left + " right: " + right + " " + match + " offby: " + (left-right));
   }
 	
   public void compareTableData(String tableLeft, String tableRight) {
