@@ -402,29 +402,42 @@ public class Transfer {
   
   private void processSrc_Mash() {
 
-    String sql = "SELECT COUNT(*) AS t FROM `" + tableLeft + "`;"; 
-    long total = ql_src.queryLong(database_src, sql);
+  	String where = "";
+  	if (srcWhere != null && srcWhere.length() > 0) {
+  		where = " WHERE " + srcWhere;
+  	}
+  	
+    String sql = "SELECT COUNT(*) AS t FROM `" + tableLeft + "`" + where;
+    System.out.println("sql" + sql);
+    total = ql_src.queryLong(database_src, sql);
+    index = total;
     
-    int lim = 1000;
-    int totalPages = (int) (total / lim);
-
-    int offset = 0;
-    int limit = 0;
-    for (int i=0; i < totalPages; i++) {
+    long lim = limitOffset;
+    BigDecimal tp = new BigDecimal(0);
+    if (total > 0) {
+    	tp = new BigDecimal(total).divide(new BigDecimal(lim)).setScale(0, RoundingMode.UP);	
+    } else {
+    	tp = new BigDecimal(1);
+    }
+    
+    long offset = 0;
+    long limit = 0;
+    for (int i=0; i < tp.intValue(); i++) {
       if (i==0) {
         offset = 0;
-        limit = 1000;
+        limit = lim;
       } else {
-        offset = ((i+1)*1000) - 1000;
-        limit = ((i+1)*1000);
+        offset = ((i + 1 )* lim) - lim;
+        limit = lim;
       }
       
       processSrc_Mash(offset, limit);
+      //System.out.println("offset: " + offset + " limit: " + limit);
     }
     
   }
   
-  private void processSrc_Mash(int offset, int limit) {
+  private void processSrc_Mash(long offset, long limit) {
 
     ColumnData primKey = cl_des.getPrimaryKey_ColumnData(columnData_des);
     String where = "WHERE " + primKey.getColumnName() + " != '' AND " + primKey.getColumnName() + " IS NOT NULL";
