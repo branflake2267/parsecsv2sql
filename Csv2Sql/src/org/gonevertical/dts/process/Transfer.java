@@ -27,6 +27,7 @@ import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
  * TODO - do i want to add multple idents as the solution of transfering from source with no autoincrement?
  * TODO - how to transfer from source with no auto increment
  * TODO - be able transform strings to sentence case  HELLO THERE to Hello there.
+ * TODO - move 100page to 1000 depending on column size
  * 
  * @author design
  *
@@ -289,14 +290,13 @@ public class Transfer {
   private void processSrc() {
   	
   	String where = "";
-  	if (where != null && where.length() > 0) {
+  	if (srcWhere != null && srcWhere.length() > 0) {
   		where = " WHERE " + srcWhere;
   	}
   	
     String sql = "SELECT COUNT(*) AS t FROM `" + tableLeft + "`" + where;
     System.out.println("sql" + sql);
     total = ql_src.queryLong(database_src, sql);
-    
     index = total;
     
     loopThroughPages();
