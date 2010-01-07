@@ -5,3 +5,4 @@
 4 - purge records that don't exist in another table
 5 - does data match from this table to that table? for slave or matching data
 6 - do tables match? for slave or copy data
+7 - multi thread processing with a query thread - spawn the queries into x threads each processing 100 at a time

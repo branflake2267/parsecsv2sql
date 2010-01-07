@@ -64,6 +64,32 @@ public class CompareTables {
   	}
   }
   
+  public void checkTableCounts(String leftTable, String rightTable) {
+  	checkTableCount(leftTable, rightTable);
+  }
+  
+  private void checkTableCount(String leftTable, String rightTable) {
+  	
+  	String where = "";
+  	if (srcWhere != null) {
+  		where = " WHERE " + srcWhere;
+  	}
+  	
+  	String sqlL = "SELECT COUNT(*) AS t FROM " + leftTable + where;
+  	String sqlR = "SELECT COUNT(*) AS t FROM " + rightTable + where;
+  	
+  	long left = ql_src.queryLong(database_src, sqlL);
+  	long right = ql_des.queryLong(database_des, sqlR);
+  
+  	String match = "";
+  	if (left == right) {
+  		 match = "TRUE";
+  	} else {
+  		match = "FALSE";
+  	}
+  	System.out.println("LeftTable: " + leftTable + " left: " + left + " RightTable: "+ rightTable + " right: " + right + " " + match);
+  }
+  
   private void checkTableCount(String table) {
   	String sql = "SELECT COUNT(*) AS t FROM " + table;
   	
@@ -76,7 +102,7 @@ public class CompareTables {
   	} else {
   		match = "FALSE";
   	}
-  	System.out.println("left: " + left + " right: " + right + " " + match);
+  	System.out.println("table: " + table + " left: " + left + " right: " + right + " " + match);
   }
 	
   public void compareTableData(String tableLeft, String tableRight) {
@@ -189,16 +215,20 @@ public class CompareTables {
       	String rightValue = columnData_des[i].getValue();
       
       	String match = "";
-      	if (leftValue.equals(rightValue) == true) {
+      	if (leftValue == null && rightValue == null) {
+      		match = "TRUE";
+      	} else if (leftValue == null | rightValue == null) {
+      		match = "FALSE";
+      	} else if (leftValue.equals(rightValue) == true) {
       		match = "TRUE";
       	} else {
       		match = "FALSE";
       	}
         
-      	s += columnData_src[i].getName() + ": " + match;
+      	s += columnData_src[i].getName() + ": " + match + ", ";
       
     }
-    System.out.println(s + "\n");
+    System.out.println(s);
   }
 
   private void getDestinationValuesForComparison() {
@@ -243,5 +273,8 @@ public class CompareTables {
     }
   }
   
+  public void setWhere(String where) {
+  	this.srcWhere = where;
+  }
   
 }
