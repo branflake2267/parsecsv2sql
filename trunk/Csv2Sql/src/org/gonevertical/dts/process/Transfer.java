@@ -280,7 +280,7 @@ public class Transfer {
   
   private void processSrc() {
     
-    String sql = "SELECT COUNT(*) AS t FROM `" + tableLeft + "`;";
+    String sql = "SELECT COUNT(*) AS t FROM `" + tableLeft + "` WHERE + " + srcWhere;
     System.out.println("sql" + sql);
     long total = ql_src.queryLong(database_src, sql);
     
