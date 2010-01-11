@@ -22,6 +22,9 @@ public class DatabaseData {
   // database
   private String database;
   
+  // ms uses this for [table_schema].[table]
+  private String tableSchema;
+  
   // what type of database is it? Mysql, Jdo, ...
   public static final int TYPE_MYSQL = 1;
   public static final int TYPE_MSSQL = 2;
@@ -69,6 +72,16 @@ public class DatabaseData {
     this.database = database;
   }
   
+  public DatabaseData(int databaseType, String host, String port, String username, String password, String database, String tableSchema) {
+    this.databaseType = databaseType;
+    this.host = host;
+    this.port = port;
+    this.username = username;
+    this.password = password;
+    this.database = database;
+    this.tableSchema = tableSchema;
+  }
+  
   /**
    * http://dev.mysql.com/doc/refman/5.4/en/connector-j-reference-configuration-properties.html
    */
@@ -104,6 +117,14 @@ public class DatabaseData {
   
   public String getDatabase() {
     return database;
+  }
+  
+  public void setTableSchema(String tableSchema) {
+  	this.tableSchema = tableSchema;
+  }
+  
+  public String getTableSchema() {
+  	return tableSchema;
   }
     
   /**

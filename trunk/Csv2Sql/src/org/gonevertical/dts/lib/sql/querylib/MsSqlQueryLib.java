@@ -8,6 +8,7 @@ import java.sql.Statement;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.gonevertical.dts.data.DatabaseData;
+import org.gonevertical.dts.lib.StringUtil;
 
 
 /**
@@ -308,10 +309,11 @@ public class MsSqlQueryLib implements QueryLib {
     return csv;
   }
 
-  public  long update(DatabaseData dd, String sql) {
+  public long update(DatabaseData dd, String sql) {
     if (sql == null) {
       return 0;
     }
+    sql = fixSyntax(sql);
     long id = 0;
     try {
       Connection conn = dd.getConnection();
@@ -336,10 +338,11 @@ public class MsSqlQueryLib implements QueryLib {
     return id;
   }
   
-  public  long update(DatabaseData dd, String sql, boolean getKey) {
+  public long update(DatabaseData dd, String sql, boolean getKey) {
     if (sql == null) {
       return 0;
     }
+    sql = fixSyntax(sql);
     long id = 0;
     try {
       Connection conn = dd.getConnection();
@@ -367,7 +370,7 @@ public class MsSqlQueryLib implements QueryLib {
     return id;
   }
   
-  public  boolean queryStringAndConvertToBoolean(DatabaseData dd, String sql) {
+  public boolean queryStringAndConvertToBoolean(DatabaseData dd, String sql) {
     String value = null;
     try {
       Connection conn = dd.getConnection();
@@ -423,4 +426,87 @@ public class MsSqlQueryLib implements QueryLib {
     return "MsSql";
   }
 
+  /**
+   * fix sql syntax if needed
+   * 
+   * @param sql
+   * @return
+   */
+  public String fixSyntax(String sql) {
+  	
+  	if ((sql.toLowerCase().contains("insert") == true | 
+  			sql.toLowerCase().contains("update") == true) && sql.toLowerCase().contains("set") == true) {
+  		sql = fixSyntax_InsertUpdate(sql);
+  	}
+  	
+  	return sql;
+  }
+  
+  /**
+   * change from column=value to (columns,...) values (values,...)
+   * 
+   * @param sql
+   * @return
+   */
+  private String fixSyntax_InsertUpdate(String sql) {
+  	
+  	// get beginning
+  	String beginning = StringUtil.getValue("(?i)^(.*?set)", sql);
+  	sql = sql.replace(beginning, "");
+  	sql = sql.replace(";", "");
+  	beginning = StringUtil.getValue("(?i)^(.*?)set", beginning);
+  	
+  	// get end
+  	String end = StringUtil.getValue("(WHERE.*?)$", sql);
+  	if (end == null) {
+  		end = "";
+  	} else {
+  		sql = sql.replace(end, "");
+  		end = StringUtil.getValue(";", end);
+  	}
+  	
+  	String middle = fixSyntax_getMiddle(sql);
+  	
+  	sql = beginning + middle + end;
+  	
+  	return sql;
+  }
+  
+  private String fixSyntax_getMiddle(String sql) {
+  	
+  	String[] split = null;
+  	if (sql.contains(",")) {
+  		split = sql.split(",");
+  	} else {
+  		split = new String[1];
+  		split[0] = sql;
+  	}
+  	
+  	String[] c = new String[split.length];
+  	String[] v = new String[split.length];
+  	for (int i=0; i < split.length; i++) {
+  		String[] cv = split[i].trim().split("=");
+  		c[i] = cv[0];
+  		v[i] = cv[1];
+  	}
+  	
+  	String columns = "";
+  	String values = "";
+  	for (int i=0; i < split.length; i++) {
+  		columns += c[i];
+  		values += v[i];
+  		if (i < split.length - 1) {
+  			columns += ",";
+  			values += ",";
+  		}
+  	}
+  	
+  	String middle = "(" + columns + ") VALUES (" + values + ");";
+  	
+  	return middle;
+  }
+  
+  
+  
+  
 }
