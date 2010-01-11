@@ -64,8 +64,8 @@ public class CompareTables {
   	}
   }
   
-  public void checkTableCounts(String leftTable, String rightTable) {
-  	checkTableCount(leftTable, rightTable);
+  public void checkTableCounts(String tableLeft, String tableRight) {
+  	checkTableCount(tableLeft, tableRight);
   }
   
   private void checkTableCount(String leftTable, String rightTable) {
@@ -77,6 +77,8 @@ public class CompareTables {
   	
   	String sqlL = "SELECT COUNT(*) AS t FROM " + leftTable + where;
   	String sqlR = "SELECT COUNT(*) AS t FROM " + rightTable + where;
+  	
+  	System.out.println(sqlL);
   	
   	long left = ql_src.queryLong(database_src, sqlL);
   	long right = ql_des.queryLong(database_des, sqlR);
@@ -236,7 +238,7 @@ public class CompareTables {
     String desPrimKeyColName = cl_des.getPrimaryKey_Name(columnData_des);
     
     String sql = "SELECT * FROM " + tableRight + " WHERE " +
-      "(`" + desPrimKeyColName + "`='" +  ql_src.escape(srcPrimKeyValue) + "')";
+      "(" + desPrimKeyColName + "='" +  ql_src.escape(srcPrimKeyValue) + "')";
     
     //System.out.println("getDestinationValuesToCompareWith(): " + sql);
     

@@ -242,7 +242,7 @@ public class DatabaseData {
     
     String url = "jdbc:sqlserver://" + host + ":" + port +  ";user=" + username + ";password=" + password + ";databaseName=" + database + ";";
     String driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-    System.out.println("getConn_MsSql: url:" + url + " user: " + username + " driver: " + driver);
+    //System.out.println("getConn_MsSql: url:" + url + " user: " + username + " driver: " + driver);
 
     try {
       Class.forName(driver);
