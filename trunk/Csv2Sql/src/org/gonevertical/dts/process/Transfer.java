@@ -86,7 +86,7 @@ public class Transfer {
   // filter your query
   private String srcWhere = null;
   
-  // this will skip comparing dest columns
+  // this will skip comparing dest columns - on an update it will update with out overwrite policy
   private boolean compareDestValues = true;
   
   // total count query
@@ -948,6 +948,10 @@ public class Transfer {
 
   public void setCompareDestValues(boolean b) {
     this.compareDestValues = b;
+  }
+  
+  public void setOffsetLimit(int limitOffset) {
+  	this.limitOffset = limitOffset;
   }
   
 }
