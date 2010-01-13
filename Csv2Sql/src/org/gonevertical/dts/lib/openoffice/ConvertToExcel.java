@@ -65,14 +65,19 @@ public class ConvertToExcel {
   }
   
   private void runUnoconv(String filename) {
-    String cmd = "unoconv --listener &";
-    runCmd(cmd);
-    cmd = "sleep 5";
-    runCmd(cmd);
-    cmd = "unoconv -f xls " + filename + "";
-    runCmd(cmd);
-    cmd = "kill -15 %-";
-    runCmd(cmd);
+    //String cmd = "unoconv --listener";
+    //runCmd(cmd);
+    //cmd = "sleep 5";
+    //runCmd(cmd);
+    String command = "unoconv -f xls " + filename + "";
+    try {
+	    Runtime.getRuntime().exec(command);
+    } catch (IOException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+    }
+    //cmd = "kill -15 %-";
+    //runCmd(cmd);
   }
   
   private void officeListen() {
