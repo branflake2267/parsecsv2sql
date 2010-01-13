@@ -1,4 +1,4 @@
-package org.gonevertical.dts.lib.openoffice;
+package org.gonevertical.dts.lib.openoffice.experimental;
 
 public class OoContent {
 

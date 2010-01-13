@@ -1,4 +1,4 @@
-package org.gonevertical.dts.openoffice;
+package org.gonevertical.dts.lib.openoffice;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -6,12 +6,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 
-import org.gonevertical.dts.test.Run_Test_Import_v1;
-
-import com.artofsolving.jodconverter.DocumentConverter;
-import com.artofsolving.jodconverter.openoffice.connection.OpenOfficeConnection;
-import com.artofsolving.jodconverter.openoffice.connection.SocketOpenOfficeConnection;
-import com.artofsolving.jodconverter.openoffice.converter.OpenOfficeDocumentConverter;
 
 /**
  * 
@@ -45,11 +39,11 @@ public class ConvertToExcel {
     ///officeListen();
     
     File executionlocation = null;
-    try {
-      executionlocation = new File(Run_Test_Import_v1.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-    } catch (URISyntaxException e) {
-      e.printStackTrace();
-    }
+    //try {
+      executionlocation = new File(""); // Run_Test_Import_v1.class.getProtectionDomain().getCodeSource().getLocation().toURI()
+    //} catch (URISyntaxException e) {
+      //e.printStackTrace();
+    //}
     String execPath = executionlocation.getParent();
     String filename = execPath + "/data/export/export_oo_test.ods";
    
@@ -82,7 +76,10 @@ public class ConvertToExcel {
   }
   
   private void officeListen() {
-    String cmd = "soffice -accept=\"socket,port=8100;urp;\"";
+  	
+  	// TODO is the port open to start with??? 
+  	
+    String cmd = "soffice -headless -accept=\"socket,port=8100;urp;\"";
     runCmd(cmd);
   }
   
