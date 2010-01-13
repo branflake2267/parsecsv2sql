@@ -1,4 +1,4 @@
-package org.gonevertical.dts.openoffice;
+package org.gonevertical.dts.lib.openoffice;
 
 import java.io.File;
 
@@ -9,7 +9,12 @@ public class SpreadSheetData {
   private char delimiter;
   
   private String sheetName = null;
+
+	private RowData[] rowData;
   
+	public SpreadSheetData() {
+	}
+	
   public SpreadSheetData(String sheetName, File file, char delimiter) {
     this.file = file;
     this.sheetName = sheetName;
@@ -27,5 +32,15 @@ public class SpreadSheetData {
   public char getDelimiter() {
     return delimiter;
   }
+  
+  public void setRowData(String sheetName, RowData[] rowData) {
+  	this.sheetName = sheetName;
+  	this.rowData = rowData;
+  }
+  
+  public RowData[] getRowData() {
+  	return this.rowData;
+  }
+  
   
 }

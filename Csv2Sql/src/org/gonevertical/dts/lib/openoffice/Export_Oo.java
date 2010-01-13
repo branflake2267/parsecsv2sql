@@ -20,7 +20,7 @@
  * limitations under the License.
  *
  ************************************************************************/
-package org.gonevertical.dts.openoffice;
+package org.gonevertical.dts.lib.openoffice;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import org.gonevertical.dts.lib.csv.Csv;
-import org.gonevertical.dts.test.Run_Test_Import_v1;
 import org.odftoolkit.odfdom.OdfFileDom;
 
 import org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument;
@@ -92,41 +91,25 @@ public class Export_Oo {
   // csv reader
   private Csv csv = new Csv();
   private CsvReader csvRead = null;
+  
+	private SpreadSheetData[] sheet;
 
+  public Export_Oo() {
+  }
+  
+  public void exportToOpenOfficeFile(SpreadSheetData[] sheet, File out) {
+  	this.sheet = sheet;
+  	outputFileName = out.getAbsolutePath();
+  	run();
+  }
+  
   public void run() {
-
-    File executionlocation = null;
-    try {
-      executionlocation = new File(Run_Test_Import_v1.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-    } catch (URISyntaxException e) {
-      e.printStackTrace();
-    }
-    String execPath = executionlocation.getParent();
-
-    String dir = execPath + "/data/";
-
-    String sfile1 = dir + "import/oo_1.txt";
-    String sfile2 = dir + "import/oo_2.txt";
-    String sfile3 = dir + "import/oo_3.txt";
-
-    File file1 = new File(sfile1);
-    File file2 = new File(sfile2);
-    File file3 = new File(sfile3);
-
-    outputFileName = dir + "export/export_oo_test.ods";
-
-    SpreadSheetData[] sheet = new SpreadSheetData[3];
-    sheet[0] = new SpreadSheetData("IdThings", file1, ",".charAt(0));
-    sheet[1] = new SpreadSheetData("Shop", file2, ",".charAt(0));
-    sheet[2] = new SpreadSheetData("Elements", file3, ",".charAt(0));
-
 
     setupOutputDocument();
 
     if (outputDocument != null) {
       cleanOutDocument();
       addAutomaticStyles();
-      //createTable("Sheet1", new File(inputFileName), ",".charAt(0));
 
       createTables(sheet);
 
@@ -135,10 +118,17 @@ public class Export_Oo {
 
     System.out.println("Finished");
   }
-
+  
   public void createTables(SpreadSheetData[] sheet) {
     for (int i=0; i < sheet.length; i++) {
-      OdfTable table = createTable(sheet[i].getSheetName(), sheet[i].getFile(), sheet[i].getDelimiter());
+    	
+      OdfTable table = null;
+      if (sheet[i].getFile() == null) {
+      	table = createTable(sheet[i]);
+      } else {
+      	table = createTable(sheet[i].getSheetName(), sheet[i].getFile(), sheet[i].getDelimiter());
+      }
+      
       officeSpreadsheet.appendChild(table);
     }
   }
@@ -216,6 +206,26 @@ public class Export_Oo {
       e.printStackTrace();
     }
 
+    return table;
+  }
+  
+  public OdfTable createTable(SpreadSheetData sheet) {
+    
+    OdfTable table = new OdfTable(contentDom);
+    table.setAttribute("table:name", sheet.getSheetName());
+
+    // header columns
+    RowData[] rd = sheet.getRowData();
+    String[] columns = rd[0].getCells();
+    OdfTableRow row = getHeaderRow(contentDom, columns);
+    table.appendRow(row);
+
+    for (int i=1; i < rd.length; i++) {
+    	String[] data = rd[i].getCells();
+    	OdfTableRow rowData = getDataRow(contentDom, data);
+    	table.appendRow(rowData);
+    }
+    
     return table;
   }
 
