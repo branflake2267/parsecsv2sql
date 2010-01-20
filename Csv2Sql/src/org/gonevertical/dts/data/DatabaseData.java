@@ -207,7 +207,7 @@ public class DatabaseData {
       Class.forName(driver).newInstance();
       conn = DriverManager.getConnection(url, username, password);
     } catch (Exception e) {
-      System.err.println("ERROR: getConn_MySql(): connection error: " + e.getMessage() + " " + "getConn_MySql: url:" + url + " user: " + username + " driver: " + driver);
+      System.err.println("~~~~~ " + url + "~~~~ ERROR: getConn_MySql(): connection error: " + e.getMessage() + " " + "getConn_MySql: url:" + url + " user: " + username + " driver: " + driver);
       e.printStackTrace();
     }
     profileTime("connected  to mysql url: " + url);
@@ -301,7 +301,7 @@ public class DatabaseData {
     try {
       conn = ds.getConnection();
     } catch (SQLException e) {
-      System.out.println("ERROR: getServletConnetion(): couldn't get servlet connection");
+      System.out.println("ERROR: getServletConnetion(): couldn't get servlet connection: " + contextRefName);
       e.printStackTrace();
     }
     
