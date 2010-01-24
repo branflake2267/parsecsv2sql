@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
@@ -43,6 +44,8 @@ public class MySqlReplication {
   private String masterHost = null;
   
   private int dryRun = 0;
+  
+  private ArrayList<String> ignoreTables = new ArrayList<String>();
   
   /**
    * constructor, init setup 
@@ -234,7 +237,16 @@ public class MySqlReplication {
     if (dryRun != 1) {
       lock = "--lock-all-tables";
     }
-    String cmd = "mysqldump -h" + dd_src.getHost() + " -u" + dd_src.getUsername() + " -p" + dd_src.getPassword() + " " + lock + " --all-databases > " + getTmpPath() + "/master_dump.sql";
+    
+    String it = getIgnoreTables();
+    
+    String cmd = "mysqldump " +
+    		"-h" + dd_src.getHost() + " " +
+    		"-u" + dd_src.getUsername() + " " +
+    		"-p" + dd_src.getPassword() + " " +
+    		"" + it + " " + 
+    		"" + lock + " " +
+    		"--all-databases > " + getTmpPath() + "/master_dump.sql";
     System.out.println(cmd);
     runShell(cmd);
   }
@@ -360,6 +372,21 @@ public class MySqlReplication {
     System.out.println("deleting mysql dump file.");
     File tmpFile = new File(tmpDir.getPath() + "master_dump.sql");
     tmpFile.delete();
+  }
+
+  public void addIgnoreTable(String table) {
+	 ignoreTables.add(table);
+  }
+  
+  private String getIgnoreTables() {
+	  if (ignoreTables.size() == 0) {
+		  return "";
+	  }
+	  String s = "";
+	  for (int i=0; i < ignoreTables.size(); i++) {
+		  s += " --ignore-table=" + ignoreTables.get(i) + " ";
+	  }
+	  return s;
   }
   
 }
