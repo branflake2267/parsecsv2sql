@@ -53,6 +53,7 @@ public class DatabaseData {
   // for profiling connection times
   private long startTime = 0;
   private boolean profile = false;
+	private int recursionCheck;
   
   /**
    * set database location and credentials
@@ -209,6 +210,11 @@ public class DatabaseData {
     } catch (Exception e) {
       System.err.println("~~~~~ " + url + "~~~~ ERROR: getConn_MySql(): connection error: " + e.getMessage() + " " + "getConn_MySql: url:" + url + " user: " + username + " driver: " + driver);
       e.printStackTrace();
+      recursionCheck++;
+      if (recursionCheck < 3) {
+      	System.out.println(recursionCheck + ". Trying connection agian");
+      	conn = getConn_MySql();
+      }
     }
     profileTime("connected  to mysql url: " + url);
     
