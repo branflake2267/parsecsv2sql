@@ -70,10 +70,10 @@ public class ConvertToExcel {
     //cmd = "sleep 5";
     //runCmd(cmd);
     String command = "unoconv -f xls " + filename + "";
+    System.out.println("exporting to excel: " + command);
     try {
 	    Runtime.getRuntime().exec(command);
     } catch (IOException e) {
-	    // TODO Auto-generated catch block
 	    e.printStackTrace();
     }
     //cmd = "kill -15 %-";
