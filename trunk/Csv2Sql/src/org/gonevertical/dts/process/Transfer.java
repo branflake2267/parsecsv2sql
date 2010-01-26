@@ -1,6 +1,7 @@
 package org.gonevertical.dts.process;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -307,7 +308,7 @@ public class Transfer {
     long lim = limitOffset;
     BigDecimal tp = new BigDecimal(0);
     if (total > 0) {
-    	tp = new BigDecimal(total).divide(new BigDecimal(lim)).setScale(1, RoundingMode.UP);	
+    	tp = new BigDecimal(total).divide(new BigDecimal(lim, MathContext.DECIMAL32), MathContext.DECIMAL32).setScale(1, RoundingMode.UP);	
     } else {
     	tp = new BigDecimal(1);
     }
