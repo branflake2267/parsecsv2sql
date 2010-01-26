@@ -307,7 +307,7 @@ public class Transfer {
     long lim = limitOffset;
     BigDecimal tp = new BigDecimal(0);
     if (total > 0) {
-    	tp = new BigDecimal(total).divide(new BigDecimal(lim)).setScale(0, RoundingMode.UP);	
+    	tp = new BigDecimal(total).divide(new BigDecimal(lim)).setScale(1, RoundingMode.UP);	
     } else {
     	tp = new BigDecimal(1);
     }
@@ -950,7 +950,7 @@ public class Transfer {
     this.compareDestValues = b;
   }
   
-  public void setOffsetLimit(int limitOffset) {
+  public void setOffsetLimit(long limitOffset) {
   	this.limitOffset = limitOffset;
   }
   
