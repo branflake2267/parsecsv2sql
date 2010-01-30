@@ -13,8 +13,8 @@ public class Run_Transfer_Zipcodes {
 
   private void run() {
     
-    DatabaseData dd_src = new DatabaseData(DatabaseData.TYPE_MYSQL, "ark", "3306", "test", "test#", "test");
-    DatabaseData dd_dst = new DatabaseData(DatabaseData.TYPE_MYSQL, "ark", "3306", "test", "test#", "test");
+    DatabaseData dd_src = new DatabaseData(DatabaseData.TYPE_MYSQL, "ark_home", "3306", "test", "test#", "test");
+    DatabaseData dd_dst = new DatabaseData(DatabaseData.TYPE_MYSQL, "ark_home", "3306", "test", "test#", "test");
     
     String fromTable = "import_zipcodes_test_all";
     String toTable = "import_zipcodes_test_transfer";
