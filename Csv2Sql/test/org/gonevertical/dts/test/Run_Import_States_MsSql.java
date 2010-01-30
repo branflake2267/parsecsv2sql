@@ -13,7 +13,7 @@ import org.gonevertical.dts.v2.Indexing;
 import org.gonevertical.dts.v2.ProcessImport;
 
 
-public class Run_Import_States {
+public class Run_Import_States_MsSql {
 
   // source data point
   private static SourceData sourceData = null;
@@ -56,7 +56,7 @@ public class Run_Import_States {
     changeColumns[0].destinationField = "TwoLetter";
     
     // database settings
-    DatabaseData databaseData = new DatabaseData(DatabaseData.TYPE_MYSQL, "ark_home", "3306", "test", "test#", "test");
+    DatabaseData databaseData = new DatabaseData(DatabaseData.TYPE_MSSQL, "xp3", "1433", "sa", "test", "test", "dbo");
     String table = "import_states_test";
     
     // destination settings
@@ -83,6 +83,8 @@ public class Run_Import_States {
     p2.runImport();
     
     
+    /*
+    
     ColumnData[] indexColumns = new ColumnData[2];
     indexColumns[0] = new ColumnData();
     indexColumns[1] = new ColumnData();
@@ -92,6 +94,8 @@ public class Run_Import_States {
     
     Indexing index = new Indexing(destinationData);
     index.runIndexColumns(indexColumns);
+    
+    */
   }
   
 

@@ -401,7 +401,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     }
     boolean b = false;
     
-    String where = " WHERE `" + primKeyColumn.getColumnName() + "`='" + primKeyColumn.getValue() + "'";
+    String where = " WHERE " + primKeyColumn.getColumnName() + "='" + primKeyColumn.getValue() + "'";
     
     FieldData[] c = dd.compareBeforeUpdate;
     for (int i=0; i < c.length; i++) {
@@ -432,7 +432,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
      // TODO - what if? Should we continue???? 
    }
    String where = " WHERE " + idents;
-   String sql = "SELECT `" + dd.primaryKeyName + "` FROM `" + dd.table + "` " + where;
+   String sql = "SELECT " + dd.primaryKeyName + " FROM " + dd.table + " " + where;
    long primaryKeyId = ql.queryLong(dd.databaseData, sql); 
    return primaryKeyId; 
   } 

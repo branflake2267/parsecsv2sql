@@ -71,6 +71,11 @@ public class DatabaseData {
     this.username = username;
     this.password = password;
     this.database = database;
+    
+    if (databaseType == DatabaseData.TYPE_MSSQL) {
+    	System.out.println("~~~~~~~~~~~~~~ Use the other contructor to set the table schema!!!! ~~~~~~~~~~~~~~");
+    	System.out.println("~~~~~~~~~~~~~~ Use the other contructor to set the table schema!!!! ~~~~~~~~~~~~~~");
+    }
   }
   
   public DatabaseData(int databaseType, String host, String port, String username, String password, String database, String tableSchema) {

@@ -13,6 +13,8 @@ import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.lib.sql.querylib.MsSqlQueryLib;
 import org.gonevertical.dts.lib.sql.transformlib.MsSqlTransformLib;
 
+import quicktime.app.event.QTActionEvent;
+
 public class MsSqlColumnLib implements ColumnLib {
 
   
@@ -53,7 +55,7 @@ public class MsSqlColumnLib implements ColumnLib {
   }
 
   /**
-   * get sql select statement string from columnData like `cola`,`colb`,`colc`,...
+   * get sql select statement string from columnData like [cola],[colb],[colc],...
    * 
    * @param columnData
    * @return
@@ -63,7 +65,7 @@ public class MsSqlColumnLib implements ColumnLib {
   }
 
   /**
-   * get sql select statement string from columnData like `cola`,`colb`,`colc`
+   * get sql select statement string from columnData like [cola],[colb],[colc]
    *  
    * @param columnData
    * @param pruneColumnData
@@ -76,7 +78,7 @@ public class MsSqlColumnLib implements ColumnLib {
     columnData = prune(columnData, pruneColumnData);
     String sql = "";
     for (int i=0; i < columnData.length; i++) {
-      sql += "`" + columnData[i].getColumnName() + "`";
+      sql += "[" + columnData[i].getColumnName() + "]";
       if (i < columnData.length -1) {
         sql += ",";
       }
@@ -97,7 +99,7 @@ public class MsSqlColumnLib implements ColumnLib {
       if (cn_sql != null) {
         c = cn_sql;
       } else {
-        c = "`" + columnData[i].getColumnName() + "`";
+        c = "[" + columnData[i].getColumnName() + "]";
       }
       sql += c;
       if (i < columnData.length -1) {
@@ -175,7 +177,7 @@ public class MsSqlColumnLib implements ColumnLib {
   }
 
   /**
-   * get columns as sql, `column1`='value1', `column2`='value2', `column3`='value3',...
+   * get columns as sql set style
    * 
    * @param columnData
    * @return
@@ -184,13 +186,10 @@ public class MsSqlColumnLib implements ColumnLib {
     return getSql(columnData, null);
   }
 
-  // TODO move to dependency injection
-  public String getSql_MSSQL(ColumnData[] columnData) {
-    return getSql_MSSQL(columnData, null);
-  }
-
   /**
-   * get columns as sql, `column1`='value1', `column2`='value2', `column3`='value3',...
+   * get columns as sql, [column1]='value1', [column2]='value2', [column3]='value3',...
+   * 
+   *    **** THIS will be transformed in the update method depending on if its an insert ****
    * 
    * @param columnData
    * @param pruneColumnData
@@ -207,7 +206,7 @@ public class MsSqlColumnLib implements ColumnLib {
     columnData = prune(columnData, pruneColumnData);
     String sql = "";
     for (int i=0; i < columnData.length; i++) {
-      String c = "`" + columnData[i].getColumnName() + "`";    
+      String c = "[" + columnData[i].getColumnName() + "]";    
       String v = null;
       if (columnData[i].isFunctionSetForValue() == true) {
         v = columnData[i].getValueAsFunction();
@@ -228,8 +227,14 @@ public class MsSqlColumnLib implements ColumnLib {
     return sql;
   }
 
-  // TODO move to dependency injection
-  public String getSql_MSSQL(ColumnData[] columnData, ColumnData[] pruneColumnData) {
+  /**
+   * this happens in the update method, depending on if its an update
+   * @param columnData
+   * @param pruneColumnData
+   * @return
+   */
+  @Deprecated
+  public String getSql_ValuesStyle(ColumnData[] columnData, ColumnData[] pruneColumnData) {
     if (columnData == null) {
       return "";
     }
@@ -291,7 +296,7 @@ public class MsSqlColumnLib implements ColumnLib {
   }
 
   public String getSql_Insert_MSSQL(ColumnData[] columnData) {
-    return getSql_Insert_MSSQL(columnData, null);
+    return getSql_Insert(columnData, null);
   }
 
   /**
@@ -310,17 +315,25 @@ public class MsSqlColumnLib implements ColumnLib {
     columnData = prune(columnData, pruneColumnData);
     String table = columnData[0].getTable();
     String fields = getSql(columnData);
-    String sql = "INSERT INTO `" + table + "` SET " + fields + ";";
+    String sql = "INSERT INTO [" + table + "] SET " + fields + ";";
     return sql;
   }
 
-  public String getSql_Insert_MSSQL(ColumnData[] columnData, ColumnData[] pruneColumnData) {
+  /**
+   * column rearanngement will happen in update method, to the correct insert style happens in method update
+   * 
+   * @param columnData
+   * @param pruneColumnData
+   * @return
+   */
+  @Deprecated
+  public String getSql_Insert_MSSQL_old(ColumnData[] columnData, ColumnData[] pruneColumnData) {
     if (columnData == null) {
       return "";
     }
     columnData = prune(columnData, pruneColumnData);
     String table = columnData[0].getTable();
-    String columnsvalues = getSql_MSSQL(columnData);
+    String columnsvalues = getSql(columnData);
     String sql = "INSERT INTO " + table + " " + columnsvalues + ";";
     return sql;
   }
@@ -349,9 +362,9 @@ public class MsSqlColumnLib implements ColumnLib {
       return null;
     }
     ColumnData priKeyCol = getPrimaryKey_ColumnData(columnData);
-    String where = " WHERE `" + priKeyCol.getColumnName() + "`='" + priKeyCol.getValue() + "'";
+    String where = " WHERE [" + priKeyCol.getColumnName() + "]='" + priKeyCol.getValue() + "'";
 
-    String sql = "UPDATE `" + columnData[0].getTable() + "` SET ";
+    String sql = "UPDATE [" + columnData[0].getTable() + "] SET ";
     pruneColumnData = merge(pruneColumnData, priKeyCol);
     sql += getSql(columnData, pruneColumnData);
     sql += where;
@@ -370,8 +383,8 @@ public class MsSqlColumnLib implements ColumnLib {
     if (columnData == null) {
       return null;
     }
-    String sql = "SELECT MAX(LENGTH(`" + columnData.getColumnName() + "`)) " +
-    "FROM `" + dd.getDatabase() + "`.`" + columnData.getTable() + "`" ;
+    String sql = "SELECT MAX(LENGTH([" + columnData.getColumnName() + "])) " +
+    "FROM [" + dd.getDatabase() + "].[" + columnData.getTable() + "]" ;
     return sql;
   }
 
@@ -616,7 +629,7 @@ public class MsSqlColumnLib implements ColumnLib {
       ColumnData col = cols.get(i);
       String c = col.getColumnName();
       String v = col.getValue();
-      sql += "`" + c + "`='" + v + "'";
+      sql += "[" + c + "]='" + v + "'";
       if (i < cols.size() - 1) {
         sql += " AND ";
       }
@@ -646,9 +659,16 @@ public class MsSqlColumnLib implements ColumnLib {
 
     // get columns used first
     ArrayList<ColumnData> cols = new ArrayList<ColumnData>();
-    for(int i=0; i < columnData.length; i++) {
+    for (int i=0; i < columnData.length; i++) {
       if (columnData != null && columnData[i].getIdentityUse() == true) {
         cols.add(columnData[i]);
+        
+        // change to varchar so we can index it
+        if (columnData[i].getIdentityUse() == true && columnData[i].getType().toLowerCase().contains("text")) {
+        	columnData[i].setType("VARCHAR(255) NULL");
+        	new MsSqlTransformLib().alterColumn(dd, columnData[i]);
+        }
+        
       }
     }
 
@@ -662,31 +682,22 @@ public class MsSqlColumnLib implements ColumnLib {
 
     String sqlColumns = getSql_Index_Multi(columns);
 
-    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + columnData[0].getTable() + "` " +
-    "ADD INDEX `" + autoIndexName + "`(" + sqlColumns + ")"; 
-
+    String sql = "CREATE INDEX [" + autoIndexName + "] ON [" + dd.getTableSchema() + "].[" + columnData[0].getTable() + "] (" + sqlColumns + ");";
+    
     return sql;
   }
 
   /**
-   * get column index setup like "`smallInt`, `myTxt`(900)"
+   * get column index setup like [smallInt], [myTxt](900)"
    * 
    * @param columns
    * @return
    */
   public String getSql_Index_Multi(ColumnData[] columns) {
-    int size = 900;
-    if (columns.length > 1) {
-      size = (int) size / columns.length;
-    }
     String sql = "";
     for(int i=0; i < columns.length; i++) {
       String c = columns[i].getColumnName();
-      String len = "";
-      if (columns[i].getType().toLowerCase().contains("text") == true) {
-        len = "(" + size + ")";
-      }
-      sql += "`" + c + "`" + len;
+      sql += "[" + c + "]";
       if (i < columns.length - 1) {
         sql += ",";
       }
@@ -758,14 +769,14 @@ public class MsSqlColumnLib implements ColumnLib {
    * @return
    */
   public String getSql_AlterColumns(DatabaseData dd, ColumnData[] columnData) {
-    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + columnData[0].getTable() + "` ";
+    String sql = "ALTER TABLE [" + dd.getDatabase() + "].[" + columnData[0].getTable() + "] ";
     sql += getSql_ModifyColumns(columnData) + ";";
     return sql;
   }
 
   /**
    * get modify column sql
-   *   like MODIFY COLUMN `Name` varchar(100) DEFAULT NULL, MODIFY COLUMN `TwoLetter` varchar(2)  DEFAULT NULL
+   *   like MODIFY COLUMN [Name] varchar(100) DEFAULT NULL, MODIFY COLUMN [TwoLetter] varchar(2)  DEFAULT NULL
    *   
    * @param columnData
    * @return
@@ -773,7 +784,7 @@ public class MsSqlColumnLib implements ColumnLib {
   public String getSql_ModifyColumns(ColumnData[] columnData) {
     String sql = "";
     for (int i=0; i < columnData.length; i++) {
-      sql += "MODIFY COLUMN `" + columnData[i].getColumnName() + "` " + columnData[i].getType() + " ";
+      sql += "MODIFY COLUMN [" + columnData[i].getColumnName() + "] " + columnData[i].getType() + " ";
       if (i < columnData.length - 1 ) {
         sql += ",";
       }
@@ -818,7 +829,7 @@ public class MsSqlColumnLib implements ColumnLib {
 
     return r;
   }
-
+  
   public String getType() {
     return "MsSql";
   }
