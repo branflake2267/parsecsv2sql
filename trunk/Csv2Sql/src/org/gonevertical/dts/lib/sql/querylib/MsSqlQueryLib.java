@@ -321,13 +321,25 @@ public class MsSqlQueryLib implements QueryLib {
         conn.setReadOnly(false);
       }
       Statement update = conn.createStatement();
-      update.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
-      ResultSet result = update.getGeneratedKeys();
-      if (result != null && result.next()) { 
-        id = result.getLong(1);
+      
+      if (sql.toLowerCase().contains("drop") == true ||
+      		sql.toLowerCase().contains("alter") == true ||
+      		sql.toLowerCase().contains("create") == true) {
+      	
+      	update.execute(sql);
+      	
+      } else {
+      	
+      	update.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
+        ResultSet result = update.getGeneratedKeys();
+        if (result != null && result.next()) { 
+          id = result.getLong(1);
+        }
+        result.close();
+        result = null;
+        
       }
-      result.close();
-      result = null;
+      
       update.close();
       update = null;
       conn.close();
@@ -439,10 +451,20 @@ public class MsSqlQueryLib implements QueryLib {
   		sql = fixSyntax_InsertUpdate(sql);
   	}
   	
+  	if (sql.toLowerCase().contains("now")) {
+  		sql = fixNow(sql);
+  	}
+  	
   	return sql;
   }
   
-  /**
+  private String fixNow(String sql) {
+  	sql = sql.replaceAll("(?i)NOW\\(\\)", "GETDATE()");
+	  return sql;
+  }
+
+
+	/**
    * change from column=value to (columns,...) values (values,...)
    * 
    * @param sql

@@ -301,7 +301,8 @@ public class MySqlTransformLib implements TransformLib {
     if (type == null) {
       type = "TEXT DEFAULT NULL";
     }
-    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + table + "` ADD COLUMN `" + columnData.getColumnName() + "`  " + type + ";";
+    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + table + "` " +
+    		"ADD COLUMN `" + columnData.getColumnName() + "`  " + type + ";";
     System.out.println("MySqlTransformUtil.createColumn(): " + sql);
     ql.update(dd, sql);
     
