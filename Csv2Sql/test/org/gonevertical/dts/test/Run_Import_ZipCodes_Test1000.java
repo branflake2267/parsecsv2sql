@@ -54,7 +54,7 @@ public class Run_Import_ZipCodes_Test1000 {
     FieldData[] changeColumns = null;
 
     // database settings
-    DatabaseData databaseData = new DatabaseData(DatabaseData.TYPE_MYSQL, "ark", "3306", "test", "test#", "test");
+    DatabaseData databaseData = new DatabaseData(DatabaseData.TYPE_MYSQL, "ark_home", "3306", "test", "test#", "test");
     String table = "import_zipcodes_test";
     
     // destination settings
