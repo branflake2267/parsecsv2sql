@@ -295,7 +295,7 @@ public class Transfer {
   		where = " WHERE " + srcWhere;
   	}
   	
-    String sql = "SELECT COUNT(*) AS t FROM `" + tableLeft + "`" + where;
+    String sql = "SELECT COUNT(*) AS t FROM " + tableLeft + " " + where;
     System.out.println("sql" + sql);
     total = ql_src.queryLong(database_src, sql);
     index = total;
@@ -308,7 +308,7 @@ public class Transfer {
     long lim = limitOffset;
     BigDecimal tp = new BigDecimal(0);
     if (total > 0) {
-    	tp = new BigDecimal(total).divide(new BigDecimal(lim, MathContext.DECIMAL32), MathContext.DECIMAL32).setScale(1, RoundingMode.UP);	
+    	tp = new BigDecimal(total).divide(new BigDecimal(lim, MathContext.DECIMAL32), MathContext.DECIMAL32).setScale(0, RoundingMode.UP);	
     } else {
     	tp = new BigDecimal(1);
     }
@@ -350,15 +350,41 @@ public class Transfer {
     }
     
     String sql = "";
-    sql = "SELECT " + columnCsv + " " + columnCsv2 + " FROM " + tableLeft + " ";
+    
+    // Microsoft paging sucks real bad. Why don't they have a built in function, duh!
+    if (database_src.getDatabaseType() == DatabaseData.TYPE_MSSQL) {
+    	sql += "SELECT * FROM ( ";
+    }
+    
+    sql += "SELECT ";
+    
+    if (database_src.getDatabaseType() == DatabaseData.TYPE_MSSQL) {
+    	sql += "(ROW_NUMBER() OVER(ORDER BY " + primKey.getColumnName() + ")) AS Auto_RowNum, ";
+    }
+    
+    sql += " " + columnCsv + " " + columnCsv2 + " ";
+    sql += " FROM ";
+    
+    if (database_src.getDatabaseType() == DatabaseData.TYPE_MSSQL) {
+    	sql += database_src.getDatabase() + ".";
+    	sql += database_src.getTableSchema() + ".";
+    }
+    sql += "" + tableLeft + " ";
+    
     sql += where;
     sql += getSrcWhere();
-    sql += " LIMIT " + offset + ", " + limit + ";";
     
-    // TODO - work around for ms sql server query
-    if (database_src.getDatabaseType() == DatabaseData.TYPE_MSSQL) {
-      sql = sql.replaceAll("`", "");
+    if (database_src.getDatabaseType() == DatabaseData.TYPE_MYSQL) {
+    	sql += " LIMIT " + offset + ", " + limit + ";";
     }
+    
+    if (database_src.getDatabaseType() == DatabaseData.TYPE_MSSQL) {
+    	sql += " ) AS TableWithRows WHERE TableWithRows.Auto_RowNum >= " + offset + " AND TableWithRows.Auto_RowNum <= " + (offset + limit) + " ";
+    }
+    
+    //if (database_src.getDatabaseType() == DatabaseData.TYPE_MSSQL) {
+      //sql = sql.replaceAll("`", "");
+    //}
     
     System.out.println("sql: " + sql);
     

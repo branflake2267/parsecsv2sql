@@ -61,6 +61,7 @@ public class MsSqlQueryLib implements QueryLib {
    * @return
    */
   public  int getResultSetSize(ResultSet result) {
+  	System.out.println("~~~~~~ getResultSetSize(ResultSet result) won't work on ms sql ~~~~~~~~~ ");
     int size = -1;
     try {
       result.last();
