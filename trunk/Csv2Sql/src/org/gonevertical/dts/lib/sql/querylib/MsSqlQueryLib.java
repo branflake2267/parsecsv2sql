@@ -8,6 +8,7 @@ import java.sql.Statement;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.gonevertical.dts.data.DatabaseData;
+import org.gonevertical.dts.data.ImportStatData;
 import org.gonevertical.dts.lib.StringUtil;
 
 
@@ -19,6 +20,30 @@ import org.gonevertical.dts.lib.StringUtil;
  */
 public class MsSqlQueryLib implements QueryLib {
 
+	// keep track of what is going on
+  private ImportStatData stats;
+
+	public MsSqlQueryLib() {
+	}
+	
+  public void setStats(ImportStatData stats) {
+  	this.stats = stats;
+  }
+
+  private void setTrackSql(String sql) {
+  	if (stats == null) {
+  		return;
+  	}
+  	stats.setTrackSql(sql);
+  }
+
+  private void setTrackError(String error) {
+  	if (stats == null) {
+  		return;
+  	}
+  	stats.setTrackError(error);
+  }
+	
   /**
    * escape string
    *  
@@ -69,6 +94,7 @@ public class MsSqlQueryLib implements QueryLib {
       result.beforeFirst();
     } catch (SQLException e) {
       System.err.println("Error: getResultSetSize()");
+      setTrackError(e.toString());
       e.printStackTrace();
     } 
     return size;
@@ -83,6 +109,7 @@ public class MsSqlQueryLib implements QueryLib {
    * @return
    */
   public  boolean queryBoolean(DatabaseData dd, String sql) {
+  	setTrackSql(sql);
     boolean b = false;
     try {
       Connection conn = dd.getConnection();
@@ -98,6 +125,7 @@ public class MsSqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryBoolean(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } 
     return b;
@@ -113,6 +141,7 @@ public class MsSqlQueryLib implements QueryLib {
    * @return
    */
   public  int queryInteger(DatabaseData dd, String sql) {
+  	setTrackSql(sql);
     int i = 0;
     try {
       Connection conn = dd.getConnection();
@@ -128,12 +157,14 @@ public class MsSqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryInteger(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } 
     return i;
   }
   
-  public  long queryLong(DatabaseData dd, String sql) {
+  public long queryLong(DatabaseData dd, String sql) {
+  	setTrackSql(sql);
     long i = 0;
     try {
       Connection conn = dd.getConnection();
@@ -149,6 +180,7 @@ public class MsSqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryInteger(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } 
     return i;
@@ -161,7 +193,8 @@ public class MsSqlQueryLib implements QueryLib {
    * @param sql
    * @return
    */
-  public  String queryString(DatabaseData dd, String sql) {
+  public String queryString(DatabaseData dd, String sql) {
+  	setTrackSql(sql);
     String s = null;
     try {
       Connection conn = dd.getConnection();
@@ -177,6 +210,7 @@ public class MsSqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryString(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } 
     return s;
@@ -189,7 +223,8 @@ public class MsSqlQueryLib implements QueryLib {
    * @param sql
    * @return
    */
-  public  double queryDouble(DatabaseData dd, String sql) {
+  public double queryDouble(DatabaseData dd, String sql) {
+  	setTrackSql(sql);
     double d = 0.0;
     try {
       Connection conn = dd.getConnection();
@@ -205,12 +240,14 @@ public class MsSqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryDouble(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } 
     return d;
   }
 
-  public  BigDecimal queryBigDecimal(DatabaseData dd, String sql) {
+  public BigDecimal queryBigDecimal(DatabaseData dd, String sql) {
+  	setTrackSql(sql);
     BigDecimal bd = null;
     try {
       Connection conn = dd.getConnection();
@@ -228,6 +265,7 @@ public class MsSqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryBigDecimal(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } 
     return bd;
@@ -240,7 +278,8 @@ public class MsSqlQueryLib implements QueryLib {
    * @param delimiter
    * @return
    */
-  public  String queryIntegersToCsv(DatabaseData dd, String sql, char delimiter) {
+  public String queryIntegersToCsv(DatabaseData dd, String sql, char delimiter) {
+  	setTrackSql(sql);
     String csv = null;
     try {
       Connection conn = dd.getConnection();
@@ -267,6 +306,7 @@ public class MsSqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryIntegersToCsv(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } 
     if (csv == null | csv.length() == 0) {
@@ -276,7 +316,7 @@ public class MsSqlQueryLib implements QueryLib {
   }
   
   public String queryStringToCsv(DatabaseData dd, String sql, char delimiter) {
-    
+  	setTrackSql(sql);
     String csv = null;
     try {
       Connection conn = dd.getConnection();
@@ -302,6 +342,7 @@ public class MsSqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryStringToCsv(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } 
     if (csv == null | csv.length() == 0) {
@@ -311,6 +352,7 @@ public class MsSqlQueryLib implements QueryLib {
   }
 
   public long update(DatabaseData dd, String sql) {
+  	setTrackSql(sql);
     if (sql == null) {
       return 0;
     }
@@ -346,12 +388,14 @@ public class MsSqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: update(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } 
     return id;
   }
   
   public long update(DatabaseData dd, String sql, boolean getKey) {
+  	setTrackSql(sql);
     if (sql == null) {
       return 0;
     }
@@ -378,12 +422,14 @@ public class MsSqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: update(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } 
     return id;
   }
   
   public boolean queryStringAndConvertToBoolean(DatabaseData dd, String sql) {
+  	setTrackSql(sql);
     String value = null;
     try {
       Connection conn = dd.getConnection();
@@ -399,6 +445,7 @@ public class MsSqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } 
     boolean b = false;
@@ -410,7 +457,8 @@ public class MsSqlQueryLib implements QueryLib {
     return b;
   }
   
-  public  boolean queryLongAndConvertToBoolean(DatabaseData dd, String sql) {
+  public boolean queryLongAndConvertToBoolean(DatabaseData dd, String sql) {
+  	setTrackSql(sql);
     long l = 0;
     try {
       Connection conn = dd.getConnection();
@@ -426,6 +474,7 @@ public class MsSqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } 
     boolean b = false;

@@ -4,10 +4,13 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 
 import org.gonevertical.dts.data.DatabaseData;
+import org.gonevertical.dts.data.ImportStatData;
 
 public interface QueryLib {
 
   public String getType();
+  
+  public void setStats(ImportStatData stats);
   
   public String escape(String s);
   
