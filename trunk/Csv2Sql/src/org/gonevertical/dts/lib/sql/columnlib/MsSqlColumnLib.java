@@ -13,7 +13,6 @@ import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.lib.sql.querylib.MsSqlQueryLib;
 import org.gonevertical.dts.lib.sql.transformlib.MsSqlTransformLib;
 
-import quicktime.app.event.QTActionEvent;
 
 public class MsSqlColumnLib implements ColumnLib {
 
