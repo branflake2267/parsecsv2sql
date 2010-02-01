@@ -8,11 +8,33 @@ import java.sql.Statement;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.gonevertical.dts.data.DatabaseData;
+import org.gonevertical.dts.data.ImportStatData;
 
 
 public class MySqlQueryLib implements QueryLib {
 
-  public MySqlQueryLib() {
+	// keep track of what is going on
+  private ImportStatData stats;
+
+	public MySqlQueryLib() {
+  }
+  
+  public void setStats(ImportStatData stats) {
+  	this.stats = stats;
+  }
+
+  private void setTrackSql(String sql) {
+  	if (stats == null) {
+  		return;
+  	}
+  	stats.setTrackSql(sql);
+  }
+
+  private void setTrackError(String error) {
+  	if (stats == null) {
+  		return;
+  	}
+  	stats.setTrackError(error);
   }
   
   /**
@@ -52,12 +74,14 @@ public class MySqlQueryLib implements QueryLib {
       result.beforeFirst();
     } catch (SQLException e) {
       System.err.println("Error: getResultSetSize()");
+      setTrackError(e.toString());
       e.printStackTrace();
     } 
     return size;
   }
   
   public boolean queryBoolean(DatabaseData dd, String sql) {
+  	setTrackSql(sql);
     boolean b = false;
     Connection conn = null;
     Statement select = null;
@@ -75,6 +99,7 @@ public class MySqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryBoolean(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } finally {
       conn = null;
@@ -84,6 +109,7 @@ public class MySqlQueryLib implements QueryLib {
   }
 
   public int queryInteger(DatabaseData dd, String sql) {
+  	setTrackSql(sql);
     int i = 0;
     Connection conn = null;
     Statement select = null;
@@ -110,6 +136,7 @@ public class MySqlQueryLib implements QueryLib {
   }
   
   public long queryLong(DatabaseData dd, String sql) {
+  	setTrackSql(sql);
     long i = 0;
     Connection conn = null;
     Statement select = null;
@@ -127,6 +154,7 @@ public class MySqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryInteger(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } finally {
       conn = null;
@@ -136,6 +164,7 @@ public class MySqlQueryLib implements QueryLib {
   }
 
   public String queryString(DatabaseData dd, String sql) {
+  	setTrackSql(sql);
     String s = null;
     Connection conn = null;
     Statement select = null;
@@ -153,6 +182,7 @@ public class MySqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryString(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } finally {
       conn = null;
@@ -162,6 +192,7 @@ public class MySqlQueryLib implements QueryLib {
   }
 
   public double queryDouble(DatabaseData dd, String sql) {
+  	setTrackSql(sql);
     double d = 0.0;
     Connection conn = null;
     Statement select = null;
@@ -179,6 +210,7 @@ public class MySqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryDouble(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } finally {
       conn = null;
@@ -188,6 +220,7 @@ public class MySqlQueryLib implements QueryLib {
   }
 
   public BigDecimal queryBigDecimal(DatabaseData dd, String sql) {
+  	setTrackSql(sql);
     BigDecimal bd = null;
     Connection conn = null;
     Statement select = null;
@@ -207,6 +240,7 @@ public class MySqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryBigDecimal(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } finally {
       conn = null;
@@ -216,6 +250,7 @@ public class MySqlQueryLib implements QueryLib {
   }
   
   public String queryIntegersToCsv(DatabaseData dd, String sql, char delimiter) {
+  	setTrackSql(sql);
     String csv = null;
     Connection conn = null;
     Statement select = null;
@@ -244,6 +279,7 @@ public class MySqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryIntegersToCsv(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } finally {
       conn = null;
@@ -256,6 +292,7 @@ public class MySqlQueryLib implements QueryLib {
   }
   
   public String queryStringToCsv(DatabaseData dd, String sql, char delimiter) {
+  	setTrackSql(sql);
     String csv = null;
     Connection conn = null;
     Statement select = null;
@@ -283,6 +320,7 @@ public class MySqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: queryStringToCsv(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } finally {
       conn = null;
@@ -295,6 +333,7 @@ public class MySqlQueryLib implements QueryLib {
   }
 
   public long update(DatabaseData dd, String sql) {
+  	setTrackSql(sql);
     if (sql == null) {
       return 0;
     }
@@ -319,6 +358,7 @@ public class MySqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: update(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } finally {
       conn = null;
@@ -328,6 +368,7 @@ public class MySqlQueryLib implements QueryLib {
   }
   
   public long update(DatabaseData dd, String sql, boolean getKey) {
+  	setTrackSql(sql);
     if (sql == null) {
       return 0;
     }
@@ -355,6 +396,7 @@ public class MySqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Error: update(): " + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } finally {
       conn = null;
@@ -364,6 +406,7 @@ public class MySqlQueryLib implements QueryLib {
   }
   
   public boolean queryStringAndConvertToBoolean(DatabaseData dd, String sql) {
+  	setTrackSql(sql);
     String value = null;
     Connection conn = null;
     Statement select = null;
@@ -381,6 +424,7 @@ public class MySqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } finally {
       conn = null;
@@ -396,6 +440,7 @@ public class MySqlQueryLib implements QueryLib {
   }
   
   public boolean queryLongAndConvertToBoolean(DatabaseData dd, String sql) {
+  	setTrackSql(sql);
     long l = 0;
     Connection conn = null;
     Statement select = null;
@@ -413,6 +458,7 @@ public class MySqlQueryLib implements QueryLib {
       conn.close();
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
+      setTrackError(e.toString());
       e.printStackTrace();
     } finally {
       conn = null;

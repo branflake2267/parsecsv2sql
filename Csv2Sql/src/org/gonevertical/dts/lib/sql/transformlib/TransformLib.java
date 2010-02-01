@@ -2,10 +2,13 @@ package org.gonevertical.dts.lib.sql.transformlib;
 
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
+import org.gonevertical.dts.data.ImportStatData;
 import org.gonevertical.dts.data.UserDbData;
 
 public interface TransformLib {
 
+	public void setStats(ImportStatData stats);
+	
   public String getType();
   
   public String fixTableName(String table);

@@ -9,6 +9,7 @@ import java.util.Comparator;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.FieldData;
 import org.gonevertical.dts.data.FieldDataComparator;
+import org.gonevertical.dts.data.ImportStatData;
 import org.gonevertical.dts.data.SourceData;
 import org.gonevertical.dts.lib.csv.Csv;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
@@ -50,12 +51,18 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   
   private boolean returnToOptimise = false;
   
+  // keep track of stats of whats going on
+  private ImportStatData stats = new ImportStatData();
+  
   /**
    * constructor
    */
   public CsvProcessing_v2(SourceData sourceData, DestinationData_v2 destinationData) {
     this.sd = sourceData;
     this.dd = destinationData;
+    
+    // start keeping track of stats
+    stats.start();
     
     // preprocess these settings
     if (destinationData.ffsd != null) {
@@ -74,6 +81,9 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     cl = ColumnLibFactory.getLib(dd.databaseData.getDatabaseType());
     tl = TransformLibFactory.getLib(dd.databaseData.getDatabaseType());
     csv = new Csv();
+    
+    ql.setStats(stats);
+    tl.setStats(stats);
   }
   
   /**
@@ -103,7 +113,12 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     
     // loop through data rows
     iterateRowsData(fileIndex);
-
+    
+    // end stats for this file
+    stats.end();
+    
+    // print report
+    stats.print();
   }
   
   private void createIdentitiesIndex() {
@@ -152,12 +167,29 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    * setup columns from csv header
    */
   private void setupColumns() {
-    String[] columns = csv.getColumns(csvRead);
+  	
+  	CsvReader cr = null;
+  	if (sd.getHeadersFile() != null) {
+  		cr = getSubstitueHeadersFromFile();
+  	} else {
+  		cr = csvRead;
+  	}
+  	
+    String[] columns = csv.getColumns(cr);
     columnData = processColumnsToColumnData(columns);
     tl.createColumn(dd.databaseData, columnData);
   }
   
   /**
+   * get a different set of headers from another file
+   * @return
+   */
+  private CsvReader getSubstitueHeadersFromFile() {
+  	CsvReader cr = csv.open(sd.getHeadersFile(), sd.getHeaderDelimiter());
+	  return cr;
+  }
+
+	/**
    * make a column 1(header) list of the fields, 
    *   which will always be needed when inserting/updating the data into sql
    * 
@@ -267,7 +299,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     rowIndex = 0;
     
     // when the first row is data, need to move up one row to start
-    if (dd != null && dd.firstRowHasNoFieldNames == true) {
+    if ((dd != null && dd.firstRowHasNoFieldNames == true) || 
+    		(sd.getHeadersFile() != null && sd.getSkipFirstRowBcOfSubHeaders() == false)) {
       rowIndex--;
     }
     
@@ -286,6 +319,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
           return;
         }
         rowIndex++;
+        stats.setAddRowCount();
       }
     } catch (IOException e) {
       System.out.println("Error: Can't loop through data!");
@@ -385,6 +419,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     // TODO - deal with truncation error ~~~~~~~~~~~~~~~~~~~~~~~~~~
     // TODO - truncation should rarely happen here, b/c this is tested for earlier.
     // TODO - set loggin
+    
+    stats.setSaveCount();
   }
  
   /**
