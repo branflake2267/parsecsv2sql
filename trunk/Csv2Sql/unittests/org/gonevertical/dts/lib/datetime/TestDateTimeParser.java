@@ -133,5 +133,9 @@ public class TestDateTimeParser {
     assertEquals(dtp.getDateMysql("2009-12-01 01:02:01.92"), "2009-12-01 01:02:01");
   }
   
-  
+  // 11/5/2009 12:00:00 AM
+  @Test
+  public void test24() {
+    assertEquals(dtp.getDateMysql("11/5/2009 12:00:00 AM"), "2009-11-05 12:00:00");
+  }
 }
