@@ -667,10 +667,12 @@ public class Optimise_v2 {
       Statement select = conn.createStatement(); // java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY
       //select.setFetchSize(Integer.MIN_VALUE);
       ResultSet result = select.executeQuery(sql);
+      int i = ql.getResultSetSize(result);
       while (result.next()) {
         cpriKey.setValue(Integer.toString(result.getInt(1)));
         columnData.setValue(result.getString(2));
-        updateColumn_Date(cpriKey, columnData);
+        updateColumn_Date(i, cpriKey, columnData);
+        i--;
       }
       select.close();
       result.close();
@@ -681,7 +683,7 @@ public class Optimise_v2 {
     
   }
   
-  private void updateColumn_Date(ColumnData cpriKey, ColumnData columnData) {
+  private void updateColumn_Date(int i, ColumnData cpriKey, ColumnData columnData) {
     String datetime = columnData.getValue();
     String tranformed = dtp.getDateMysql(datetime);
 
@@ -692,7 +694,7 @@ public class Optimise_v2 {
     } 
     
     columnData.setValue(tranformed);
-    destinationData.debug("column: " + columnData.getColumnName() + " datetime before: " + datetime + " after: " + tranformed);
+    destinationData.debug(i + ". column: " + columnData.getColumnName() + " datetime before: " + datetime + " after: " + tranformed);
 
     // is there room for the transformation values
     columnData.alterColumnSizeBiggerIfNeedBe(destinationData.databaseData);
