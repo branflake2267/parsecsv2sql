@@ -1,6 +1,8 @@
 package org.gonevertical.dts.v2;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -636,18 +638,23 @@ public class Optimise_v2 {
     String sql = "SELECT COUNT(*) AS t FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "`;"; 
     long total = ql.queryLong(destinationData.databaseData, sql);
     
-    int lim = 1000;
-    int totalPages = (int) (total / lim);
-
-    int offset = 0;
-    int limit = 0;
-    for (int i=0; i < totalPages; i++) {
+    long lim = 1000;
+    BigDecimal tp = new BigDecimal(0);
+    if (total > 0) {
+    	tp = new BigDecimal(total).divide(new BigDecimal(lim, MathContext.DECIMAL32), MathContext.DECIMAL32).setScale(0, RoundingMode.UP);	
+    } else {
+    	tp = new BigDecimal(1);
+    }
+    
+    long offset = 0;
+    long limit = 0;
+    for (int i=0; i < tp.intValue(); i++) {
       if (i==0) {
         offset = 0;
-        limit = 1000;
+        limit = lim;
       } else {
-        offset = ((i+1)*1000) - 1000;
-        limit = ((i+1)*1000);
+        offset = ((i + 1 )* lim) - lim;
+        limit = lim;
       }
       
       formatColumn_ToDateTime(columnData, offset, limit);
@@ -655,7 +662,7 @@ public class Optimise_v2 {
     
   }
   
-  private void formatColumn_ToDateTime(ColumnData columnData, int offset, int limit) {
+  private void formatColumn_ToDateTime(ColumnData columnData, long offset, long limit) {
     
     ColumnData cpriKey = tl.queryPrimaryKey(destinationData.databaseData, columnData.getTable());
     
