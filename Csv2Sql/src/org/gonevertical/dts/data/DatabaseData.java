@@ -55,6 +55,8 @@ public class DatabaseData {
   private boolean profile = false;
 	private int recursionCheck;
   
+	private String url = null;
+	
   /**
    * set database location and credentials
    * 
@@ -370,5 +372,9 @@ public class DatabaseData {
     long endTime = System.currentTimeMillis();
     long howLong = endTime - startTime;
     System.out.println(msg + " " + Long.toString(howLong) + "ms");
+  }
+  
+  public String getServer() {
+  	return "Server: " + host + ":" + port + "/" + database;
   }
 }
