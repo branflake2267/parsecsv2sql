@@ -932,6 +932,8 @@ public class Transfer {
         desValue = "";
       }
       
+      //System.out.println("TEST: overwriteBlanOnly: " + onlyOverwriteBlank + " srcValue: " + columnData_src[i].getValue() + " des: " + columnData_des[i].getValue());
+      
       // overwrite dest policy defined here
       if ( 
           (onlyOverwriteBlank == true && (desValue == null | desValue.length() == 0)) | 
@@ -939,11 +941,12 @@ public class Transfer {
          ) { // only overwrite when dest values are blank
         columnData_des[i].setValue(columnData_src[i].getValue());
         
-      } else if (onlyOverwriteBlank == false | onlyOverwriteZero == false) {
-        columnData_des[i].setValue(columnData_des[i].getValue());
+      } else if (onlyOverwriteBlank == false | onlyOverwriteZero == false) { // always overwrite the des
+        columnData_des[i].setValue(columnData_src[i].getValue());
       } else {
       	columnData_des[i].setValue(columnData_des[i].getValue());
       }
+      //System.out.println("test:");
     }
    
   }
@@ -955,8 +958,10 @@ public class Transfer {
     
     for (int i=0; i < columnData_src_oneToMany.length; i++) {
       
+
       boolean onlyOverwriteBlank = columnData_des_oneToMany[i].getOverwriteWhenBlank();
-      boolean onlyOverwriteZero = columnData_des[i].getOverwriteWhenZero();
+      boolean onlyOverwriteZero = columnData_des_oneToMany[i].getOverwriteWhenZero();
+
       
       String desValue = columnData_des_oneToMany[i].getValue();
       
