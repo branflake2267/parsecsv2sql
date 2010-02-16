@@ -676,7 +676,7 @@ public class Transfer {
       sql = "INSERT INTO " + tableRight + " SET " + fields;
     }
 
-    System.out.println(index + ". SAVE: " + sql.substring(0,10));
+    System.out.println(index + ". SAVE: " + sql);
     
     testColumnValueSizes(columnData_des);
     
@@ -771,9 +771,9 @@ public class Transfer {
    */
   private void getDestinationValuesForComparison() {
 
-    if (oneToMany_RelationshipSql == null && oneToMany != null) {
+    //if (oneToMany_RelationshipSql == null && oneToMany != null) {
       setOneToManySqlRelationship();
-    }
+    //}
     
     // this will skip comparing dest values, saving time, and just moving the data to dest regardless of overwrite policy
     if (compareDestValues == false) {
@@ -940,8 +940,10 @@ public class Transfer {
         columnData_des[i].setValue(columnData_src[i].getValue());
         
       } else if (onlyOverwriteBlank == false | onlyOverwriteZero == false) {
-        columnData_des[i].setValue(columnData_src[i].getValue());
-      } 
+        columnData_des[i].setValue(columnData_des[i].getValue());
+      } else {
+      	columnData_des[i].setValue(columnData_des[i].getValue());
+      }
     }
    
   }
