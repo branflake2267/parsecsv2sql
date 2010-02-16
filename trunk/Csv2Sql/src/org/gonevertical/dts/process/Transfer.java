@@ -600,7 +600,7 @@ public class Transfer {
     
     String datafields = getFields_OneToMany(columnData);
     if (datafields == null) {
-      System.out.println("saveOneToMany(): no one to many value to insert");
+      //System.out.println("saveOneToMany(): no one to many value to insert");
       return;
     }
     
