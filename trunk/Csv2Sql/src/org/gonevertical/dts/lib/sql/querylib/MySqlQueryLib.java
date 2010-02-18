@@ -396,9 +396,9 @@ public class MySqlQueryLib implements QueryLib {
         ResultSet result = update.getGeneratedKeys();
         if (result != null && result.next()) { 
             id = result.getLong(1);
-          }
-          result.close();
-          result = null;
+        }
+        result.close();
+        result = null;
       }
       update.close();
       update = null;

@@ -415,7 +415,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     
     dd.debug(rowIndex + ". SAVE(): " + sql);
     
-    ql.update(dd.databaseData, sql);
+    ql.update(dd.databaseData, sql, false);
     // TODO - deal with truncation error ~~~~~~~~~~~~~~~~~~~~~~~~~~
     // TODO - truncation should rarely happen here, b/c this is tested for earlier.
     // TODO - set loggin
