@@ -161,10 +161,7 @@ public class DatabaseData {
    * @return
    */
   public Connection getConnection() {
-  	if (conn == null) {
-  		openConnection();
-  	}
-    return conn;
+    return openConnection();
   } 
     
   /**
