@@ -11,6 +11,8 @@ import javax.sql.DataSource;
 
 public class DatabaseData {
   
+	private Connection conn = null;
+	
   // location
   private String host;
   private String port;
@@ -141,8 +143,6 @@ public class DatabaseData {
    */
   public Connection openConnection() {
   
-    Connection conn = null;
-    
     if (context != null && contextRefName != null && serverInfo.toLowerCase().contains("tomcat")) {
       conn = getServletConnetion();
     } else {
@@ -161,7 +161,10 @@ public class DatabaseData {
    * @return
    */
   public Connection getConnection() {
-    return openConnection();
+  	if (conn == null) {
+  		openConnection();
+  	}
+    return conn;
   } 
     
   /**
@@ -170,17 +173,17 @@ public class DatabaseData {
    *  conn.close();
    */
   public void closeConnection() {
-    //if (conn == null) {
-      //return;
-    //}
+    if (conn == null) {
+      return;
+    }
     
-    //try {
-      //conn.close();
-    //} catch (SQLException e) {
-      //e.printStackTrace();
-    //} finally {
-      //conn = null;
-    //}
+    try {
+      conn.close();
+    } catch (SQLException e) {
+      e.printStackTrace();
+    } finally {
+      conn = null;
+    }
   }
   
   /**
