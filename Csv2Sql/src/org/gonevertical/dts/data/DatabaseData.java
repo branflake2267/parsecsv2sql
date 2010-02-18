@@ -141,14 +141,20 @@ public class DatabaseData {
    */
   public Connection openConnection() {
     Connection conn = null;
-    if (context != null && contextRefName != null && serverInfo.toLowerCase().contains("tomcat")) {
-      conn = getServletConnetion();
+  	// get connection by jndi context
+    if (context != null && contextRefName != null) { // no longer needed - && serverInfo.toLowerCase().contains("tomcat")
+      conn = getConnetionByConext();
+      
     } else {
+    	
+    	// get connection by default
       if (databaseType == TYPE_MYSQL) {
         conn = getConn_MySql();
+        
       } else if (databaseType == TYPE_MSSQL) {
         conn = getConn_MsSql();
-      } 
+      }
+      
     }
 
     return conn;
@@ -201,12 +207,12 @@ public class DatabaseData {
     }
     
     String url = "jdbc:mysql://" + host + ":" + port + "/" + database + loadBalance;
-    String driver = "com.mysql.jdbc.Driver";
-    //System.out.println("getConn_MySql: url:" + url + " user: " + username + " driver: " + driver);
 
+    String driver = "com.mysql.jdbc.Driver";
     if (roundRobinLoadBalance == true) {
       driver = "com.mysql.jdbc.ReplicationDriver";
     }
+    // System.out.println("getConn_MySql: url:" + url + " user: " + username + " driver: " + driver);
     
     profileTime("connection to mysql url: " + url);
     try {
@@ -286,7 +292,7 @@ public class DatabaseData {
    * 
    * @return
    */
-  public Connection getServletConnetion() {
+  public Connection getConnetionByConext() {
   
     if (context == null) {
       System.out.println("ERROR: getServletConnetion(): no context set");
@@ -294,7 +300,7 @@ public class DatabaseData {
     }
   
     if (contextRefName == null) {
-      System.out.println("ERROR: getServletConnetion(): no contextRefName set");
+      System.out.println("ERROR: getContextConnetion(): no contextRefName set");
       return null;
     }
     
@@ -303,7 +309,7 @@ public class DatabaseData {
     try {
       ds = (DataSource) context.lookup(contextRefName); 
     } catch (NamingException e) {
-      System.out.println("ERROR: getServletConnetion(): NO datasource");
+      System.out.println("ERROR: getContextConnetion(): NO datasource");
       e.printStackTrace();
     }
     
@@ -312,7 +318,7 @@ public class DatabaseData {
     try {
       conn = ds.getConnection();
     } catch (SQLException e) {
-      System.out.println("ERROR: getServletConnetion(): couldn't get servlet connection: " + contextRefName);
+      System.out.println("ERROR: getContextConnetion(): couldn't get servlet connection: " + contextRefName);
       e.printStackTrace();
     }
     
@@ -325,6 +331,8 @@ public class DatabaseData {
    * @return
    */
   public static Context initContext() {
+  	
+  	String sctx = "java:/comp/env";
 
     Context initContext = null;
     try {
@@ -336,10 +344,36 @@ public class DatabaseData {
   
     Context ctx = null;
     try {
-      ctx = (Context) initContext.lookup("java:/comp/env");
+      ctx = (Context) initContext.lookup(sctx);
     } catch (NamingException e) {
       System.out.println("ERROR: initContext(): Could not init Context");
       e.printStackTrace();
+      System.out.println("DatabaseData().initContext() Exiting!!!!! Setup the context: " + sctx);
+      System.exit(1);
+    }
+
+    return ctx;
+  }
+  
+  public static Context initContext(String context_url) {
+  	
+  
+    Context initContext = null;
+    try {
+      initContext = new InitialContext();
+    } catch (NamingException e) {
+      System.out.println("ERROR: initContext(): Could not get InitalContext");
+      e.printStackTrace();
+    }
+  
+    Context ctx = null;
+    try {
+      ctx = (Context) initContext.lookup(context_url);
+    } catch (NamingException e) {
+      System.out.println("ERROR: initContext(): Could not init Context");
+      e.printStackTrace();
+      System.out.println("DatabaseData().initContext() Exiting!!!!! Setup the context: " + context_url);
+      System.exit(1);
     }
 
     return ctx;
