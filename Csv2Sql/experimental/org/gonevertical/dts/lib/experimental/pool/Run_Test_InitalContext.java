@@ -8,7 +8,9 @@ public class Run_Test_InitalContext {
 		
 		String contextXmlPath = "/Users/branflake2267/Documents/workspace/Metrics_Nca/war/META-INF/context.xml";
 		
-		SetupInitialContext ic = new SetupInitialContext();
+		String tmpPath = "/Users/branflake2267/tmp";
+		
+		SetupInitialContext ic = new SetupInitialContext(tmpPath);
 		ic.setContextXmlFileLocation(contextXmlPath);
 		ic.run();
 		
