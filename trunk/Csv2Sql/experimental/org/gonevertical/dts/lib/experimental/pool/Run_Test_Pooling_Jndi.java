@@ -13,12 +13,16 @@ import javax.sql.DataSource;
 public class Run_Test_Pooling_Jndi {
 
 
-	public static void main(String[] args) {
+	public static void main(String[] args) {	
+		test();
+	}
 
-
+	
+	public static void test() {
+		
 		System.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.fscontext.RefFSContextFactory");
 		
-		System.setProperty(Context.PROVIDER_URL, "file:///tmp");
+		System.setProperty(Context.PROVIDER_URL, "file:///Users/branflake2267/tmp");
 		
 		InitialContext ic = null;
     try {
@@ -29,10 +33,18 @@ public class Run_Test_Pooling_Jndi {
 
 		// Construct BasicDataSource reference
 		Reference ref = new Reference("javax.sql.DataSource", "org.apache.commons.dbcp.BasicDataSourceFactory", null);
-		ref.add(new StringRefAddr("driverClassName", "org.apache.commons.dbcp.TesterDriver"));
-		ref.add(new StringRefAddr("url", "jdbc:apache:commons:testdriver"));
-		ref.add(new StringRefAddr("username", "username"));
-		ref.add(new StringRefAddr("password", "password"));
+		ref.add(new StringRefAddr("driverClassName", "com.mysql.jdbc.Driver"));
+		ref.add(new StringRefAddr("type", "javax.sql.DataSource"));
+		ref.add(new StringRefAddr("url", "jdbc:mysql://ark/system?autoReconnect=true"));
+		ref.add(new StringRefAddr("username", "Web"));
+		ref.add(new StringRefAddr("password", "?"));
+		
+		ref.add(new StringRefAddr("removeAbandoned", "true"));
+		ref.add(new StringRefAddr("removeAbandonedTimeout", "90"));
+		ref.add(new StringRefAddr("logAbandoned", "true"));
+		ref.add(new StringRefAddr("maxActive", "1000"));
+		ref.add(new StringRefAddr("maxIdle", "30"));
+		ref.add(new StringRefAddr("maxWait", "900"));
 		
 		try {
 	    ic.rebind("jdbc/basic", ref);
@@ -60,17 +72,15 @@ public class Run_Test_Pooling_Jndi {
     try {
 	    conn = ds.getConnection();
     } catch (SQLException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
+    	e.printStackTrace();
     }
 		
 		try {
 	    conn.close();
     } catch (SQLException e) {
-	    // TODO Auto-generated catch block
 	    e.printStackTrace();
     }
-
+		
 	}
-
+	
 }
