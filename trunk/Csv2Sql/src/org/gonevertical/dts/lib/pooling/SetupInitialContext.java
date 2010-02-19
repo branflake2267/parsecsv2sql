@@ -23,11 +23,11 @@ public class SetupInitialContext {
 	
 	private InitialContext initalContext = null;
 
-	public SetupInitialContext() {
+	public SetupInitialContext(String tmpPath) {
 		
 		System.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.fscontext.RefFSContextFactory");
 		
-		System.setProperty(Context.PROVIDER_URL, "file:///Users/branflake2267/tmp");
+		System.setProperty(Context.PROVIDER_URL, "file://" + tmpPath + "");
 		
     try {
     	initalContext = new InitialContext();
