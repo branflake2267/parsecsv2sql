@@ -21,7 +21,7 @@ public class SetupInitialContext {
 	
 	private String contextPath = null;
 	
-	private InitialContext initalContext;
+	private InitialContext initalContext = null;
 
 	public SetupInitialContext() {
 		
@@ -29,11 +29,8 @@ public class SetupInitialContext {
 		
 		System.setProperty(Context.PROVIDER_URL, "file:///Users/branflake2267/tmp");
 		
-	  initalContext = null;
     try {
-	    
     	initalContext = new InitialContext();
-	    
     } catch (NamingException e) {
 	    e.printStackTrace();
     }
@@ -41,7 +38,7 @@ public class SetupInitialContext {
 	}
 	
 	public void setContextXmlFileLocation(String contextXmlPath) {
-		this.contextPath  = contextXmlPath;
+		this.contextPath = contextXmlPath;
 	}
 	
 	public void run() {
@@ -64,9 +61,7 @@ public class SetupInitialContext {
 	}
 
 	private ResourceData[] getResources() {
-	  
-		ResourceData[] rds = readXmlFile();
-		
+		ResourceData[] rds = readXmlFile();		
 	  return rds;
   }
 	
@@ -78,14 +73,8 @@ public class SetupInitialContext {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
 		try {
-
-			//Using factory get an instance of document builder
 			DocumentBuilder db = dbf.newDocumentBuilder();
-
-			//parse using builder to get DOM representation of the XML file
 			Document dom = db.parse(contextPath);
-
-			//get the root element - context
 			Element docEle = dom.getDocumentElement();
 
 			//get a nodelist of  elements
@@ -141,6 +130,10 @@ public class SetupInitialContext {
 		
 		return rd;
 	}
+
+	public Context getInitialContext() {
+	  return initalContext;
+  }
 	
 	
 	
