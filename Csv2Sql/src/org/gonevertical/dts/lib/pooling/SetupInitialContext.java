@@ -1,5 +1,6 @@
 package org.gonevertical.dts.lib.pooling;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -10,6 +11,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.gonevertical.dts.lib.FileUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -26,6 +28,9 @@ public class SetupInitialContext {
 	public SetupInitialContext(String tmpPath) {
 		
 		System.setProperty(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.fscontext.RefFSContextFactory");
+		
+		File d = new File(tmpPath + "/jdbc");
+		d.mkdirs();
 		
 		System.setProperty(Context.PROVIDER_URL, "file://" + tmpPath + "");
 		
