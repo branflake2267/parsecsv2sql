@@ -140,24 +140,4 @@ public class SetupInitialContext {
 	  return initalContext;
   }
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 }
