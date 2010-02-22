@@ -9,6 +9,8 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.apache.commons.dbcp.BasicDataSource;
+
 public class DatabaseData {
   
   // location
@@ -33,6 +35,9 @@ public class DatabaseData {
   
   // setup a connection and store it in this object for easy reference to
   //private Connection conn = null;
+  
+  // pooling datasource
+  private DataSource dataSourcePool = null;
   
   // servlet context - used for connection pooling
   private Context context = null;
@@ -304,23 +309,32 @@ public class DatabaseData {
       return null;
     }
     
-    // first get a datasource
-    DataSource ds = null;
-    try {
-      ds = (DataSource) context.lookup(contextRefName); 
-    } catch (NamingException e) {
-      System.out.println("ERROR: getContextConnetion(): NO datasource");
-      e.printStackTrace();
+    // the first call setup the dataSource Pool
+    if (dataSourcePool == null) { // && serverInfo.toLowerCase().contains("tomcat") == true
+    	
+      try {
+        dataSourcePool = (DataSource) context.lookup(contextRefName); 
+      } catch (NamingException e) {
+        System.out.println("ERROR: getContextConnetion(): NO datasource");
+        e.printStackTrace();
+      }
+
+      
     }
     
     // use the datasource to get the connection
     Connection conn = null;
     try {
-      conn = ds.getConnection();
+      conn = dataSourcePool.getConnection();
+      
     } catch (SQLException e) {
       System.out.println("ERROR: getContextConnetion(): couldn't get servlet connection: " + contextRefName);
       e.printStackTrace();
     }
+    
+    //BasicDataSource bds = (BasicDataSource) dataSourcePool;
+    //System.out.println(contextRefName + ": Active Conn: " + bds.getNumActive() + " max: " + bds.getMaxActive());
+    //System.out.println(contextRefName + ": Idle Conn: " + bds.getNumIdle());
     
     return conn;
   }
@@ -380,7 +394,7 @@ public class DatabaseData {
   }
   
   public boolean getLoadBalance() {
-    return this.roundRobinLoadBalance;
+    return roundRobinLoadBalance;
   }
 
   public void setReadOnly(boolean b) {
