@@ -586,6 +586,11 @@ public class MySqlColumnLib implements ColumnLib {
       if (columnData != null && columnData[i].getIdentityUse() == true) {
         cols.add(columnData[i]);
       }
+      
+      // limit is 16, TODO -maybe a setting later
+      if (i > 16) {
+        break;
+      }
     }
 
     if (cols.size() == 0) {
