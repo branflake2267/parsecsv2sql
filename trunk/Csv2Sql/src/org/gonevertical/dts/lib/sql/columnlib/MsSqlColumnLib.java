@@ -11,6 +11,7 @@ import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.ColumnDataComparator;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.lib.sql.querylib.MsSqlQueryLib;
+import org.gonevertical.dts.lib.sql.querylib.MySqlQueryLib;
 import org.gonevertical.dts.lib.sql.transformlib.MsSqlTransformLib;
 
 
@@ -621,6 +622,18 @@ public class MsSqlColumnLib implements ColumnLib {
         cols.add(columnData[i]);
       }
     }
+    
+    /*  
+     * 
+     * TODO - add in escape 
+     * String v = col.getValue();
+      if (v == null || v.trim().length() == 0) {
+        sql += "`" + c + "` IS NULL ";
+      } else {
+        v = new MySqlQueryLib().escape(col.getValue());
+        sql += "`" + c + "`='" + v + "'";
+      }
+     */
 
     // create sql where vars
     String sql = "";
@@ -628,7 +641,14 @@ public class MsSqlColumnLib implements ColumnLib {
       ColumnData col = cols.get(i);
       String c = col.getColumnName();
       String v = col.getValue();
-      sql += "[" + c + "]='" + v + "'";
+      
+      if (v == null || v.trim().length() == 0) {
+        sql += "[" + c + "] IS NULL ";
+      } else {
+        v = new MsSqlQueryLib().escape(col.getValue());
+        sql += "[" + c + "]='" + v + "'";
+      }
+      
       if (i < cols.size() - 1) {
         sql += " AND ";
       }

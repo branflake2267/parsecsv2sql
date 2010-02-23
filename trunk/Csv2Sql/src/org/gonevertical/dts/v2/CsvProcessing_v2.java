@@ -458,18 +458,27 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     return b;
   }
   
+  /**
+   * does the data already exist
+   * 
+   *  TODO deal with empty to null
+   *  
+   * @return
+   */
   private long doesDataExist() {
-   if (dd.identityColumns == null) {
+   
+    if (dd.identityColumns == null) {
      return -1;
    }
+   
    String idents = cl.getSql_IdentitiesWhere(columnData);
-   if (idents == null || idents.trim().length() == 0) {
-     System.out.println("ERROR: doesDataExist(): Can't figure out the identies. exiting. (check delimiter?)");
-     // TODO - what if? Should we continue???? 
-   }
+
    String where = " WHERE " + idents;
+   
    String sql = "SELECT " + dd.primaryKeyName + " FROM " + dd.table + " " + where;
+   
    long primaryKeyId = ql.queryLong(dd.databaseData, sql); 
+   
    return primaryKeyId; 
   } 
   
