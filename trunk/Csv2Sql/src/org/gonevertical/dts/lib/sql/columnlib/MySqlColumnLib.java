@@ -564,6 +564,8 @@ public class MySqlColumnLib implements ColumnLib {
   /**
    * get Sql for identities indexing
    * 
+   * TODO - when looking for columns to index make sure they aren't varchar(0)
+   * 
    * @param dd
    * @param columnData
    * @return
