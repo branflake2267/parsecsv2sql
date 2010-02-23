@@ -545,9 +545,14 @@ public class MySqlColumnLib implements ColumnLib {
     for(int i=0; i < cols.size(); i++) {
       ColumnData col = cols.get(i);
       String c = col.getColumnName();
-      // TODO set up query lib at open of this
-      String v = new MySqlQueryLib().escape(col.getValue());
-      sql += "`" + c + "`='" + v + "'";
+      String v = col.getValue();
+      if (v == null || v.trim().length() == 0) {
+        sql += "`" + c + "` IS NULL ";
+      } else {
+        v = new MySqlQueryLib().escape(col.getValue());
+        sql += "`" + c + "`='" + v + "'";
+      }
+      
       if (i < cols.size() - 1) {
         sql += " AND ";
       }
