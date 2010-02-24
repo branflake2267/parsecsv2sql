@@ -259,17 +259,20 @@ public class Transfer {
       columnData_src[i].setOverwriteWhenBlank(mappedFields[i].onlyOverwriteBlank);
       columnData_src[i].setOverwriteWhenZero(mappedFields[i].onlyOverwriteZero);
       columnData_src[i].setRegex(mappedFields[i].regexSourceField);
+      columnData_src[i].setDeleteExisting(mappedFields[i].deleteExisting);
       
       columnData_des[i].setTable(tableRight);
       columnData_des[i].setColumnName(mappedFields[i].destinationField);
       columnData_des[i].setIsPrimaryKey(mappedFields[i].isPrimaryKey);
       columnData_des[i].setOverwriteWhenBlank(mappedFields[i].onlyOverwriteBlank);
       columnData_des[i].setCase(mappedFields[i].changeCase);
+      columnData_des[i].setDeleteExisting(mappedFields[i].deleteExisting);
     }
 
     if (oneToMany != null) {
       columnData_src_oneToMany = new ColumnData[oneToMany.length];
       columnData_des_oneToMany = new ColumnData[oneToMany.length];
+      
       for (int i=0; i < oneToMany.length; i++) {
         columnData_src_oneToMany[i] = new ColumnData();
         columnData_des_oneToMany[i] = new ColumnData();
@@ -277,11 +280,14 @@ public class Transfer {
         columnData_src_oneToMany[i].setColumnName(oneToMany[i].sourceField);
         columnData_src_oneToMany[i].setOverwriteWhenBlank(oneToMany[i].onlyOverwriteBlank);
         columnData_src_oneToMany[i].setRegex(oneToMany[i].regexSourceField);
+        columnData_src_oneToMany[i].setDeleteExisting(oneToMany[i].deleteExisting);
         
         columnData_des_oneToMany[i].setColumnName(oneToMany[i].destinationField);
         columnData_des_oneToMany[i].setOverwriteWhenBlank(oneToMany[i].onlyOverwriteBlank);
         columnData_des_oneToMany[i].setRegex(oneToMany[i].regexSourceField);
         columnData_des_oneToMany[i].setTable(oneToMany[i].differentDestinationTable);
+        columnData_des_oneToMany[i].setDeleteExisting(oneToMany[i].deleteExisting);
+        
         hardOneToMany.add(oneToMany[i].hardOneToMany);
       }
     }
@@ -687,7 +693,7 @@ public class Transfer {
     }
     
     String valueField = "";
-    if (columnData.getValue() == null || columnData.getValue().length() == 0) {
+    if ((columnData.getValue() == null || columnData.getValue().length() == 0) || columnData.getDeleteExisting() == true) {
     	valueField = "";
     } else {
     	valueField = " AND (`" + columnData.getColumnName()+"`='" + ql_src.escape(columnData.getValue()) + "')";
@@ -1006,7 +1012,7 @@ public class Transfer {
     
     for (int i=0; i < columnData_src_oneToMany.length; i++) {
       
-
+    	columnData_des_oneToMany[i].setDeleteExisting(columnData_src_oneToMany[i].getDeleteExisting());
       boolean onlyOverwriteBlank = columnData_des_oneToMany[i].getOverwriteWhenBlank();
       boolean onlyOverwriteZero = columnData_des_oneToMany[i].getOverwriteWhenZero();
 
