@@ -54,6 +54,8 @@ public class FieldData implements Comparable<FieldData> {
 	
 	public boolean updateOnlyWhenBigger = false;
 	
+	public boolean deleteExisting = false;
+	
 	/**
 	 * constructor
 	 */

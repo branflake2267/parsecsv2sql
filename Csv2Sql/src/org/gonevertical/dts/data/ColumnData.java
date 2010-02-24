@@ -81,6 +81,7 @@ public class ColumnData implements Cloneable {
 
   // test the value type matches Sql Type throw
   private boolean testTypeThrow = false;
+	private boolean deleteExistingValue;
   
   /**
    * constructor
@@ -747,6 +748,19 @@ public class ColumnData implements Cloneable {
     } catch (CloneNotSupportedException e) {
       throw new InternalError(e.toString());
     }
+  }
+
+  /**
+   * for transfer only 
+   * 
+   * @param deleteExisting
+   */
+	public void setDeleteExisting(boolean deleteExisting) {
+	  this.deleteExistingValue = deleteExisting;
+  }
+
+	public boolean getDeleteExisting() {
+	  return deleteExistingValue;
   }
 
 }
