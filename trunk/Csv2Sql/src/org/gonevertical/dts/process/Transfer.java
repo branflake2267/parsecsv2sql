@@ -632,16 +632,53 @@ public class Transfer {
     
     String where = getOneToManySqlWhere(columnData, hardOneToMany);
 
-    String sql = "SELECT " + oneToManyTablePrimaryKey.getColumnName() + " FROM " + columnData.getTable() + " WHERE " + where;
+    String sql = "SELECT " + oneToManyTablePrimaryKey.getColumnName() + " " +
+    		"FROM " + columnData.getTable() + " WHERE " + where;
     
     //System.out.println("checking onetomany: " + sql);
     
-    long id = ql_des.queryLong(database_des, sql);
+    long id = 0;
+    Connection conn = null;
+    Statement select = null;
+    int size = 0;
+    try {
+      conn = database_des.getConnection();
+      select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      size = ql_des.getResultSetSize(result);
+      while (result.next()) {
+        id = result.getLong(1);
+      }
+      select.close();
+      select = null;
+      result.close();
+      result = null;
+      conn.close();
+    } catch (SQLException e) {
+      System.err.println("Error: " + sql);
+      e.printStackTrace();
+    } finally {
+      conn = null;
+      select = null;
+    }
+    
+    if (size > 1) {
+    	deleteOneToMany(columnData.getTable(), where);
+    	id = 0;
+    } else {
+    	//nothing
+    }
     
     return id;
   }
   
-  // TODO - this is MYSQL specific - make it not specific using guice
+  private void deleteOneToMany(String table, String where) {
+  	String sql = "DELETE FROM " + table + " WHERE " + where;
+  	System.out.println("\t\t Deleting duplicate one to many");
+	  ql_des.update(database_des, sql);
+  }
+
+	// TODO - this is MYSQL specific - make it not specific using guice
   private String getOneToManySqlWhere(ColumnData columnData, HashMap<String,String> hardOneToMany) {
 
     String whereHard = "";
@@ -649,8 +686,14 @@ public class Transfer {
       whereHard = " AND " + getFields_OneToMany_Hard(hardOneToMany, 2);
     }
     
-    String where = getWhere() + " AND " +
-        "(`" + columnData.getColumnName()+"`='" +  ql_src.escape(columnData.getValue()) + "') " + whereHard;
+    String valueField = "";
+    if (columnData.getValue() == null || columnData.getValue().length() == 0) {
+    	valueField = "";
+    } else {
+    	valueField = " AND (`" + columnData.getColumnName()+"`='" + ql_src.escape(columnData.getValue()) + "')";
+    }
+    
+    String where = getWhere() + " " +  valueField  + " " + whereHard;
  
     return where;
   }
@@ -733,12 +776,17 @@ public class Transfer {
     // data fields
     String column = columnData.getColumnName();
     String value = columnData.getValue();
-    sql += "`" + column + "`='" +  ql_src.escape(value) + "'";
-
-    // don't insert blank data
     if (value == null || value.length() == 0) {
-      sql = null;
+    	sql += "`" + column + "`=NULL";	
+    } else {
+    	sql += "`" + column + "`='" +  ql_src.escape(value) + "'";	
     }
+    
+
+    // don't insert blank data - need to insert null, b/c this is considered a value, if it where to erase a previous value
+    //if (value == null || value.length() == 0) {
+      //sql = null;
+    //}
     
     return sql;
   }
