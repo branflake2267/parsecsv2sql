@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -98,6 +99,8 @@ public class Transfer {
 	
   // at index
   private long index = 0;
+  
+	private Date purgeAtEnd = null;
   
   /**
    * Transfer data object setup 
@@ -1040,6 +1043,10 @@ public class Transfer {
   
   public void setOffsetLimit(long limitOffset) {
   	this.limitOffset = limitOffset;
+  }
+
+	public void purgeAtEnd() {
+		purgeAtEnd = new Date();
   }
   
 }
