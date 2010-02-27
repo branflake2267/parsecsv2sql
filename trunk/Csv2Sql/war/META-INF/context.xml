@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<!-- The contents of this file will be loaded for each web application -->
+<Context>
+
+    <!-- #1 -->
+    <Resource name="jdbc/conn_test" auth="Container" type="javax.sql.DataSource"
+	       removeAbandoned="true" removeAbandonedTimeout="90" logAbandoned="true"
+	       maxActive="1000" maxIdle="30" maxWait="900"
+	       username="test" password="test#" driverClassName="com.mysql.jdbc.Driver"
+	       url="jdbc:mysql://ark_home:3306/test?autoReconnect=true" />
+
+	<!-- #2 -->
+	<Resource name="jdbc/conn_test2" auth="Container" type="javax.sql.DataSource"
+	       removeAbandoned="true" removeAbandonedTimeout="90" logAbandoned="true"
+	       maxActive="1000" maxIdle="30" maxWait="900"
+	       username="test" password="test#" driverClassName="com.mysql.jdbc.Driver"
+	       url="jdbc:mysql://ark_home:3306/test?autoReconnect=true"/>
+
+</Context>
+
+
+
+

@@ -5,6 +5,7 @@
 	<classpathentry kind="src" path="unittests"/>
 	<classpathentry kind="src" path="src_office"/>
 	<classpathentry kind="src" path="experimental"/>
+	<classpathentry kind="src" path="src_gwt"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/opt/classpath/mysql-connector-java-5.1.10/mysql-connector-java-5.1.10-bin.jar"/>
 	<classpathentry kind="lib" path="/opt/classpath/sqljdbc_2.0/enu/sqljdbc4.jar"/>
@@ -21,5 +22,14 @@
 	<classpathentry kind="lib" path="/opt/classpath/commons-logging-1.1.1/commons-logging-1.1.1-javadoc.jar"/>
 	<classpathentry kind="lib" path="/opt/classpath/commons-collections-3.2.1/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="lib" path="/opt/classpath/commons-collections-3.2.1/commons-collections-3.2.1-javadoc.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/sax2r3/sax2.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/commons-dbcp-1.4/commons-dbcp-1.4-javadoc.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/commons-dbcp-1.4/commons-dbcp-1.4.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/jndi112/lib/jndi.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/fscontext-ea4/lib/fscontext.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/fscontext-ea4/lib/providerutil.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/commons-pool-1.5.4/commons-pool-1.5.4-javadoc.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/commons-pool-1.5.4/commons-pool-1.5.4-sources.jar"/>
+	<classpathentry kind="lib" path="/opt/classpath/commons-pool-1.5.4/commons-pool-1.5.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

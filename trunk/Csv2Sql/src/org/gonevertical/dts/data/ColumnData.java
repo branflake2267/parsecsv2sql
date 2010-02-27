@@ -103,29 +103,34 @@ public class ColumnData implements Cloneable {
   }
 
   /**
-   * set value of column
+   * set value of column 
+   * 
+   *  NOTE: by default, all empty (white space) values get turned into null
+   * 
+   *  Optional: ChangeCase
+   *  Optional: run regex on value
    * 
    * @param value
    */
   public void setValue(String value) {
+  	
+  	// always set empty to null 
+  	// TODO make this optional to turn this off
+  	if (value != null && value.trim().length() == 0) {
+  		value = null;
+  	}
 
+  	// optional: if change case is set on, change the case of the value
     if (value != null && changeCase > 0) {
       value = changeCase(value);
     }
 
-    // use regex to get the value
-    if (regex != null) {
+    // optional: run regex on the value
+    if (value != null && regex != null) {
       value = StringUtil.getValue(regex, value);
     }
+    
     this.value = value;
-
-    if (value != null) {
-      value.trim();
-      if (value.length() == 0) {
-        value = null;
-      }
-    }
-
   }
 
   /**
@@ -742,6 +747,10 @@ public class ColumnData implements Cloneable {
     return resize;
   }
 
+  /**
+   * clone ColumnData object
+   */
+  @Override
   public Object clone() {
     try {
       return super.clone();
