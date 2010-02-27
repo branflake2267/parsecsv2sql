@@ -34,7 +34,7 @@ import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
  * @author design
  *
  */
-public class Transfer {
+public class Transfer implements Runnable, Cloneable {
 
   // what kind of transfer process is going on
   public static final int MODE_TRANSFER_ALL = 1;
@@ -100,7 +100,31 @@ public class Transfer {
   // at index
   private long index = 0;
   
+  // not used, but maybe in the future. best way to purge is set date created for all to be copied then erase earlier date
+  // maybe need to set a purge column
+  @Deprecated
 	private Date purgeAtEnd = null;
+	
+	/**
+	 * what offset is this thread on
+	 */
+	private long offset;
+	
+	/**
+	 * what limit is this thread on
+	 */
+	private long limit;
+	
+	/**
+	 * what thread are we on
+	 */
+	private int threadCount;
+
+	/**
+	 * how many threads to spawn to transfer
+	 */
+	private int totalThreadCount = 1;
+	private int offsetIndex;
   
   /**
    * Transfer data object setup 
@@ -325,21 +349,65 @@ public class Transfer {
     long offset = 0;
     long limit = 0;
     for (int i=0; i < tp.intValue(); i++) {
-      if (i==0) {
-        offset = 0;
-        limit = lim;
-      } else {
-        offset = ((i + 1 )* lim) - lim;
-        limit = lim;
-      }
+    
+    	// spawn more than one thread to copy, in order to do this, connection pooling will need to be setup
+    	Thread[] threads = new Thread[totalThreadCount];
+    	for (int threadCount=0; threadCount < totalThreadCount; threadCount++) {
+    	
+        if (i==0) {
+          offset = 0;
+          limit = lim;
+        } else {
+          offset = ((i + 1 ) * lim) - lim;
+          limit = lim;
+        }
+               
+        Transfer transfer = (Transfer) this.clone();
+        transfer.setThread(threadCount);
+        transfer.setProcessSrc(offset, limit);
+   
+        threads[threadCount] = new Thread(transfer);
+       
+        if (totalThreadCount > 1) {
+        	i++;
+        }
+    	}
+    	
+    	for (int threadCount=0; threadCount < totalThreadCount; threadCount++) {
+    		 threads[threadCount].start();
+    	}
       
-      processSrc(offset, limit);
-      //System.out.println("offset: " + offset + " limit: " + limit);
+    	// join threads - finish the threads before moving to the next pages
+    	for (int threadCount=0; threadCount < totalThreadCount; threadCount++) { 
+        try {
+	        threads[0].join();
+        } catch (InterruptedException e) {
+	        e.printStackTrace();
+        }
+    	}
+    	
     }
     
   }
   
-  private void processSrc(long offset, long limit) {
+  private void setProcessSrc(long offset, long limit) {
+  	this.offset = offset;
+  	this.limit = limit;
+  }
+  
+  public void run() {
+  	System.out.println("Start of thread " + threadCount + " offset: " + offset + " limit: " + limit);
+  	
+  	processSrc(offset, limit);
+  	
+  	System.out.println("End of thread " + threadCount + " offset: " + offset + " limit: " + limit);
+  }
+
+	private void setThread(int threadCount) {
+	  this.threadCount = threadCount;
+  }
+
+	private void processSrc(long offset, long limit) {
 
     ColumnData primKey = cl_src.getPrimaryKey_ColumnData(columnData_src);
     String where = "";
@@ -395,10 +463,11 @@ public class Transfer {
       //sql = sql.replaceAll("`", "");
     //}
     
-    System.out.println("sql: " + sql);
+    System.out.println("Thread: " + threadCount + " sql: " + sql);
     
     Connection conn = null;
     Statement select = null;
+    offsetIndex = 0; // watch the offset loop
     try {
       conn = database_src.getConnection();
       select = conn.createStatement();
@@ -409,6 +478,7 @@ public class Transfer {
         for (int i=0; i < columnData_src.length; i++) {
           String value = result.getString(columnData_src[i].getColumnName());
           columnData_src[i].setValue(value);
+          ///System.out.println("\t\t Thread. " + threadCount + " "  + columnData_src[i].getColumnName() + "=" + value);
         }
         
         // one to many relationships processing
@@ -420,6 +490,8 @@ public class Transfer {
         }
 
         process();
+        
+        offsetIndex++; // use this to debug loop
       }
       result.close();
       select.close();
@@ -463,7 +535,7 @@ public class Transfer {
         offset = 0;
         limit = lim;
       } else {
-        offset = ((i + 1 )* lim) - lim;
+        offset = ((i + 1 ) * lim) - lim;
         limit = lim;
       }
       
@@ -535,9 +607,6 @@ public class Transfer {
         // get values 
         for (int i=0; i < columnData_src.length; i++) {
           String value = result.getString(columnData_src[i].getColumnName());
-          if (value != null && value.trim().length() == 0) {
-            value = null;
-          }
           columnData_src[i].setValue(value);
         }
         
@@ -728,7 +797,7 @@ public class Transfer {
       sql = "INSERT INTO " + tableRight + " SET " + fields;
     }
 
-    System.out.println(index + ". SAVE: " + sql);
+    System.out.println(index + ". offsetIndex: " + offsetIndex + " Thread: " + threadCount + " offset: " + offset + " limit: " + limit + " id: "+id+" SAVE: " + sql);
     
     testColumnValueSizes(columnData_des);
     
@@ -1045,8 +1114,71 @@ public class Transfer {
   	this.limitOffset = limitOffset;
   }
 
+  /**
+   * TODO I had imaginged a way to purge extra records on the destination datbase, this still need to be done
+   * I decided to set dateupdated the same on the src db before copy, then deleted the less than dateupdated on dest
+   * I'd like to figure out a way with out altering, but it looks like if I add a column would work too.
+   */
+  @Deprecated
 	public void purgeAtEnd() {
 		purgeAtEnd = new Date();
   }
+
+	/**
+	 * set how many threads to spawn - Warning, this should only be used with connection pooling
+	 *   NOTE: will probably crash connection due to max connections or will hit the file descriptor OS ceiling
+	 *   NOTE: netstat -na or ulimit -a
+	 * @param totalSpawnThreadCount
+	 */
+	public void setThreadsToSpawn(int totalSpawnThreadCount) {
+	  this.totalThreadCount = totalSpawnThreadCount;
+	  
+	  //TODO - should I set back to 1 if there is no context setup?
+  }
+
+	@Override
+	public Object clone() {
+		
+		Transfer cloned = null;
+    try {
+	    cloned = (Transfer) super.clone();
+    } catch (CloneNotSupportedException e) {
+	    e.printStackTrace();
+    }
+    
+    // copy object arrays by cloning each object
+    ColumnData[] cdSrc = new ColumnData[columnData_src.length];
+    for (int i=0; i < columnData_src.length; i++) {
+    	cdSrc[i] = (ColumnData) columnData_src[i].clone();
+    }
+    
+    ColumnData[] cdDes = new ColumnData[columnData_des.length];
+    for (int i=0; i < columnData_des.length; i++) {
+    	cdDes[i] = (ColumnData) columnData_des[i].clone();
+    }
+    
+    // also clone the columndata - transfer of data happens through these, and has to be split into the threads
+    cloned.columnData_src = cdSrc;
+    cloned.columnData_des = cdDes;
+    
+    if (columnData_src_oneToMany != null) {
+    	ColumnData[] cdSrcOtm = new ColumnData[columnData_src_oneToMany.length];
+    	for (int i=0; i < columnData_src_oneToMany.length; i++) {
+      	cdSrcOtm[i] = (ColumnData) columnData_src_oneToMany[i].clone();
+      }
+    	cloned.columnData_src_oneToMany = cdSrcOtm;
+    }
+    
+    if (columnData_des_oneToMany != null) {
+    	ColumnData[] cdDesOtm = new ColumnData[columnData_des_oneToMany.length];
+    	for (int i=0; i < columnData_des_oneToMany.length; i++) {
+      	cdDesOtm[i] = (ColumnData) columnData_des_oneToMany[i].clone();
+      }
+    	cloned.columnData_des_oneToMany = cdDesOtm;
+    }
+    
+		return cloned;
+	}
+
   
 }
