@@ -335,10 +335,11 @@ public class Optimise_v2 {
       
     System.out.println("Analyzing Column For Type: " + columnData.getColumnName() + " query: " + sql);
 
+    Connection conn = null;
+    Statement select = null;
     try { 
-      Connection conn = destinationData.databaseData.getConnection();
-      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, 
-          java.sql.ResultSet.CONCUR_READ_ONLY);
+      conn = destinationData.databaseData.getConnection();
+      select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
       select.setFetchSize(Integer.MIN_VALUE);
       ResultSet result = select.executeQuery(sql);
       int i = 0;
@@ -347,10 +348,17 @@ public class Optimise_v2 {
         i++;
       }
       select.close();
+      select = null;
       result.close();
+      result = null;
+      conn.close();
+      conn = null;
     } catch (SQLException e) {
       System.err.println("SQL Statement Error:" + sql);
       e.printStackTrace();
+    } finally {
+    	select = null;
+    	conn = null;
     }
     
   }
