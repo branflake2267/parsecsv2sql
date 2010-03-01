@@ -269,6 +269,12 @@ public class ColumnData implements Cloneable {
         value = null;
       } else {
         try { 
+        	
+        	// when retrieving a value it can come like "." representing "0.0"
+        	if (value != null && value.equals(".")) {
+        		value = "0.0";
+        	}
+        	
           // change (1234) to negative
           if (value != null && value.matches("[\\(].*[\\)]")) {
             value = value.replaceAll("[\\)\\(]", "");
