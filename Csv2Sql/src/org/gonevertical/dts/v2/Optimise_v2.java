@@ -691,7 +691,11 @@ public class Optimise_v2 {
         i--;
       }
       select.close();
+      select = null;
       result.close();
+      result = null;
+      conn.close();
+      conn = null;
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
@@ -764,7 +768,11 @@ public class Optimise_v2 {
         updateColumn_Int(cpriKey, columnData);
       }
       select.close();
+      select = null;
       result.close();
+      result = null;
+      conn.close();
+      conn = null;
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
@@ -872,7 +880,11 @@ public class Optimise_v2 {
       ResultSet result = select.executeQuery(sql);
       c = ql.getResultSetSize(result);
       select.close();
+      select = null;
       result.close();
+      result = null;
+      conn.close();
+      conn = null;
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
@@ -925,7 +937,11 @@ public class Optimise_v2 {
         index--;
       }
       select.close();
+      select = null;
       result.close();
+      result = null;
+      conn.close();
+      conn = null;
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
@@ -956,7 +972,11 @@ public class Optimise_v2 {
         deleteDuplicate(values);
       }
       select.close();
+      select = null;
       result.close();
+      result = null;
+      conn.close();
+      conn = null;
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
@@ -993,7 +1013,11 @@ public class Optimise_v2 {
         i++;
       }
       select.close();
+      select = null;
       result.close();
+      result = null;
+      conn.close();
+      conn = null;
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
