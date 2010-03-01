@@ -776,7 +776,7 @@ public class MySqlTransformLib implements TransformLib {
     for (int i=0; i < indexes.size(); i++) {
       String s = indexes.get(i);
       s = s.replaceAll("\n", "");
-      s = s.replace("KEY", "ADD INDEX");
+      s = s.replaceAll("^KEY", "ADD INDEX");
       if (s.matches(".*?,") == true) {
         s = s.substring(0,s.length() - 1);
         r[i] = s;
