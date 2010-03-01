@@ -502,7 +502,8 @@ public class Optimise_v2 {
       }
       break;
     case ColumnData.FIELDTYPE_DECIMAL:
-      columnType = "DECIMAL(" + charLength + "," + decb + ")"; // not doing this b/c it errors DEFAULT 0.0 when nothing exists ''
+    	int maxLenth = charLength + decb;
+      columnType = "DECIMAL(" + maxLenth + "," + decb + ")"; // not doing this b/c it errors DEFAULT 0.0 when nothing exists ''
       break;
     case ColumnData.FIELDTYPE_EMPTY:
       columnType = "CHAR(0)";
