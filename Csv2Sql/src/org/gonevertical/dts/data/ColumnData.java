@@ -442,6 +442,7 @@ public class ColumnData implements Cloneable {
 
   /**
    * set the lengths INT(10) or decimal(10,2)
+   * 
    * @param columnType
    */
   public void setCharLength(String columnType) {
