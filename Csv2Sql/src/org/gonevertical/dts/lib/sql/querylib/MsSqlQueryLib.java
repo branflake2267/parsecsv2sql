@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Date;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.gonevertical.dts.data.DatabaseData;
@@ -576,6 +577,12 @@ public class MsSqlQueryLib implements QueryLib {
   	String middle = "(" + columns + ") VALUES (" + values + ");";
   	
   	return middle;
+  }
+
+	@Override
+  public Date queryDate(DatabaseData dd, String sql) {
+	  // TODO Auto-generated method stub
+	  return null;
   }
   
   

@@ -5,6 +5,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Calendar;
+import java.util.Date;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.gonevertical.dts.data.DatabaseData;
@@ -485,6 +487,43 @@ public class MySqlQueryLib implements QueryLib {
 
   public String getType() {
     return "MySql";
+  }
+
+	public Date queryDate(DatabaseData dd, String sql) {
+		setTrackSql(sql);
+		java.sql.Date sqlDate = null;
+    Connection conn = null;
+    Statement select = null;
+    try {
+      conn = dd.getConnection();
+      select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        sqlDate = result.getDate(1);
+      }
+      select.close();
+      select = null;
+      result.close();
+      result = null;
+      conn.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      System.err.println("servletConn:" + dd.getConnetionByConext() + " Server: " + dd.getServer());
+      setTrackError(e.toString());
+      e.printStackTrace();
+    } finally {
+      conn = null;
+      select = null;
+    }
+    
+   Date date = null;
+   if (sqlDate != null) {
+     long time = sqlDate.getTime();
+     date = new Date(time);
+   }
+   
+    
+    return date;
   }
 
   
