@@ -2,6 +2,7 @@ package org.gonevertical.dts.lib.sql.querylib;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.util.Date;
 
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.ImportStatData;
@@ -42,4 +43,5 @@ public interface QueryLib {
   
   public boolean queryLongAndConvertToBoolean(DatabaseData dd, String sql);
   
+  public Date queryDate(DatabaseData dd, String sql);
 }

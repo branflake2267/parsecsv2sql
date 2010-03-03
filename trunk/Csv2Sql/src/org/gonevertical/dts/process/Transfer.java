@@ -323,6 +323,12 @@ public class Transfer implements Runnable, Cloneable {
   
   private void processSrc() {
   	
+  	setTotal();
+    
+    loopThroughPages();
+  }
+  
+  private void setTotal() {
   	String where = "";
   	if (srcWhere != null && srcWhere.length() > 0) {
   		where = " WHERE " + srcWhere;
@@ -332,8 +338,6 @@ public class Transfer implements Runnable, Cloneable {
     System.out.println("sql" + sql);
     total = ql_src.queryLong(database_src, sql);
     index = total;
-    
-    loopThroughPages();
   }
   
   private void loopThroughPages() {
@@ -371,6 +375,8 @@ public class Transfer implements Runnable, Cloneable {
         if (totalThreadCount > 1) {
         	i++;
         }
+        
+        index = index - limitOffset;
     	}
     	
     	for (int threadCount=0; threadCount < totalThreadCount; threadCount++) {
