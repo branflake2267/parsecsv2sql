@@ -14,6 +14,8 @@ import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
+
 import com.csvreader.CsvReader;
 
 public class FileUtil {
@@ -228,7 +230,15 @@ public class FileUtil {
     
     File file = moveFile;
     File dir = toDir;
-    file.renameTo(new File(dir, f + file.getName()));
+    File dest = new File(dir, f + file.getName());
+    boolean moved = file.renameTo(dest);
+    if (moved != true) {
+    	try {
+	      FileUtils.moveFile(file, dest);
+      } catch (IOException e) {
+	      e.printStackTrace();
+      }
+    }
   }
   
   private int getFileCount(File dir) {
