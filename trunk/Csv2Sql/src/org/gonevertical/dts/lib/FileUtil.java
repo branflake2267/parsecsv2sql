@@ -7,10 +7,13 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -236,7 +239,12 @@ public class FileUtil {
     	try {
 	      FileUtils.moveFile(file, dest);
       } catch (IOException e) {
-	      e.printStackTrace();
+	      copyFile(file, dest);
+	      try {
+	        delete(file);
+        } catch (IOException e1) {
+	        e1.printStackTrace();
+        }
       }
     }
   }
@@ -357,32 +365,32 @@ public class FileUtil {
       System.out.println("doesFileHeaderMatchStr: could not read headers");
       e.printStackTrace();
     }
-    
+
     if (header == null) {
-      return null;
+    	return null;
     }
-    
+
     return header;
   }
-  
+
   public boolean doesFileNameMatch(File file, String regex) {
-    
-    if (regex == null | file.getName() == null) {
-      return false;
-    }
-    
-    boolean b = false;
-    try {
-      Pattern p = Pattern.compile(regex);
-      Matcher m = p.matcher(file.getName());
-      b = m.find();
-    } catch (Exception e) {
-      System.out.println("doesFileNameMatch: regex error");
-    }
-    
-    return b;
+
+  	if (regex == null | file.getName() == null) {
+  		return false;
+  	}
+
+  	boolean b = false;
+  	try {
+  		Pattern p = Pattern.compile(regex);
+  		Matcher m = p.matcher(file.getName());
+  		b = m.find();
+  	} catch (Exception e) {
+  		System.out.println("doesFileNameMatch: regex error");
+  	}
+
+  	return b;
   }
-  
+
   /**
    * get file size in KB
    * 
@@ -390,13 +398,13 @@ public class FileUtil {
    * @return
    */
   public static long getFileSize(File file) {
-    if (file == null) {
-      return 0;
-    }
-    long size= file.length() / 1000;
-    return size;
+  	if (file == null) {
+  		return 0;
+  	}
+  	long size= file.length() / 1000;
+  	return size;
   }
-  
+
   /**
    * change the file name from file.csv to file_1.csv
    * 
@@ -405,19 +413,19 @@ public class FileUtil {
    * @return
    */
   public static String getNewFileName(File file, int index) {
-    String fileName = file.getName();
-    String regex = ".*\\.(.*)";
-    String newFileName = null;
-    try {
-      Pattern p = Pattern.compile(regex);
-      Matcher m = p.matcher(fileName);
-      String ext = m.group(1);
-      String newExt = "_" + index + "." + ext;
-      newFileName = m.replaceAll(newExt);
-    } catch (Exception e) {
-      System.out.println("findMatch: regex error");
-    }
-    return newFileName;
+  	String fileName = file.getName();
+  	String regex = ".*\\.(.*)";
+  	String newFileName = null;
+  	try {
+  		Pattern p = Pattern.compile(regex);
+  		Matcher m = p.matcher(fileName);
+  		String ext = m.group(1);
+  		String newExt = "_" + index + "." + ext;
+  		newFileName = m.replaceAll(newExt);
+  	} catch (Exception e) {
+  		System.out.println("findMatch: regex error");
+  	}
+  	return newFileName;
   }
 
   /**
@@ -427,30 +435,46 @@ public class FileUtil {
    * @param outputFile
    */
   public void copyFile(File inputFile, File outputFile) {
-    FileReader in = null;
-    try {
-      in = new FileReader(inputFile);
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    }
-    FileWriter out = null;
-    try {
-      out = new FileWriter(outputFile);
-      int c;
-      while ((c = in.read()) != -1) {
-        out.write(c);
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+  	FileReader in = null;
+  	try {
+  		in = new FileReader(inputFile);
+  	} catch (FileNotFoundException e) {
+  		e.printStackTrace();
+  	}
+  	FileWriter out = null;
+  	try {
+  		out = new FileWriter(outputFile);
+  		int c;
+  		while ((c = in.read()) != -1) {
+  			out.write(c);
+  		}
+  	} catch (IOException e) {
+  		e.printStackTrace();
+  	}
 
-    try {
-      in.close();
-      out.close();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+  	try {
+  		in.close();
+  		out.close();
+  	} catch (IOException e) {
+  		e.printStackTrace();
+  	}
   }
-  
+
+  public static boolean delete(File resource) throws IOException { 
+
+  	if (resource.isDirectory()){
+
+  		File[] childFiles = resource.listFiles();
+
+  		for (File child : childFiles){
+  			delete(child);
+  		}
+
+  	}
+
+  	return resource.delete();
+  }
+   
+ 
   
 }
