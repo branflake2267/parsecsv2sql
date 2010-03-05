@@ -5,7 +5,6 @@ import java.util.regex.Pattern;
 
 public class StringUtil {
 
-  
   /**
    * find a match in a string
    * 
@@ -42,6 +41,37 @@ public class StringUtil {
       if (found == true) {
         v = m.group(1);
       }
+    } catch (Exception e) {
+      System.out.println("findMatch: regex error (check to see if you have a (group)");
+      e.printStackTrace();
+    }
+    
+    return v;
+  }
+  
+  public static String[] getValues(String regex, String value) {
+    if (regex == null | value == null) {
+      return null;
+    }
+    
+    String[] v = null;
+    try {
+      Pattern p = Pattern.compile(regex);
+      Matcher m = p.matcher(value);
+      boolean found = m.find();
+      
+      if (found == true) {
+      	
+      	int c = m.groupCount();
+      	
+      	v = new String[c];
+      	
+      	for (int i=0; i < c; i++) {
+      		v[i] = m.group(i);
+      	}
+        
+      }
+      
     } catch (Exception e) {
       System.out.println("findMatch: regex error (check to see if you have a (group)");
       e.printStackTrace();
