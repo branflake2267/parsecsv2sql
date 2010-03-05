@@ -18,6 +18,7 @@ import org.gonevertical.dts.lib.sql.querylib.QueryLib;
 import org.gonevertical.dts.lib.sql.querymulti.QueryLibFactory;
 import org.gonevertical.dts.lib.sql.transformlib.TransformLib;
 import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
+import org.gonevertical.dts.process.Transfer;
 
 /**
  * 
@@ -644,183 +645,147 @@ public class Optimise_v2 {
   }
   
   private void formatColumn_ToDateTime(ColumnData columnData) {
+  	
     String sql = "SELECT COUNT(*) AS t FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "`;"; 
     long total = ql.queryLong(destinationData.databaseData, sql);
     
-    long lim = 1000;
-    BigDecimal tp = new BigDecimal(0);
-    if (total > 0) {
-    	tp = new BigDecimal(total).divide(new BigDecimal(lim, MathContext.DECIMAL32), MathContext.DECIMAL32).setScale(0, RoundingMode.UP);	
-    } else {
-    	tp = new BigDecimal(1);
-    }
+    long index = total;
     
-    long offset = 0;
-    long limit = 0;
-    for (int i=0; i < tp.intValue(); i++) {
-      if (i==0) {
-        offset = 0;
-        limit = lim;
-      } else {
-        offset = ((i + 1 )* lim) - lim;
-        limit = lim;
-      }
-      
-      formatColumn_ToDateTime(columnData, offset, limit);
-    }
-    
-  }
-  
-  private void formatColumn_ToDateTime(ColumnData columnData, long offset, long limit) {
-    
-    ColumnData cpriKey = tl.queryPrimaryKey(destinationData.databaseData, columnData.getTable());
-    
-    String sql = "SELECT " + cpriKey.getColumnName() + ", `" + columnData.getColumnName() + "` " +
-    		"FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "` LIMIT " + offset + ", " + limit + ";"; 
-    System.out.println(sql);
-    try {
-      Connection conn = destinationData.databaseData.getConnection();
-      Statement select = conn.createStatement(); // java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY
-      //select.setFetchSize(Integer.MIN_VALUE);
-      ResultSet result = select.executeQuery(sql);
-      int i = ql.getResultSetSize(result);
-      while (result.next()) {
-        cpriKey.setValue(Integer.toString(result.getInt(1)));
-        columnData.setValue(result.getString(2));
-        updateColumn_Date(i, cpriKey, columnData);
-        i--;
-      }
-      select.close();
-      select = null;
-      result.close();
-      result = null;
-      conn.close();
-      conn = null;
-    } catch (SQLException e) {
-      System.err.println("Mysql Statement Error:" + sql);
-      e.printStackTrace();
-    }
-    
-  }
-  
-  private void updateColumn_Date(int i, ColumnData cpriKey, ColumnData columnData) {
-    String datetime = columnData.getValue();
-    String tranformed = dtp.getDateMysql(datetime);
+  	long lim = 5000;
+  	BigDecimal tp = new BigDecimal(0);
+  	if (total > 0) {
+  		tp = new BigDecimal(total).divide(new BigDecimal(lim, MathContext.DECIMAL32), MathContext.DECIMAL32).setScale(0, RoundingMode.UP);	
+  	} else {
+  		tp = new BigDecimal(1);
+  	}
 
-    if (datetime == null) {
-      tranformed = null;
-    } else if (datetime.trim().length() == 0) {
-      tranformed = null;
-    } 
-    
-    columnData.setValue(tranformed);
-    destinationData.debug(i + ". column: " + columnData.getColumnName() + " datetime before: " + datetime + " after: " + tranformed);
+  	long offset = 0;
+  	long limit = 0;
+  	for (int i=0; i < tp.intValue(); i++) {
 
-    // is there room for the transformation values
-    columnData.alterColumnSizeBiggerIfNeedBe(destinationData.databaseData);
-    
-    ColumnData[] c = new ColumnData[2];
-    c[0] = cpriKey;
-    c[1] = columnData;
+  		if (i==0) {
+  			offset = 0;
+  			limit = lim;
+  		} else {
+  			offset = ((i + 1 ) * lim) - lim;
+  			limit = lim;
+  		}
 
-    String sql = cl.getSql_Update(c);
-    ql.update(destinationData.databaseData, sql);
+  		// TODO move this up to class var
+  		int totalThreadCount = 6;
+
+  		// spawn more than one thread to copy, in order to do this, connection pooling will need to be setup
+  		Thread[] threads = new Thread[totalThreadCount];
+  		for (int threadCount=0; threadCount < totalThreadCount; threadCount++) {
+
+  			if (i==0) {
+  				offset = 0;
+  				limit = lim;
+  			} else {
+  				offset = ((i + 1 ) * lim) - lim;
+  				limit = lim;
+  			}
+
+  			// setup object
+  			Optimise_FormatColumn formatColumn = new Optimise_FormatColumn();
+  			formatColumn.setData(destinationData, Optimise_FormatColumn.FORMAT_DATETIME, columnData, offset, limit, index);
+
+  			threads[threadCount] = new Thread(formatColumn);
+
+  			if (totalThreadCount > 1) {
+  				i++;
+  			}
+  			
+  			index = index - lim;
+  		}
+
+  		for (int threadCount=0; threadCount < totalThreadCount; threadCount++) {
+  			threads[threadCount].start();
+  		}
+
+  		// join threads - finish the threads before moving to the next pages
+  		for (int threadCount=0; threadCount < totalThreadCount; threadCount++) { 
+  			try {
+  				threads[0].join();
+  			} catch (InterruptedException e) {
+  				e.printStackTrace();
+  			}
+  		}
+  	}
+    
   }
   
   private void formatColumn_ToInt(ColumnData columnData) {
 
-    String sql = "SELECT COUNT(*) as t FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "`;";
-    long total = ql.queryLong(destinationData.databaseData, sql);
-    
-    int lim = 1000;
-    int totalPages = (int) (total / lim);
+  	String sql = "SELECT COUNT(*) as t FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "`;";
+  	long total = ql.queryLong(destinationData.databaseData, sql);
 
-    int offset = 0;
-    int limit = 0;
-    for (int i=0; i < totalPages; i++) {
-      if (i==0) {
-        offset = 0;
-        limit = 1000;
-      } else {
-        offset = ((i+1)*1000) - 1000;
-        limit = ((i+1)*1000);
-      }
-      formatColumn_ToInt(columnData, offset, limit);
-    }
+  	long index = total;
+  	
+  	long lim = 5000;
+  	BigDecimal tp = new BigDecimal(0);
+  	if (total > 0) {
+  		tp = new BigDecimal(total).divide(new BigDecimal(lim, MathContext.DECIMAL32), MathContext.DECIMAL32).setScale(0, RoundingMode.UP);	
+  	} else {
+  		tp = new BigDecimal(1);
+  	}
+
+  	long offset = 0;
+  	long limit = 0;
+  	for (int i=0; i < tp.intValue(); i++) {
+
+  		if (i==0) {
+  			offset = 0;
+  			limit = lim;
+  		} else {
+  			offset = ((i + 1 ) * lim) - lim;
+  			limit = lim;
+  		}
+
+  		// TODO move this up to class var
+  		int totalThreadCount = 6;
+
+  		// spawn more than one thread to copy, in order to do this, connection pooling will need to be setup
+  		Thread[] threads = new Thread[totalThreadCount];
+  		for (int threadCount=0; threadCount < totalThreadCount; threadCount++) {
+
+  			if (i==0) {
+  				offset = 0;
+  				limit = lim;
+  			} else {
+  				offset = ((i + 1 ) * lim) - lim;
+  				limit = lim;
+  			}
+
+  			// setup object
+  			Optimise_FormatColumn formatColumn = new Optimise_FormatColumn();
+  			formatColumn.setData(destinationData, Optimise_FormatColumn.FORMAT_INT, columnData, offset, limit, index);
+
+  			threads[threadCount] = new Thread(formatColumn);
+
+  			if (totalThreadCount > 1) {
+  				i++;
+  			}
+  			
+  			index = index - lim;
+  		}
+
+  		for (int threadCount=0; threadCount < totalThreadCount; threadCount++) {
+  			threads[threadCount].start();
+  		}
+
+  		// join threads - finish the threads before moving to the next pages
+  		for (int threadCount=0; threadCount < totalThreadCount; threadCount++) { 
+  			try {
+  				threads[0].join();
+  			} catch (InterruptedException e) {
+  				e.printStackTrace();
+  			}
+  		}
+  	}
+  	
   }
   
-  private void formatColumn_ToInt(ColumnData columnData, int offset, int limit) {
-
-    ColumnData cpriKey = tl.queryPrimaryKey(destinationData.databaseData, columnData.getTable());
-    
-    String sql = "SELECT " + cpriKey.getColumnName() + ", `" + columnData.getColumnName() + "` " +
-        "FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "` LIMIT " + offset + ", " + limit + ";"; 
-    
-    System.out.println(sql);
-    
-    try {
-      Connection conn = destinationData.databaseData.getConnection();
-      Statement select = conn.createStatement();
-      ResultSet result = select.executeQuery(sql);
-      while (result.next()) {
-        cpriKey.setValue(Integer.toString(result.getInt(1)));
-        columnData.setValue(result.getString(2));
-        updateColumn_Int(cpriKey, columnData);
-      }
-      select.close();
-      select = null;
-      result.close();
-      result = null;
-      conn.close();
-      conn = null;
-    } catch (SQLException e) {
-      System.err.println("Mysql Statement Error:" + sql);
-      e.printStackTrace();
-    }
-    
-  }
-  
-  private void updateColumn_Int(ColumnData cpriKey, ColumnData columnData) {
-
-    String before = columnData.getValue();
-    
-    String value = columnData.getValue();
-    if (value == null) {
-      value = "0";
-    } else if (value.trim().length() == 0) {
-      value = "0";
-    } else {
-      try {
-        // change (1234) to negative
-        if (value != null && value.matches("[\\(].*[\\)]")) {
-          value = value.replaceAll("[\\)\\(]", "");
-          value = "-" + value;
-        }
-        // take out all non digit characters except . - and 0-9
-        if (value != null) {
-          value = value.replaceAll("[^0-9\\.\\-]", ""); 
-        }
-        BigDecimal bd = new BigDecimal(value);
-        value = bd.toString();
-      } catch (NumberFormatException e) {
-        value = "0";
-      } 
-    }
-
-    columnData.setValue(value);
-    
-    destinationData.debug("column: " + columnData.getColumnName() + " (is an int) was before: " + before + " after: " + value);
-
-    // is there room for the transformation values
-    columnData.alterColumnSizeBiggerIfNeedBe(destinationData.databaseData);
-    
-    ColumnData[] c = new ColumnData[2];
-    c[0] = cpriKey;
-    c[1] = columnData;
-
-    String sql = cl.getSql_Update(c);
-    ql.update(destinationData.databaseData, sql);
-  }
   
   private void alterColumns() {
     if (alterColumns.size() == 0) {
