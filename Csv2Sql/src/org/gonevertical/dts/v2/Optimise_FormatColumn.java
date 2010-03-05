@@ -61,6 +61,7 @@ public class Optimise_FormatColumn implements Runnable {
 		this.columnData = columnData;
 		this.offset = offset;
 		this.limit = limit;
+		this.index = total;
 		setSupportingLibraries();
 	}
   
@@ -136,7 +137,7 @@ public class Optimise_FormatColumn implements Runnable {
 
     columnData.setValue(value);
     
-    destinationData.debug(index + "column: " + columnData.getColumnName() + " (is an int) was before: " + before + " after: " + value);
+    destinationData.debug(index + ". column: " + columnData.getColumnName() + " (is an int) was before: " + before + " after: " + value);
 
     // is there room for the transformation values
     columnData.alterColumnSizeBiggerIfNeedBe(destinationData.databaseData);
