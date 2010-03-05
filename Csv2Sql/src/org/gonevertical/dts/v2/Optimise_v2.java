@@ -651,7 +651,7 @@ public class Optimise_v2 {
     
     long index = total;
     
-  	long lim = 5000;
+  	long lim = 20000;
   	BigDecimal tp = new BigDecimal(0);
   	if (total > 0) {
   		tp = new BigDecimal(total).divide(new BigDecimal(lim, MathContext.DECIMAL32), MathContext.DECIMAL32).setScale(0, RoundingMode.UP);	
@@ -722,7 +722,7 @@ public class Optimise_v2 {
 
   	long index = total;
   	
-  	long lim = 5000;
+  	long lim = 20000;
   	BigDecimal tp = new BigDecimal(0);
   	if (total > 0) {
   		tp = new BigDecimal(total).divide(new BigDecimal(lim, MathContext.DECIMAL32), MathContext.DECIMAL32).setScale(0, RoundingMode.UP);	
