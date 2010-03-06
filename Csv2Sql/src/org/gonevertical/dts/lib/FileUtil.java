@@ -386,6 +386,7 @@ public class FileUtil {
   		b = m.find();
   	} catch (Exception e) {
   		System.out.println("doesFileNameMatch: regex error");
+  		e.printStackTrace();
   	}
 
   	return b;
