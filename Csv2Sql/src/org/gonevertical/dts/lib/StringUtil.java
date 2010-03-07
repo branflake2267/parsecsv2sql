@@ -33,6 +33,8 @@ public class StringUtil {
       return null;
     }
     
+    // TODO - tell teh person when he doesn't put in (group) parentheses to capture group
+    
     String v = null;
     try {
       Pattern p = Pattern.compile(regex);
