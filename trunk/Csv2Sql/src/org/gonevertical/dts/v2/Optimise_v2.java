@@ -839,11 +839,12 @@ public class Optimise_v2 {
     long c = 0;
     try {
       Connection conn = destinationData.databaseData.getConnection();
-      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, 
-          java.sql.ResultSet.CONCUR_READ_ONLY);
+      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
       select.setFetchSize(Integer.MIN_VALUE);
       ResultSet result = select.executeQuery(sql);
-      c = ql.getResultSetSize(result);
+      while (result.next()) {
+      	c++;
+      }
       select.close();
       select = null;
       result.close();
