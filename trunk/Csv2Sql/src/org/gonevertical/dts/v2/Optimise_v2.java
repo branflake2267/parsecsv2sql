@@ -897,7 +897,7 @@ public class Optimise_v2 {
           java.sql.ResultSet.CONCUR_READ_ONLY);
       select.setFetchSize(Integer.MIN_VALUE);
       ResultSet result = select.executeQuery(sql);
-      int index = ql.getResultSetSize(result);
+      int index = 0; //ql.getResultSetSize(result); TODO change this, b/c its not supported in foward read
       while (result.next()) {
         processDuplicate(index, result.getInt(1));
         index--;
