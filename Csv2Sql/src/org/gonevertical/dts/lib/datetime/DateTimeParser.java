@@ -193,6 +193,9 @@ public class DateTimeParser {
     } else if (checkforFormat_weird1() == true) { // 3-apr-09
       s = df.format(date);
       isDate = true;
+    } else if (checkforFormat_weird2() == true) { // 9-dec or 10-dec
+      s = df.format(date);
+      isDate = true;
     } else if (checkforFormat_datetime12hr() == true ) { // month first
       s = df.format(date);
       isDate = true;
@@ -223,10 +226,13 @@ public class DateTimeParser {
     } else if (checkforFormat_engDateStringNoDay() == true ) {
       s = df.format(date);
       isDate = true;
-    }  else if (checkforFormat_Intformat() == true) { 
+    } else if (checkforFormat_Intformat() == true) { 
       s = df.format(date);
       isDate = true;
     } else if (checkforFormat_Intformat_Short() == true) {
+      s = df.format(date); // 20091231
+      isDate = true;
+    } else if (checkforFormat_Intformat_Shorter() == true) {
       s = df.format(date); // 20091231
       isDate = true;
     } else {
@@ -1071,6 +1077,41 @@ public class DateTimeParser {
     return found;
   }
   
+  private boolean checkforFormat_Intformat_Shorter() {
+    
+  	//yyyymm
+    String re = "^.*?([0-9]{4})([0-9]{2})$";
+    Pattern p = Pattern.compile(re);
+    Matcher m = p.matcher(datetime);
+    boolean found = m.find();
+  
+    int year = 0;
+    int month = 0;
+    if (found == true) {
+      String yy = m.group(1);
+      String mm = m.group(2);
+
+      if (yy == null | mm == null) {
+        return false;
+      }
+      
+      year = getYear(yy);
+      month = getMonth(mm) - 1;
+    } else {
+      return false;
+    }
+  
+    Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.DAY_OF_MONTH, 1);
+    cal.set(Calendar.MONTH, month);
+    cal.set(Calendar.YEAR, year);
+    cal.set(Calendar.HOUR_OF_DAY, 0);
+    cal.set(Calendar.MINUTE, 0);
+    cal.set(Calendar.SECOND, 0);
+    date = cal.getTime();
+    return found;
+  }
+  
   /**
    * 3-apr-09 or 3 apr 09  or 3.apr.09 
    * 
@@ -1110,6 +1151,53 @@ public class DateTimeParser {
     
     Calendar cal = Calendar.getInstance();
     cal.set(Calendar.DAY_OF_MONTH, day);
+    cal.set(Calendar.MONTH, month);
+    cal.set(Calendar.YEAR, year);
+    cal.set(Calendar.HOUR_OF_DAY, 0);
+    cal.set(Calendar.MINUTE, 0);
+    cal.set(Calendar.SECOND, 0);
+
+    date = cal.getTime();
+
+    return found;
+  }
+  
+  /**
+   * 9-dec or 10-feb
+   * @return
+   */
+  private boolean checkforFormat_weird2() { 
+
+    if (isMonthSpelledOut(datetime) == false) {
+      return false;
+    }
+    
+    // yy mm
+    String re = "^([0-9]+)[\040-\\.]+([a-zA-Z]+)$";
+    Pattern p = Pattern.compile(re);
+    Matcher m = p.matcher(datetime);
+    boolean found = m.find();
+
+    int year = 0;
+    int month = 0;
+    if (found == true) {
+      String yy = m.group(1);
+      String mm = m.group(2);
+      
+      if (yy == null | mm == null) {
+        return false;
+      }
+      
+      year = getYear(yy);
+      month = getMonth(mm) - 1;
+      
+      
+    } else {
+      return false;
+    }
+    
+    Calendar cal = Calendar.getInstance();
+    cal.set(Calendar.DAY_OF_MONTH, 1);
     cal.set(Calendar.MONTH, month);
     cal.set(Calendar.YEAR, year);
     cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -1168,7 +1256,9 @@ public class DateTimeParser {
   private int getYear(String s) {
 
     int year = -1;
-    if (s.matches("[0-9]{2}")) {
+    if (s.matches("[0-9]{1}")) { 
+    	year = getYearTwoDigit(s);
+    } else if (s.matches("[0-9]{2}")) {
       year = getYearTwoDigit(s);
     } else if (s.matches("[0-9]{4}")) {
       year = Integer.parseInt(s);
@@ -1182,6 +1272,7 @@ public class DateTimeParser {
     
     return year;
   }
+  
   
   private int getYearTwoDigit(String s) {
     int y = Integer.parseInt(s);
