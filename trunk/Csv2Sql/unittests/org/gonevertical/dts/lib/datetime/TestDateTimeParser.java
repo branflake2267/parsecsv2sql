@@ -47,6 +47,12 @@ public class TestDateTimeParser {
   }
   
   @Test
+  public void test6b() {
+    assertEquals(dtp.getDateMysql("10-feb"), "2010-02-01 00:00:00");
+    assertEquals(dtp.getDateMysql("9-feb"), "2009-02-01 00:00:00");
+  }
+  
+  @Test
   public void test7() {
     assertEquals(dtp.getDateMysql("may 2009"), "2009-05-01 00:00:00");
   }
@@ -70,6 +76,7 @@ public class TestDateTimeParser {
   @Test
   public void test11() {
     assertEquals(dtp.getDateMysql("20111231"), "2011-12-31 00:00:00");
+    assertEquals(dtp.getDateMysql("201002"), "2010-02-01 00:00:00");
   }
   
   @Test

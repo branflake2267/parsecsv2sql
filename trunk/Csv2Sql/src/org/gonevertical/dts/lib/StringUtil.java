@@ -1,5 +1,6 @@
 package org.gonevertical.dts.lib;
 
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,30 +57,28 @@ public class StringUtil {
       return null;
     }
     
-    String[] v = null;
+    ArrayList<String> s = new ArrayList<String>();
     try {
       Pattern p = Pattern.compile(regex);
       Matcher m = p.matcher(value);
-      boolean found = m.find();
       
-      if (found == true) {
+      	while (m.find()) {
+	        s.add(m.group(1));
+        }
       	
-      	int c = m.groupCount();
-      	
-      	v = new String[c];
-      	
-      	for (int i=0; i < c; i++) {
-      		v[i] = m.group(i);
-      	}
-        
-      }
-      
     } catch (Exception e) {
       System.out.println("findMatch: regex error (check to see if you have a (group)");
       e.printStackTrace();
     }
     
-    return v;
+    if (s.size() == 0) {
+    	return null;
+    }
+    
+    String[] r = new String[s.size()];
+    s.toArray(r);
+    
+    return r;
   }
   
   /**
