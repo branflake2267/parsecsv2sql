@@ -240,11 +240,7 @@ public class FileUtil {
 	      FileUtils.moveFile(file, dest);
       } catch (IOException e) {
 	      copyFile(file, dest);
-	      try {
-	        delete(file);
-        } catch (IOException e1) {
-	        e1.printStackTrace();
-        }
+	      delete(file);
       }
     }
   }
@@ -461,19 +457,22 @@ public class FileUtil {
   	}
   }
 
-  public static boolean delete(File resource) throws IOException { 
+  public static boolean delete(File file) { 
 
-  	if (resource.isDirectory()){
-
-  		File[] childFiles = resource.listFiles();
-
+  	if (file.isDirectory()){
+  		File[] childFiles = file.listFiles();
   		for (File child : childFiles){
   			delete(child);
   		}
+  	}
+  	
+  	boolean b = file.delete();
 
+  	if (b == false) {
+  		file.delete();
   	}
 
-  	return resource.delete();
+  	return b;
   }
    
  
