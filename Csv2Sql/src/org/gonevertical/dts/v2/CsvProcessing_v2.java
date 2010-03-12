@@ -119,6 +119,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     
     // print report
     stats.print();
+    
+    csvRead.close();
   }
   
   private void createIdentitiesIndex() {
