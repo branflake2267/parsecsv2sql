@@ -469,7 +469,8 @@ public class FileUtil {
   	boolean b = file.delete();
 
   	if (b == false) {
-  		file.delete();
+  		file.deleteOnExit();
+  		
   	}
 
   	return b;
