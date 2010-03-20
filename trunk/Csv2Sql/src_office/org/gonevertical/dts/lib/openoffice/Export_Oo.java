@@ -120,7 +120,16 @@ public class Export_Oo {
   }
   
   public void createTables(SpreadSheetData[] sheet) {
+  	
+  	if (sheet == null) {
+  		System.out.println("ERROR: createTables(): sheet is null");
+  	}
+  	
     for (int i=0; i < sheet.length; i++) {
+    	
+    	if (sheet[i] == null) {
+    		System.out.println("ERROR: createTables(): sheet[" + i + "] is null");
+    	}
     	
       OdfTable table = null;
       if (sheet[i].getFile() == null) {
