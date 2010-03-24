@@ -16,7 +16,7 @@ public class MsSqlQueryUtilTest_SqlEscape {
 
   @Before
   public void setUp() throws Exception {
-    dd = new DatabaseData(DatabaseData.TYPE_MYSQL, "ark", "3306", "test", "test#", "test");
+    dd = new DatabaseData(DatabaseData.TYPE_MYSQL, "ark_home", "3306", "test", "test#", "test");
     
     new MySqlTransformLib().dropTable(dd, "test_escape");
     ColumnData columnData = new ColumnData("test_escape", "Value", "TEXT DEFAULT NULL");

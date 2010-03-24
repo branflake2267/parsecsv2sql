@@ -39,6 +39,7 @@ public class ProcessImport {
     // this will happen on a first import, so to optimise early, then start agian
     if (fileProcessing.getReturnOnOptimise() == true) {
       dd.optimise = false;
+      dd.dropTable = false;
       runImport();
     }
   }

@@ -335,7 +335,7 @@ public class Transfer implements Runnable, Cloneable {
   	}
   	
     String sql = "SELECT COUNT(*) AS t FROM " + tableLeft + " " + where;
-    System.out.println("sql" + sql);
+    //System.out.println("sql" + sql);
     total = ql_src.queryLong(database_src, sql);
     index = total;
   }
@@ -352,7 +352,7 @@ public class Transfer implements Runnable, Cloneable {
     
     long offset = 0;
     long limit = 0;
-    for (int i=0; i < tp.intValue(); i++) {
+    for (int i=0; i <= tp.intValue()+1; i++) {
     
     	// spawn more than one thread to copy, in order to do this, connection pooling will need to be setup
     	Thread[] threads = new Thread[totalThreadCount];
@@ -366,17 +366,19 @@ public class Transfer implements Runnable, Cloneable {
           limit = lim;
         }
                
+        // setup thread
         Transfer transfer = (Transfer) this.clone();
         transfer.setThread(threadCount);
         transfer.setProcessSrc(offset, limit);
-   
         threads[threadCount] = new Thread(transfer);
        
-        if (totalThreadCount > 1) {
+        // update count down
+        index = index - limitOffset;
+        
+        // move offset in with more than one thread
+        if (totalThreadCount > 1 &&  threadCount < totalThreadCount-1) {
         	i++;
         }
-        
-        index = index - limitOffset;
     	}
     	
     	for (int threadCount=0; threadCount < totalThreadCount; threadCount++) {
@@ -386,13 +388,13 @@ public class Transfer implements Runnable, Cloneable {
     	// join threads - finish the threads before moving to the next pages
     	for (int threadCount=0; threadCount < totalThreadCount; threadCount++) { 
         try {
-	        threads[0].join();
+	        threads[threadCount].join();
         } catch (InterruptedException e) {
 	        e.printStackTrace();
         }
     	}
     	
-    }
+    } // end of loop through pages
     
   }
   
@@ -406,7 +408,7 @@ public class Transfer implements Runnable, Cloneable {
   	
   	processSrc(offset, limit);
   	
-  	System.out.println("End of thread " + threadCount + " offset: " + offset + " limit: " + limit);
+  	//System.out.println("End of thread " + threadCount + " offset: " + offset + " limit: " + limit);
   }
 
 	private void setThread(int threadCount) {
@@ -469,7 +471,7 @@ public class Transfer implements Runnable, Cloneable {
       //sql = sql.replaceAll("`", "");
     //}
     
-    System.out.println("Thread: " + threadCount + " sql: " + sql);
+    //System.out.println("Thread: " + threadCount + " sql: " + sql);
     
     Connection conn = null;
     Statement select = null;
@@ -803,7 +805,7 @@ public class Transfer implements Runnable, Cloneable {
       sql = "INSERT INTO " + tableRight + " SET " + fields;
     }
 
-    System.out.println(index + ". offsetIndex: " + offsetIndex + " Thread: " + threadCount + " offset: " + offset + " limit: " + limit + " id: "+id+" SAVE: " + sql);
+    //System.out.println(index + ". offsetIndex: " + offsetIndex + " Thread: " + threadCount + " offset: " + offset + " limit: " + limit + " id: "+id+" SAVE: " + sql);
     
     testColumnValueSizes(columnData_des);
     
