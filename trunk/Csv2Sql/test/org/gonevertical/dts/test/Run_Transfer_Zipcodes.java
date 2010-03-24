@@ -27,28 +27,31 @@ public class Run_Transfer_Zipcodes {
    * DBCP conection pooling context
    */
 	private Context context;
+	
+	private String toTable;
 
   private void run() {
     
   	// set up pool context
   	setUpPoolContext();
-  	
+    	
   	// setup the source database connection
-    DatabaseData dd_src = new DatabaseData(DatabaseData.TYPE_MYSQL, "ark_home", "3306", "test", "test#", "test");
+    DatabaseData dd_src = new DatabaseData(DatabaseData.TYPE_MYSQL, "localhost", "3306", "test", "test#", "test");
     dd_src.setServletContext(null, context, "jdbc/conn_test");
     
     // setup the destination database connection (could use teh same context name as 'jdbc/conn_test')
-    DatabaseData dd_dst = new DatabaseData(DatabaseData.TYPE_MYSQL, "ark_home", "3306", "test", "test#", "test");
+    DatabaseData dd_dst = new DatabaseData(DatabaseData.TYPE_MYSQL, "localhost", "3306", "test", "test#", "test");
     dd_dst.setServletContext(null, context, "jdbc/conn_test2");
-    
-    //deleteDestRecords(dd_dst);
-    
+        
     // from and to tables
     String fromTable = "import_zipcodes_test_all";
-    String toTable = "import_zipcodes_test_transfer";
+    toTable = "import_zipcodes_test_transfer";
+    
+    // reset dest table
+    deleteDestRecords(dd_dst);
     
     Transfer transfer = new Transfer(dd_src, dd_dst);
-    transfer.setOffsetLimit(100); // how many records to read at a time, its low here for testing
+    transfer.setOffsetLimit(1000); // how many records to read at a time, its low here for testing
     transfer.setThreadsToSpawn(4);
     transfer.transferAllFields(fromTable, toTable);
     
@@ -86,7 +89,7 @@ public class Run_Transfer_Zipcodes {
   
   private void deleteDestRecords(DatabaseData dd) {
   	
-  	String sql = "DELETE FROM import_zipcodes_test_transfer;";
+  	String sql = "DELETE FROM " + toTable;
   	MySqlQueryUtil.update(dd, sql);
   }
   

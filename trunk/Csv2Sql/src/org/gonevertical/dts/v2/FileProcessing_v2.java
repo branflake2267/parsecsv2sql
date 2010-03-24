@@ -221,7 +221,7 @@ public class FileProcessing_v2 {
    */
   private void dropTable() {
     if (desinationData.dropTable == true) {
-      System.out.println("Dropping Table");
+      System.out.println("FileProcessing.dropTable(): Dropping Table");
       tl.dropTable(desinationData.databaseData, desinationData.table);
     }
   }

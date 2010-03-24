@@ -54,19 +54,25 @@ public class Run_Import_ZipCodes_All {
     FieldData[] changeColumns = null;
 
     // database settings
-    DatabaseData databaseData = new DatabaseData(DatabaseData.TYPE_MYSQL, "ark", "3306", "test", "test#", "test");
+    DatabaseData databaseData = new DatabaseData(DatabaseData.TYPE_MYSQL, "localhost", "3306", "test", "test#", "test");
     String table = "import_zipcodes_test_all";
+    
     
     // destination settings
     destinationData = new DestinationData_v2();
     destinationData.displayElapsedTime();
     destinationData.setData(databaseData, changeColumns, identities, table);
     
+    
     // Settings
-    destinationData.dropTable = false;
+    destinationData.dropTable = true;
     destinationData.optimise = true;
-    destinationData.debug = 1;
     destinationData.optimise_RecordsToExamine = 300;
+    
+    // debug output
+    destinationData.debug = 1;
+    
+    
     
     ProcessImport p = new ProcessImport(sourceData, destinationData);
     p.runImport();
