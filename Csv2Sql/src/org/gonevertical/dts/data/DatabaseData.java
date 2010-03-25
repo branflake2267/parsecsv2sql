@@ -29,6 +29,8 @@ public class DatabaseData {
   public static final int TYPE_MYSQL = 1;
   public static final int TYPE_MSSQL = 2;
   public static final int TYPE_JDO = 3;
+	public static final int TYPE_ORACLE = 4;
+	
   private int databaseType = 0;
   
   // setup a connection and store it in this object for easy reference to
@@ -156,6 +158,10 @@ public class DatabaseData {
         
       } else if (databaseType == TYPE_MSSQL) {
         conn = getConn_MsSql();
+        
+      } else if (databaseType == TYPE_ORACLE) {
+      	conn = getConn_Oracle();
+      	
       }
       
     }
@@ -269,6 +275,28 @@ public class DatabaseData {
       conn = DriverManager.getConnection(url);
     } catch (Exception e) {
       System.err.println("ERROR: getConn_MsSql(): connection error: " + e.getMessage());
+      e.printStackTrace();
+    }
+    return conn;
+  }
+  
+  /**
+   * Oracle jdbc connection
+   * 
+   * @return
+   */
+  private Connection getConn_Oracle() {
+    
+    String url = "jdbc:oracle:thin:@" + host + ":" + port + ":" + database;
+    String driver = "oracle.jdbc.OracleDriver";
+    System.out.println("getConn_Oracle: url= " + url + " user= " + username + " driver= " + driver);
+
+    Connection conn = null;
+    try {
+      Class.forName(driver);
+      conn = DriverManager.getConnection(url, username, password);
+    } catch (Exception e) {
+      System.err.println("ERROR: getConn_Oracle(): connection error: " + e.getMessage());
       e.printStackTrace();
     }
     return conn;

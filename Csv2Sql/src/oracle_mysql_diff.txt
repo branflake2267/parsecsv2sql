@@ -1,0 +1,4 @@
+
+differences between oracle and mysql
+
+http://download.oracle.com/docs/cd/E10405_01/doc/appdev.120/e10380/oracle_mysql_compared.htm
