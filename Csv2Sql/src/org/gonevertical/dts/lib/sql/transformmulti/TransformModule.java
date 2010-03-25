@@ -2,6 +2,7 @@ package org.gonevertical.dts.lib.sql.transformmulti;
 
 import org.gonevertical.dts.lib.sql.transformlib.MsSqlTransformLib;
 import org.gonevertical.dts.lib.sql.transformlib.MySqlTransformLib;
+import org.gonevertical.dts.lib.sql.transformlib.OracleTransformLib;
 import org.gonevertical.dts.lib.sql.transformlib.TransformLib;
 
 import com.google.inject.Binder;
@@ -15,6 +16,7 @@ public class TransformModule implements Module {
 
     binder.bind(TransformLib.class).annotatedWith(Names.named("MySql")).to(MySqlTransformLib.class);
     binder.bind(TransformLib.class).annotatedWith(Names.named("MsSql")).to(MsSqlTransformLib.class);
+    binder.bind(TransformLib.class).annotatedWith(Names.named("MsSql")).to(OracleTransformLib.class);
 
   }
 
