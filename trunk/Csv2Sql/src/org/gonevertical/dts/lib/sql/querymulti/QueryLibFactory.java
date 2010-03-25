@@ -18,6 +18,8 @@ public class QueryLibFactory {
       ql = queryLib.getQueryLib_MySql();
     } else if (databaseType == DatabaseData.TYPE_MSSQL) {
       ql = queryLib.getQueryLib_MsSql();
+    } else if (databaseType == DatabaseData.TYPE_ORACLE) {
+    	ql = queryLib.getQueryLib_Oracle();
     }
 
     return ql;

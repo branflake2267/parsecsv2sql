@@ -18,6 +18,8 @@ public class TransformLibFactory {
       tl = tm.getTransformLib_MySql();
     } else if (databaseType == DatabaseData.TYPE_MSSQL) {
       tl = tm.getTransformLib_MsSql();
+    } else if (databaseType == DatabaseData.TYPE_ORACLE) {
+    	tl = tm.getTransformLib_Oracle();
     }
     
     return tl;

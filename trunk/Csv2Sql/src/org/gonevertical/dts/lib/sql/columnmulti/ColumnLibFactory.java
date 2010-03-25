@@ -18,6 +18,8 @@ public class ColumnLibFactory {
       cl = cm.getColumnLib_MySql();
     } else if (databaseType == DatabaseData.TYPE_MSSQL) {
       cl = cm.getColumnLib_MsSql();
+    } else if (databaseType == DatabaseData.TYPE_ORACLE) {
+    	cl = cm.getColumnLib_Oracle();
     }
     
     return cl;

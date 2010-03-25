@@ -8,7 +8,8 @@ import com.google.inject.name.Named;
 public class TransformMulti {
 
   private TransformLib transformLibMySql;
-  private TransformLib transofrmLibMsSql;
+  private TransformLib transformLibMsSql;
+	private TransformLib transformLibOracle;
 
   @Inject
   public void setMySqlEngine(@Named("MySql") TransformLib transformLib) {
@@ -17,7 +18,12 @@ public class TransformMulti {
 
   @Inject
   public void setMsSqlEngine(@Named("MsSql") TransformLib transformLib) {
-      this.transofrmLibMsSql = transformLib;
+      this.transformLibMsSql = transformLib;
+  }
+  
+  @Inject
+  public void setOracleEngine(@Named("Oracle") TransformLib transformLib) {
+      this.transformLibOracle = transformLib;
   }
 
   public TransformLib getTransformLib_MySql() {
@@ -25,7 +31,11 @@ public class TransformMulti {
   }
   
   public TransformLib getTransformLib_MsSql() {
-      return transofrmLibMsSql;
+      return transformLibMsSql;
+  }
+
+	public TransformLib getTransformLib_Oracle() {
+	  return transformLibOracle;
   }
   
 }
