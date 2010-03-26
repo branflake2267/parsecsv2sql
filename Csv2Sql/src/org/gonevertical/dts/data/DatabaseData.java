@@ -299,6 +299,12 @@ public class DatabaseData {
       System.err.println("ERROR: getConn_Oracle(): connection error: " + e.getMessage());
       e.printStackTrace();
     }
+    
+    if (conn == null) {
+      System.out.println("Oracle get Connection exiting");
+      System.exit(1);
+    }
+    
     return conn;
   }
   
