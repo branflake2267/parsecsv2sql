@@ -222,7 +222,8 @@ public class Export {
     
     try {
       Connection conn = src.getConnection();
-      Statement select = conn.createStatement();
+      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
+      select.setFetchSize(5000);
       ResultSet result = select.executeQuery(sql);
       int i = 0;
       while (result.next()) {
