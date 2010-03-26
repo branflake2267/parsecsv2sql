@@ -27,9 +27,10 @@ import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
  * transfer data from one table to another
  * 
  * TODO - do i want to add multple idents as the solution of transfering from source with no autoincrement?
- * TODO - how to transfer from source with no auto increment
- * TODO - be able transform strings to sentence case  HELLO THERE to Hello there.
- * TODO - move 100page to 1000 depending on column size
+ * TODO - how to transfer from source with no auto increment - also set idents on those that it uses
+ *        partially done
+ * 
+ * oracle and microsoft sql need to be able to page with rownumbering
  * 
  * @author design
  *
@@ -125,6 +126,7 @@ public class Transfer implements Runnable, Cloneable {
 	 */
 	private int totalThreadCount = 1;
 	private int offsetIndex;
+  private boolean skipPaging;
   
   /**
    * Transfer data object setup 
@@ -325,16 +327,30 @@ public class Transfer implements Runnable, Cloneable {
   	
   	setTotal();
     
-    loopThroughPages();
+  	if (skipPaging == false) {
+  	  loopThroughPages();
+  	} else {
+  	  loop();
+  	}
   }
   
+  /**
+   * dont thread or page through source record set, 
+   *   for now oracle and ms copies should use this, until row num process is worked out
+   */
+  private void loop() {
+    
+    processSrc_WithOutPaging();
+    
+  }
+
   private void setTotal() {
   	String where = "";
   	if (srcWhere != null && srcWhere.length() > 0) {
   		where = " WHERE " + srcWhere;
   	}
   	
-    String sql = "SELECT COUNT(*) AS t FROM " + tableLeft + " " + where;
+    String sql = "SELECT COUNT(*) AS t FROM " + database_src.getDatabase() + "." + tableLeft + " " + where;
     //System.out.println("sql" + sql);
     total = ql_src.queryLong(database_src, sql);
     index = total;
@@ -406,7 +422,7 @@ public class Transfer implements Runnable, Cloneable {
   public void run() {
   	System.out.println("Start of thread " + threadCount + " offset: " + offset + " limit: " + limit);
   	
-  	processSrc(offset, limit);
+  	processSrcForPaging(offset, limit);
   	
   	//System.out.println("End of thread " + threadCount + " offset: " + offset + " limit: " + limit);
   }
@@ -414,8 +430,103 @@ public class Transfer implements Runnable, Cloneable {
 	private void setThread(int threadCount) {
 	  this.threadCount = threadCount;
   }
+	
+	/**
+	 * process source with out paging - one thread only
+	 * 
+	 * @param offset
+	 * @param limit
+	 */
+	private void processSrc_WithOutPaging() {
 
-	private void processSrc(long offset, long limit) {
+    ColumnData primKey = cl_src.getPrimaryKey_ColumnData(columnData_src);
+    String where = "";
+    // TODO - oracle seems to be type safe in its where, or its not the way to write sql this way for oracle
+    // TODO - can have multiple primary keys (with zero autoincrement)
+    if (primKey != null) {
+      //where = "WHERE " + primKey.getColumnName() + " != '' AND " + primKey.getColumnName() + " IS NOT NULL";
+    }
+    
+    String columnCsv = cl_src.getSql_Names_WSql(columnData_src, null);
+    
+    String columnCsv2 = "";
+    if (columnData_src_oneToMany != null) {
+      columnCsv2 = cl_src.getSql_Names_WSql(columnData_src_oneToMany, null);
+      
+      if (columnCsv2.length() > 0) {
+        columnCsv2 = "," + columnCsv2;
+      }
+    }
+    
+    String sql = "";
+    
+    // Microsoft/Oracle paging sucks real bad. Why don't they have a built in function, duh!
+    if (database_src.getDatabaseType() == DatabaseData.TYPE_MSSQL) {
+      sql += "SELECT * FROM ( ";
+    }
+    
+    sql += "SELECT ";
+    
+    if (database_src.getDatabaseType() == DatabaseData.TYPE_MSSQL) {
+      sql += "(ROW_NUMBER() OVER(ORDER BY " + primKey.getColumnName() + ")) AS Auto_RowNum, ";
+    }
+    
+    sql += " " + columnCsv + " " + columnCsv2 + " ";
+    sql += " FROM ";
+    
+    if (database_src.getDatabaseType() == DatabaseData.TYPE_MSSQL) {
+      sql += database_src.getDatabase() + ".";
+      sql += database_src.getTableSchema() + ".";
+    }
+    sql += database_src.getDatabase() + "." + tableLeft + " ";
+    
+    sql += where;
+    sql += getSrcWhere();
+    
+    System.out.println(sql);
+    
+    Connection conn = null;
+    Statement select = null;
+    try {
+      conn = database_src.getConnection();
+      select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
+      select.setFetchSize(5000);
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+
+        // get values 
+        for (int i=0; i < columnData_src.length; i++) {
+          String value = result.getString(columnData_src[i].getColumnName());
+          columnData_src[i].setValue(value);
+        }
+        
+        // one to many relationships processing
+        if (columnData_src_oneToMany != null && columnData_src_oneToMany.length > 0) {
+          for (int i=0; i < columnData_src_oneToMany.length; i++) {
+            String value = result.getString(columnData_src_oneToMany[i].getColumnName());
+            columnData_src_oneToMany[i].setValue(value);
+          }
+        }
+
+        process();
+      }
+      result.close();
+      select.close();
+      conn.close();
+      result = null;
+      select = null;
+      conn = null;
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      e.printStackTrace();
+    } finally {
+      conn = null;
+      select = null;
+    }
+  }
+  
+
+	private void processSrcForPaging(long offset, long limit) {
 
     ColumnData primKey = cl_src.getPrimaryKey_ColumnData(columnData_src);
     String where = "";
@@ -436,7 +547,7 @@ public class Transfer implements Runnable, Cloneable {
     
     String sql = "";
     
-    // Microsoft paging sucks real bad. Why don't they have a built in function, duh!
+    // Microsoft/Oracle paging sucks real bad. Why don't they have a built in function, duh!
     if (database_src.getDatabaseType() == DatabaseData.TYPE_MSSQL) {
     	sql += "SELECT * FROM ( ";
     }
@@ -454,7 +565,7 @@ public class Transfer implements Runnable, Cloneable {
     	sql += database_src.getDatabase() + ".";
     	sql += database_src.getTableSchema() + ".";
     }
-    sql += "" + tableLeft + " ";
+    sql += database_src.getDatabase() + "." + tableLeft + " ";
     
     sql += where;
     sql += getSrcWhere();
@@ -467,8 +578,13 @@ public class Transfer implements Runnable, Cloneable {
     	sql += " ) AS TableWithRows WHERE TableWithRows.Auto_RowNum >= " + offset + " AND TableWithRows.Auto_RowNum <= " + (offset + limit) + " ";
     }
     
+    if (database_src.getDatabaseType() == DatabaseData.TYPE_ORACLE) {
+      long end = (long) (offset + limit);
+      sql += " AND ROWNUM >= " + offset + " AND ROWNUM <= " + end + "";
+    }
+    
     //if (database_src.getDatabaseType() == DatabaseData.TYPE_MSSQL) {
-      //sql = sql.replaceAll("`", "");
+      //sql = sql.replaceAll("", "");
     //}
     
     //System.out.println("Thread: " + threadCount + " sql: " + sql);
@@ -523,7 +639,7 @@ public class Transfer implements Runnable, Cloneable {
   		where = " WHERE " + srcWhere;
   	}
   	
-    String sql = "SELECT COUNT(*) AS t FROM `" + tableLeft + "`" + where;
+    String sql = "SELECT COUNT(*) AS t FROM " + tableLeft + "" + where;
     System.out.println("sql" + sql);
     total = ql_src.queryLong(database_src, sql);
     index = total;
@@ -698,7 +814,7 @@ public class Transfer implements Runnable, Cloneable {
     if (onetoId > 0) { // update
       
       datafields += ",DateUpdated=NOW()";
-      String where = "(`" + oneToManyTablePrimaryKey.getColumnName() + "`='" + onetoId + "')";
+      String where = "(" + oneToManyTablePrimaryKey.getColumnName() + "='" + onetoId + "')";
       sql = "UPDATE " + columnData.getTable() + " SET " + datafields + " WHERE " + where;
       
     } else { // insert
@@ -776,38 +892,38 @@ public class Transfer implements Runnable, Cloneable {
     if ((columnData.getValue() == null || columnData.getValue().length() == 0) || columnData.getDeleteExisting() == true) {
     	valueField = "";
     } else {
-    	valueField = " AND (`" + columnData.getColumnName()+"`='" + ql_src.escape(columnData.getValue()) + "')";
+    	valueField = " AND (" + columnData.getColumnName()+"='" + ql_src.escape(columnData.getValue()) + "')";
     }
     
-    String where = getWhere() + " " +  valueField  + " " + whereHard;
+    String where = getSql_PrimaryKeysWhere() + " " +  valueField  + " " + whereHard;
  
     return where;
   }
 
+  /**
+   * save data to dest table
+   * 
+   * TODO ignore columns - cl_des.doesColumnNameExist(columnData_des, "DateCreated")
+   */
   private void save() {
     
-    long id = doIdentsExistAlready(database_des);
+    // does this data exist in dest table, (can have multile keys)
+    long count = doIdentsExistAlready(database_des);
     
     String fields = getFields();
-    
-    String where = getWhere();
+    String where = getSql_ForPrimaryKeys();
     
     String sql = "";
-    if (id > 0) { // update
-      if (cl_des.doesColumnNameExist(columnData_des, "DateUpdated") == false) {
-        //fields += ",DateUpdated=NOW()";
-      }
+    if (count > 0) { // update
       sql = "UPDATE " + tableRight + " SET " + fields + " WHERE " + where; 
+      
     } else { // insert
-      if (cl_des.doesColumnNameExist(columnData_des, "DateCreated") == false) {
-        //fields += ",DateCreated=NOW()";
-      }
       sql = "INSERT INTO " + tableRight + " SET " + fields;
     }
 
-    //System.out.println(index + ". offsetIndex: " + offsetIndex + " Thread: " + threadCount + " offset: " + offset + " limit: " + limit + " id: "+id+" SAVE: " + sql);
-    
     testColumnValueSizes(columnData_des);
+    
+    System.out.println("Transfer.save(): " + sql);
     
     ql_des.update(database_des, sql, false);
     
@@ -818,13 +934,6 @@ public class Transfer implements Runnable, Cloneable {
     for (int i=0; i < columnData.length; i++) {
       columnData[i].alterColumnSizeBiggerIfNeedBe(database_des);
     }
-  }
-  
-  private String getWhere() {
-    String srcPrimKeyValue = cl_src.getPrimaryKey_Value(columnData_src);
-    String desPrimKeyColName = cl_des.getPrimaryKey_Name(columnData_des);
-    String where = "(`" + desPrimKeyColName + "`='" +  ql_src.escape(srcPrimKeyValue) + "')";
-    return where;
   }
   
   private String getFields() {
@@ -844,7 +953,7 @@ public class Transfer implements Runnable, Cloneable {
         svalue = "'" +  ql_src.escape(value) + "'";
       }
       
-      sql += "`" + column + "`=" + svalue;
+      sql += "" + column + "=" + svalue;
       if (i < columnData_des.length -1) {
         sql += ",";
       }
@@ -863,9 +972,9 @@ public class Transfer implements Runnable, Cloneable {
     String column = columnData.getColumnName();
     String value = columnData.getValue();
     if (value == null || value.length() == 0) {
-    	sql += "`" + column + "`=NULL";	
+    	sql += "" + column + "=NULL";	
     } else {
-    	sql += "`" + column + "`='" +  ql_src.escape(value) + "'";	
+    	sql += "" + column + "='" +  ql_src.escape(value) + "'";	
     }
     
 
@@ -894,7 +1003,7 @@ public class Transfer implements Runnable, Cloneable {
       if (i > 0) {
         sql += sep;
       }
-      sql += "`" + key + "`='" + ql_src.escape(value) + "'";
+      sql += "" + key + "='" + ql_src.escape(value) + "'";
       i++;
     }// end of while
     return sql;
@@ -924,7 +1033,7 @@ public class Transfer implements Runnable, Cloneable {
     String desPrimKeyColName = cl_des.getPrimaryKey_Name(columnData_des);
     
     String sql = "SELECT * FROM " + tableRight + " WHERE " +
-      "(`" + desPrimKeyColName + "`='" +  ql_src.escape(srcPrimKeyValue) + "')";
+      "(" + desPrimKeyColName + "='" +  ql_src.escape(srcPrimKeyValue) + "')";
     
     //System.out.println("getDestinationValuesToCompareWith(): " + sql);
     
@@ -966,7 +1075,7 @@ public class Transfer implements Runnable, Cloneable {
   private void setOneToManySqlRelationship() {
     String srcPrimKeyValue = cl_src.getPrimaryKey_Value(columnData_src);
     String desPrimKeyColName = cl_des.getPrimaryKey_Name(columnData_des);
-    oneToMany_RelationshipSql = "`" + desPrimKeyColName + "`='" +  ql_src.escape(srcPrimKeyValue) + "'"; 
+    oneToMany_RelationshipSql = "" + desPrimKeyColName + "='" +  ql_src.escape(srcPrimKeyValue) + "'"; 
   }
   
   private void getDestinationValuesToCompareWith_OneToMany(ColumnData[] src, ColumnData[] des) {
@@ -974,7 +1083,7 @@ public class Transfer implements Runnable, Cloneable {
     // TODO - is the primary different in one to many table?
     String srcPrimKeyValue = cl_src.getPrimaryKey_Value(columnData_src);
     String desPrimKeyColName = cl_des.getPrimaryKey_Name(columnData_des);
-    String where = "(`" + desPrimKeyColName + "`='" +  ql_src.escape(srcPrimKeyValue) + "')";
+    String where = "(" + desPrimKeyColName + "='" +  ql_src.escape(srcPrimKeyValue) + "')";
     
     for (int i=0; i < src.length; i++) {
       getDestinationValuesToCompareWith_OneToMany(where, src[i], des[i]);
@@ -1015,41 +1124,54 @@ public class Transfer implements Runnable, Cloneable {
     
   }
 
+  /**
+   * does the data exist in the dst table?
+   * 
+   * @param databaseData
+   * @return
+   */
   private long doIdentsExistAlready(DatabaseData databaseData) {
-   
-    ColumnData primaryKey = tl_des.queryPrimaryKey(database_des, tableRight);
-    
-    if (primaryKey == null) {
-      return 0;
-    }
-    
-    String sql = "Select `" + primaryKey.getColumnName() + "` FROM " + tableRight + " WHERE "  + getSqlIdent();
-    
-   //System.out.println("\texist: " + sql);
-    
-    long id = ql_des.queryLong(database_des, sql);
-    
-    return id;
+    String sql = "Select COUNT(*) as t " +
+    		"FROM " + databaseData.getDatabase() + "." + tableRight + " " +
+    		"WHERE " + getSql_ForPrimaryKeys();
+    //System.out.println(sql);
+    long count = ql_des.queryLong(database_des, sql);
+    return count;
   }
   
-  private String getSqlIdent() {
+  /**
+   * get where query for keys
+   * @return
+   */
+  private String getSql_ForPrimaryKeys() {
     
     String sql = "";
     int is = 0;
     for (int i=0; i < columnData_des.length; i++) {
       if (columnData_des[i].getIsPrimaryKey() == true) {
         
-        if (is > 1) {
+        if (is >= 1) {
           sql += " AND ";
         }
         
-        sql += "(`" + columnData_des[i].getColumnName() + "`='" + ql_src.escape(columnData_des[i].getValue()) + "')";
+        sql += "(" + columnData_des[i].getColumnName() + "='" + ql_src.escape(columnData_des[i].getValue()) + "')";
         
         is++;
       }
     }
     
     return sql;
+  }
+  
+  @Deprecated
+  private String getSql_PrimaryKeysWhere() {
+    String srcPrimKeyValue = cl_src.getPrimaryKey_Value(columnData_src);
+    
+    String desPrimKeyColName = cl_des.getPrimaryKey_Name(columnData_des);
+    
+    String where = "(" + desPrimKeyColName + "='" +  ql_src.escape(srcPrimKeyValue) + "')";
+    
+    return where;
   }
   
   private void merge() {
@@ -1187,6 +1309,14 @@ public class Transfer implements Runnable, Cloneable {
     
 		return cloned;
 	}
+
+	/**
+	 * don't page through the record set, plain old move foward through it
+	 * @param b
+	 */
+  public void setSkipPaging(boolean b) {
+    this.skipPaging = b;
+  }
 
   
 }

@@ -16,7 +16,7 @@ public class TransformModule implements Module {
 
     binder.bind(TransformLib.class).annotatedWith(Names.named("MySql")).to(MySqlTransformLib.class);
     binder.bind(TransformLib.class).annotatedWith(Names.named("MsSql")).to(MsSqlTransformLib.class);
-    binder.bind(TransformLib.class).annotatedWith(Names.named("MsSql")).to(OracleTransformLib.class);
+    binder.bind(TransformLib.class).annotatedWith(Names.named("Oracle")).to(OracleTransformLib.class);
 
   }
 

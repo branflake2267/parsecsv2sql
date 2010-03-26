@@ -55,7 +55,7 @@ public class OracleColumnLib implements ColumnLib {
   }
 
   /**
-   * get sql select statement string from columnData like `cola`,`colb`,`colc`,...
+   * get sql select statement string from columnData like cola,colb,colc,...
    * 
    * @param columnData
    * @return
@@ -65,7 +65,7 @@ public class OracleColumnLib implements ColumnLib {
   }
 
   /**
-   * get sql select statement string from columnData like `cola`,`colb`,`colc`
+   * get sql select statement string from columnData like cola,colb,colc
    *  
    * @param columnData
    * @param pruneColumnData
@@ -78,7 +78,7 @@ public class OracleColumnLib implements ColumnLib {
     columnData = prune(columnData, pruneColumnData);
     String sql = "";
     for (int i=0; i < columnData.length; i++) {
-      sql += "`" + columnData[i].getColumnName() + "`";
+      sql += "" + columnData[i].getColumnName() + "";
       if (i < columnData.length -1) {
         sql += ",";
       }
@@ -99,7 +99,7 @@ public class OracleColumnLib implements ColumnLib {
       if (cn_sql != null) {
         c = cn_sql;
       } else {
-        c = "`" + columnData[i].getColumnName() + "`";
+        c = "" + columnData[i].getColumnName() + "";
       }
       sql += c;
       if (i < columnData.length -1) {
@@ -177,7 +177,7 @@ public class OracleColumnLib implements ColumnLib {
   }
 
   /**
-   * get columns as sql, `column1`='value1', `column2`='value2', `column3`='value3',...
+   * get columns as sql, column1='value1', column2='value2', column3='value3',...
    * 
    * @param columnData
    * @return
@@ -187,7 +187,7 @@ public class OracleColumnLib implements ColumnLib {
   }
 
   /**
-   * get columns as sql, `column1`='value1', `column2`='value2', `column3`='value3',...
+   * get columns as sql, column1='value1', column2='value2', column3='value3',...
    * 
    * @param columnData
    * @param pruneColumnData
@@ -204,7 +204,7 @@ public class OracleColumnLib implements ColumnLib {
     columnData = prune(columnData, pruneColumnData);
     String sql = "";
     for (int i=0; i < columnData.length; i++) {
-      String c = "`" + columnData[i].getColumnName() + "`";    
+      String c = "" + columnData[i].getColumnName() + "";    
       String v = null;
       if (columnData[i].isFunctionSetForValue() == true) {
         v = columnData[i].getValueAsFunction();
@@ -251,7 +251,7 @@ public class OracleColumnLib implements ColumnLib {
     columnData = prune(columnData, pruneColumnData);
     String table = columnData[0].getTable();
     String fields = getSql(columnData);
-    String sql = "INSERT INTO `" + table + "` SET " + fields + ";";
+    String sql = "INSERT INTO " + table + " SET " + fields + ";";
     return sql;
   }
 
@@ -279,9 +279,9 @@ public class OracleColumnLib implements ColumnLib {
       return null;
     }
     ColumnData priKeyCol = getPrimaryKey_ColumnData(columnData);
-    String where = " WHERE `" + priKeyCol.getColumnName() + "`='" + priKeyCol.getValue() + "'";
+    String where = " WHERE " + priKeyCol.getColumnName() + "='" + priKeyCol.getValue() + "'";
 
-    String sql = "UPDATE `" + columnData[0].getTable() + "` SET ";
+    String sql = "UPDATE " + columnData[0].getTable() + " SET ";
     pruneColumnData = merge(pruneColumnData, priKeyCol);
     sql += getSql(columnData, pruneColumnData);
     sql += where;
@@ -300,8 +300,8 @@ public class OracleColumnLib implements ColumnLib {
     if (columnData == null) {
       return null;
     }
-    String sql = "SELECT MAX(LENGTH(`" + columnData.getColumnName() + "`)) " +
-    "FROM `" + dd.getDatabase() + "`.`" + columnData.getTable() + "`" ;
+    String sql = "SELECT MAX(LENGTH(" + columnData.getColumnName() + ")) " +
+    "FROM " + dd.getDatabase() + "." + columnData.getTable() + "" ;
     return sql;
   }
 
@@ -547,10 +547,10 @@ public class OracleColumnLib implements ColumnLib {
       String c = col.getColumnName();
       String v = col.getValue();
       if (v == null || v.trim().length() == 0) {
-        sql += "`" + c + "` IS NULL ";
+        sql += "" + c + " IS NULL ";
       } else {
         v = new MySqlQueryLib().escape(col.getValue());
-        sql += "`" + c + "`='" + v + "'";
+        sql += "" + c + "='" + v + "'";
       }
       
       if (i < cols.size() - 1) {
@@ -605,14 +605,14 @@ public class OracleColumnLib implements ColumnLib {
 
     String sqlColumns = getSql_Index_Multi(columns);
 
-    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + columnData[0].getTable() + "` " +
-    "ADD INDEX `" + autoIndexName + "`(" + sqlColumns + ")"; 
+    String sql = "ALTER TABLE " + dd.getDatabase() + "." + columnData[0].getTable() + " " +
+    "ADD INDEX " + autoIndexName + "(" + sqlColumns + ")"; 
 
     return sql;
   }
 
   /**
-   * get column index setup like "`smallInt`, `myTxt`(900)"
+   * get column index setup like "smallInt, myTxt(900)"
    * 
    * @param columns
    * @return
@@ -629,7 +629,7 @@ public class OracleColumnLib implements ColumnLib {
       if (columns[i].getType().toLowerCase().contains("text") == true) {
         len = "(" + size + ")";
       }
-      sql += "`" + c + "`" + len;
+      sql += "" + c + "" + len;
       if (i < columns.length - 1) {
         sql += ",";
       }
@@ -701,14 +701,14 @@ public class OracleColumnLib implements ColumnLib {
    * @return
    */
   public String getSql_AlterColumns(DatabaseData dd, ColumnData[] columnData) {
-    String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + columnData[0].getTable() + "` ";
+    String sql = "ALTER TABLE " + dd.getDatabase() + "." + columnData[0].getTable() + " ";
     sql += getSql_ModifyColumns(columnData) + ";";
     return sql;
   }
 
   /**
    * get modify column sql
-   *   like MODIFY COLUMN `Name` varchar(100) DEFAULT NULL, MODIFY COLUMN `TwoLetter` varchar(2)  DEFAULT NULL
+   *   like MODIFY COLUMN Name varchar(100) DEFAULT NULL, MODIFY COLUMN TwoLetter varchar(2)  DEFAULT NULL
    *   
    * @param columnData
    * @return
@@ -716,7 +716,7 @@ public class OracleColumnLib implements ColumnLib {
   public String getSql_ModifyColumns(ColumnData[] columnData) {
     String sql = "";
     for (int i=0; i < columnData.length; i++) {
-      sql += "MODIFY COLUMN `" + columnData[i].getColumnName() + "` " + columnData[i].getType() + " ";
+      sql += "MODIFY COLUMN " + columnData[i].getColumnName() + " " + columnData[i].getType() + " ";
       if (i < columnData.length - 1 ) {
         sql += ",";
       }
