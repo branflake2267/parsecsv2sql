@@ -289,7 +289,7 @@ public class DatabaseData {
     
     String url = "jdbc:oracle:thin:@" + host + ":" + port + ":" + database;
     String driver = "oracle.jdbc.OracleDriver";
-    System.out.println("getConn_Oracle: url= " + url + " user= " + username + " driver= " + driver);
+    //System.out.println("getConn_Oracle: url= " + url + " user= " + username + " driver= " + driver);
 
     Connection conn = null;
     try {
