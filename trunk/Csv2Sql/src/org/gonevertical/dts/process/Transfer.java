@@ -923,7 +923,7 @@ public class Transfer implements Runnable, Cloneable {
 
     testColumnValueSizes(columnData_des);
     
-    System.out.println("Transfer.save(): " + sql);
+    System.out.println(index + " Transfer.save(): " + sql);
     
     ql_des.update(database_des, sql, false);
     
