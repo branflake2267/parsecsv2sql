@@ -287,14 +287,14 @@ public class DatabaseData {
    */
   private Connection getConn_Oracle() {
     
-    String url = "jdbc:oracle:thin:@" + host + ":" + port + ":" + database;
+    String url = "jdbc:oracle:thin:"+username+"/"+password+"@" + host + ":" + port + ":" + database;
     String driver = "oracle.jdbc.OracleDriver";
-    //System.out.println("getConn_Oracle: url= " + url + " user= " + username + " driver= " + driver);
+    System.out.println("getConn_Oracle: url= " + url + " user= " + username + " driver= " + driver);
 
     Connection conn = null;
     try {
       Class.forName(driver);
-      conn = DriverManager.getConnection(url, username, password);
+      conn = DriverManager.getConnection(url);
     } catch (Exception e) {
       System.err.println("ERROR: getConn_Oracle(): connection error: " + e.getMessage());
       e.printStackTrace();
