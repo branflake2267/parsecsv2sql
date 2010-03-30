@@ -127,6 +127,7 @@ public class Transfer implements Runnable, Cloneable {
 	private int totalThreadCount = 1;
 	private int offsetIndex;
   private boolean skipPaging;
+  private String orderBy;
   
   /**
    * Transfer data object setup 
@@ -482,6 +483,7 @@ public class Transfer implements Runnable, Cloneable {
     
     sql += where;
     sql += getSrcWhere();
+    sql += getOrderBy();
     
     System.out.println(sql);
     
@@ -569,6 +571,7 @@ public class Transfer implements Runnable, Cloneable {
     
     sql += where;
     sql += getSrcWhere();
+    sql += getOrderBy();
     
     if (database_src.getDatabaseType() == DatabaseData.TYPE_MYSQL) {
     	sql += " LIMIT " + offset + ", " + limit + ";";
@@ -680,6 +683,7 @@ public class Transfer implements Runnable, Cloneable {
     sql = "SELECT " + keyDes.getColumnName() + " FROM " + tableRight + " ";
     sql += where;
     sql += getSrcWhere();
+    sql += getOrderBy();
     sql += " LIMIT " + offset + ", " + limit + ";";
     
     System.out.println("sql: " + sql);
@@ -706,6 +710,11 @@ public class Transfer implements Runnable, Cloneable {
     }
   }
   
+  private String getOrderBy() {
+    String sql = orderBy;
+    return sql;
+  }
+
   private void processSrc_Mash(String keyValueDes) {
 
     String columnCsv = cl_src.getSql_Names_WSql(columnData_src, null);
@@ -717,6 +726,7 @@ public class Transfer implements Runnable, Cloneable {
     sql = "SELECT " + columnCsv + " FROM " + tableLeft + " ";
     sql += "WHERE " + keySrc.getColumnName() + " = '" + keyValueDes + "' ";
     sql += getSrcWhere();
+    sql += getOrderBy();
     
     System.out.println("sql: " + sql);
     
@@ -1316,6 +1326,10 @@ public class Transfer implements Runnable, Cloneable {
 	 */
   public void setSkipPaging(boolean b) {
     this.skipPaging = b;
+  }
+
+  public void setOrderBy(String orderBy) {
+    this.orderBy = orderBy;
   }
 
   
