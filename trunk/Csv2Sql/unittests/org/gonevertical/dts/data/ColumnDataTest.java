@@ -65,24 +65,170 @@ public class ColumnDataTest {
   }
 
   @Test
-  public void testGetValue() {
-    // TODO - get value varchar
-    // TODO - get value datetime
-    // TODO - get value null
-    // TODO - get value ""
-    fail("Not yet implemented");
+  public void testGetValue_Varchar() {
+  	String columnTable = "table";
+    String columnName = "field";
+    String columnType = "VARCHAR(25) DEFAULT NULL";
+    String value = "abcdefHKLKJ*(&^/";
+    ColumnData c = new ColumnData(columnTable, columnName, columnType);
+    c.setValue(value);
+    String rvalue = c.getValue();
+    assertEquals(value, rvalue);
+  }
+  
+  @Test
+  public void testGetValue_DateTime() {
+  	String columnTable = "table";
+    String columnName = "field";
+    String columnType = "DATETIME DEFAULT NULL";
+    String value = "2010-03-30 01:12:05.0";
+    ColumnData c = new ColumnData(columnTable, columnName, columnType);
+    c.setValue(value);
+    String rvalue = c.getValue();
+    assertEquals("2010-03-30 01:12:05", rvalue);
+  }
+  
+  @Test
+  public void testGetValue_DateTime2() {
+  	String columnTable = "table";
+    String columnName = "field";
+    String columnType = "DATETIME DEFAULT NULL";
+    String value = "3/30/2010";
+    ColumnData c = new ColumnData(columnTable, columnName, columnType);
+    c.setValue(value);
+    String rvalue = c.getValue();
+    assertEquals("2010-03-30 00:00:00", rvalue);
+  }
+  
+  @Test
+  public void testGetValue_DateTime3() {
+  	String columnTable = "table";
+    String columnName = "field";
+    String columnType = "DATETIME DEFAULT NULL";
+    String value = "3/30/2010 1:03am";
+    ColumnData c = new ColumnData(columnTable, columnName, columnType);
+    c.setValue(value);
+    String rvalue = c.getValue();
+    assertEquals("2010-03-30 01:03:00", rvalue);
+  }
+  
+  @Test
+  public void testGetValue_Null() {
+  	String columnTable = "table";
+    String columnName = "field";
+    String columnType = "VARCHAR(25) DEFAULT NULL";
+    String value = null;
+    ColumnData c = new ColumnData(columnTable, columnName, columnType);
+    c.setValue(value);
+    String rvalue = c.getValue();
+    assertEquals(value, rvalue);
+  }
+  
+  @Test
+  public void testGetValue_Null2() {
+  	String columnTable = "table";
+    String columnName = "field";
+    String columnType = "VARCHAR(25) DEFAULT NULL";
+    String value = "";
+    ColumnData c = new ColumnData(columnTable, columnName, columnType);
+    c.setValue(value);
+    String rvalue = c.getValue();
+    assertEquals(null, rvalue);
+  }
+  
+  @Test
+  public void testGetValue_Null3() {
+  	String columnTable = "table";
+    String columnName = "field";
+    String columnType = "VARCHAR(25) DEFAULT NULL";
+    String value = "  ";
+    ColumnData c = new ColumnData(columnTable, columnName, columnType);
+    c.setValue(value);
+    String rvalue = c.getValue();
+    assertEquals(null, rvalue);
   }
 
   @Test
   public void testGetValueRaw() {
-    fail("Not yet implemented");
+  	String columnTable = "table";
+    String columnName = "field";
+    String columnType = "DATETIME DEFAULT NULL";
+    String value = "3/30/2010 1:03am";
+    ColumnData c = new ColumnData(columnTable, columnName, columnType);
+    c.setValue(value);
+    String rvalue = c.getValueRaw(); 
+    assertEquals(value, rvalue);
   }
 
   @Test
-  public void testGetTestTypeThrow() {
-    fail("Not yet implemented");
+  public void testGetTestTypeThrow_Int() {
+  	String columnTable = "table";
+    String columnName = "field";
+    String columnType = "INTEGER DEFAULT NULL";
+    String value = "string";
+    ColumnData c = new ColumnData(columnTable, columnName, columnType);
+    c.setValue(value);
+    boolean rb = c.getTestTypeThrow();
+    assertEquals(true, rb);
   }
-
+  
+  public void testGetTestTypeThrow_Int2() {
+  	String columnTable = "table";
+    String columnName = "field";
+    String columnType = "INTEGER DEFAULT NULL";
+    String value = "012d3456";
+    ColumnData c = new ColumnData(columnTable, columnName, columnType);
+    c.setValue(value);
+    boolean rb = c.getTestTypeThrow();
+    assertEquals(false, rb);
+  }
+  
+  @Test
+  public void testGetTestTypeThrow_Decimal() {
+  	String columnTable = "table";
+    String columnName = "field";
+    String columnType = "DECIMAL(4,2) DEFAULT NULL";
+    String value = "string";
+    ColumnData c = new ColumnData(columnTable, columnName, columnType);
+    c.setValue(value);
+    boolean rb = c.getTestTypeThrow();
+    assertEquals(true, rb);
+  }
+  
+  public void testGetTestTypeThrow_Decimal2() {
+  	String columnTable = "table";
+    String columnName = "field";
+    String columnType = "DECIMAL(4,2) DEFAULT NULL";
+    String value = "1234.02";
+    ColumnData c = new ColumnData(columnTable, columnName, columnType);
+    c.setValue(value);
+    boolean rb = c.getTestTypeThrow();
+    assertEquals(false, rb);
+  }
+  
+  @Test
+  public void testGetTestTypeThrow_DateTime() {
+  	String columnTable = "table";
+    String columnName = "field";
+    String columnType = "DATETIME DEFAULT NULL";
+    String value = "0123456aa";
+    ColumnData c = new ColumnData(columnTable, columnName, columnType);
+    c.setValue(value);
+    boolean rb = c.getTestTypeThrow();
+    assertEquals(true, rb);
+  }
+  
+  public void testGetTestTypeThrow_DateTime2() {
+  	String columnTable = "table";
+    String columnName = "field";
+    String columnType = "DATETIME DEFAULT NULL";
+    String value = "3/30/2010 1:03am";
+    ColumnData c = new ColumnData(columnTable, columnName, columnType);
+    c.setValue(value);
+    boolean rb = c.getTestTypeThrow();
+    assertEquals(false, rb);
+  }
+  
   @Test
   public void testGetValueAsInt() {
     fail("Not yet implemented");
