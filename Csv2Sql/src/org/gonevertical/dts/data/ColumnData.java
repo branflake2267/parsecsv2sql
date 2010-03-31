@@ -142,17 +142,6 @@ public class ColumnData implements Cloneable {
     this.value = Long.toString(value);
   }
 
-  private String changeCase(String value) {
-    if (changeCase == CHANGECASE_LOWER) {
-      value = value.toLowerCase();
-    } else if (changeCase == CHANGECASE_UPPER) {
-      value = value.toUpperCase();
-    } else if (changeCase == CHANGECASE_SENTENCE) {
-      value = WordUtils.capitalizeFully(value);
-    }
-    return value;
-  }
-
   /**
    * get value
    *   will return valueIsFunction if set, this will overide value
@@ -711,6 +700,16 @@ public class ColumnData implements Cloneable {
     return fieldType;
   }
 
+  private String changeCase(String value) {
+    if (changeCase == CHANGECASE_LOWER) {
+      value = value.toLowerCase();
+    } else if (changeCase == CHANGECASE_UPPER) {
+      value = value.toUpperCase();
+    } else if (changeCase == CHANGECASE_SENTENCE) {
+      value = WordUtils.capitalizeFully(value);
+    }
+    return value;
+  }
 
   /**
    * test value length to see if it will fit

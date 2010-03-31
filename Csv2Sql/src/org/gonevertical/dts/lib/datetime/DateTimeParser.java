@@ -114,7 +114,7 @@ public class DateTimeParser {
     this.datetime = datetime;
     String s = getDate(TYPE_MYSQL_DATETIME);
     if (isDate == false) {
-      System.out.println("getDateMysql(): Can't figure out date format.");
+      System.out.println("DateTimeParser.getDateMysql(): Can't figure out date format. valueWas: " + datetime);
     }
     return s;
   }
@@ -449,7 +449,7 @@ public class DateTimeParser {
    */
   private boolean checkforFormat_datetime12hr() {
 
-    String re = "^([0-9]{1,2})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})[/\\-\040\\.]?(am|pm)$";
+    String re = "^([0-9]{1,2})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})?[/\\-\040\\.]?(am|pm)$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
     boolean found = m.find();
@@ -560,13 +560,13 @@ public class DateTimeParser {
 
 
   /**
-   * mm/dd/yyyy hh:min AM
+   * mm/dd/yyyy hh:mm AM
    * 
    * @return
    */
   private boolean checkforFormat_datetime12hra() {
 
-    String re = "^([0-9]{1,2})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2})[/\\-\040\\.]?(am|pm)$";
+    String re = "^([0-9]{1,2})[/\\-\040\\.]([0-9]{1,2})[/\\-\040\\.]([0-9]{2,4})[\040]+([0-9]{1,2}):([0-9]{1,2})?[/\\-\040\\.]?(am|pm)$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
     boolean found = m.find();
@@ -685,7 +685,7 @@ public class DateTimeParser {
    */
   private boolean checkforFormat_datetime12hr2() {
 
-    String re = "^([0-9]{4})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})[/\\-\040\\.]?(am|pm)$";
+    String re = "^([0-9]{4})[/\\-\040\\.]([0-9]+)[/\\-\040\\.]([0-9]+)[\040]+([0-9]{2}):([0-9]{2}):([0-9]{2})?[/\\-\040\\.]?(am|pm)$";
     Pattern p = Pattern.compile(re);
     Matcher m = p.matcher(datetime);
     boolean found = m.find();
