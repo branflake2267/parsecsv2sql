@@ -92,6 +92,16 @@ public class DestinationData_v2 {
   public FieldData[] compareBeforeUpdate = null;
   
   private long millisecondsStart = 0;
+  
+  /**
+   * turn on logging to a table
+   */
+  private boolean loggingToTable = false;
+  
+  /**
+   * logging to table name
+   */
+  private String loggingTable = "logging_import";
  
   public DestinationData_v2() {
     setStart();

@@ -264,11 +264,11 @@ public class Transfer implements Runnable, Cloneable {
   }
   
   private String getSrcWhere() {
-    String s = "";
+    String sql = "";
     if (srcWhere != null && srcWhere.length() > 0) {
-      s = " AND " + srcWhere;
+      sql = " AND " + srcWhere;
     }
-    return s; 
+    return sql; 
   }
   
   /**
@@ -711,7 +711,10 @@ public class Transfer implements Runnable, Cloneable {
   }
   
   private String getOrderBy() {
-    String sql = orderBy;
+    String sql = "";
+    if (orderBy != null) {
+    	sql = orderBy;
+    }
     return sql;
   }
 

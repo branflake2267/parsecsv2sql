@@ -63,6 +63,9 @@ public class ImportStatData {
 		errors.add(error);
 	}
 	
+	/**
+	 * output to String
+	 */
 	public void print() {
 		long diff = endTime - startTime;
 		System.out.println("start: " + startTime + " endTime: " + endTime + " diffTime: " + diff);
@@ -75,9 +78,13 @@ public class ImportStatData {
 		System.out.println("saveCount: " + saveCount);
 	}
 	
+	private void createLoggingTable() {
+		
+	}
 	
-	
-	
+	private void writeToTable() {
+		
+	}
 	
 	
 	

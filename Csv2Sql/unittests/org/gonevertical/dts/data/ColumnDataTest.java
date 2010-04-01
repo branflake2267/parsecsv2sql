@@ -172,6 +172,7 @@ public class ColumnDataTest {
     assertEquals(true, rb);
   }
   
+  @Test
   public void testGetTestTypeThrow_Int2() {
   	String columnTable = "table";
     String columnName = "field";
@@ -195,6 +196,7 @@ public class ColumnDataTest {
     assertEquals(true, rb);
   }
   
+  @Test
   public void testGetTestTypeThrow_Decimal2() {
   	String columnTable = "table";
     String columnName = "field";
@@ -218,6 +220,7 @@ public class ColumnDataTest {
     assertEquals(true, rb);
   }
   
+  @Test
   public void testGetTestTypeThrow_DateTime2() {
   	String columnTable = "table";
     String columnName = "field";
