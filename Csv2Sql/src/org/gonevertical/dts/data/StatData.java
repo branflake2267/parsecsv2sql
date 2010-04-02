@@ -1,10 +1,20 @@
 package org.gonevertical.dts.data;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 
+import org.gonevertical.dts.lib.StringUtil;
+import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
+import org.gonevertical.dts.lib.sql.querylib.QueryLib;
+import org.gonevertical.dts.lib.sql.transformlib.TransformLib;
+
 public class StatData {
 
+	private ColumnLib cl;
+	private QueryLib ql;
+	private TransformLib tl;
+	
 	/**
 	 * track micro time start
 	 */
@@ -60,17 +70,49 @@ public class StatData {
 	 */
 	private long fileLineCount = 0;
 	
+	private DatabaseData dd;
+	
+	private File srcFile;
+	
+	private String dstTable;
+
+
+	
 	public StatData() {
 	}
+
+	/**
+	 * set supporting libraries (to save to table)
+	 * 
+	 * @param cl
+	 * @param ql
+	 * @param tl
+	 */
+	public void setSupportingLibraries(ColumnLib cl, QueryLib ql, TransformLib tl) {
+		this.cl = cl;
+		this.ql = ql;
+		this.tl = tl;
+  }
 	
+	/**
+	 * start the stats - set the time
+	 */
 	public void start() {
 		startTime = new Date().getTime();
 	}
 	
+	/**
+	 * end the stats - set the end time
+	 */
 	public void end() {
 		endTime = new Date().getTime();
 	}
 	
+	/**
+	 * track sql
+	 * 
+	 * @param sql
+	 */
 	public void setTrackSql(String sql) {
 		
 		if (sql == null) {
@@ -90,48 +132,62 @@ public class StatData {
 		
 	}
 	
+	/**
+	 * increment save count
+	 */
 	public void setSaveCount() {
 		saveCount++;
 	}
 	
+	/**
+	 * increment row count
+	 */
 	public void setAddRowCount() {
 		rowCount++;
 	}
 	
+	/**
+	 * save an error
+	 * 
+	 * @param error
+	 */
 	public void setTrackError(String error) {
-		errors.add(error);
+		errors.add("rowIndex: " + rowCount + " :: " + error);
 	}
 	
+	/**
+	 * how many lines in the file?
+	 * 
+	 * @param fileLineCount
+	 */
 	public void setFileLineCount(long fileLineCount) {
 		this.fileLineCount = fileLineCount;
 	}
 	
 	/**
-	 * output to String
-	 * 
-	 * TODO maybe change this toString()
+	 * output to console
 	 */
 	public void print() {
+		System.out.println(this.toString());
+	}
+	
+	public String toString() {
 		long diff = endTime - startTime;
-		System.out.println("startTime: " + startTime + " endTime: " + endTime + " diffTime: " + diff);
-		System.out.println("fileLineCount: " + fileLineCount);
-		System.out.println("rowCount: " + rowCount);
-		System.out.println("sqlStatementsTotalCount: " + sqlTotalCount);
-		System.out.println("sqlStatementAlterCount: " + sqlAlterCount);
-		System.out.println("sqlStatementInsertCount: " + sqlInsertCount);
-		System.out.println("sqlStatementUpdateCount: " + sqlUpdateCount);
-		System.out.println("sqlStatementNullCount: " + sqlNullCount);
-		System.out.println("saveStatementsCount (update/insert): " + saveCount);	
+		
+		String s = "";
+		s += "startTime: " + startTime + " endTime: " + endTime + " diffTime: " + diff + "\n";
+		s += "fileLineCount: " + fileLineCount + "\n";
+		s += "rowCount: " + rowCount+ "\n";
+		s += "sqlStatementsTotalCount: " + sqlTotalCount + "\n";
+		s += "sqlStatementAlterCount: " + sqlAlterCount + "\n";
+		s += "sqlStatementInsertCount: " + sqlInsertCount + "\n";
+		s += "sqlStatementUpdateCount: " + sqlUpdateCount + "\n";
+		s += "sqlStatementNullCount: " + sqlNullCount;
+		s += "saveStatementsCount (update/insert): " + saveCount + "\n";
+		
+		return s;
 	}
 	
-	private void createLoggingTable() {
-		
-	}
-	
-	private void writeToTable() {
-		
-	}
-
 	public void setRowCount(int rowCount) {
 		this.rowCount = rowCount;
   }
@@ -139,9 +195,95 @@ public class StatData {
 	public long getFileLineCount() {
 		return fileLineCount;
   }
+
+	public void saveToTable(DatabaseData dd, boolean logToTable, String loggingTable) {
+		if (logToTable == false || loggingTable == null) {
+			return;
+		}
+		this.dd = dd;
+		
+		// create table and fields if needed
+		createLoggingTable(loggingTable);
+		
+		// write the stuff to the table
+		writeToTable(loggingTable);
+  }
+
+	private void createLoggingTable(String table) {
+		String primaryKeyName = "Auto_LogId";
+		tl.createTable(dd, table, primaryKeyName);
+		
+		ColumnData c1 = new ColumnData(table, "DateCreated", "DATETIME DEFAULT NULL");
+		ColumnData c2 = new ColumnData(table, "SrcFile", "VARCHAR(255) DEFAULT NULL");
+		ColumnData c3 = new ColumnData(table, "DestTable", "VARCHAR(255) DEFAULT NULL");
+		ColumnData c4 = new ColumnData(table, "Description", "TEXT DEFAULT NULL");
+		ColumnData c5 = new ColumnData(table, "Errors", "TEXT DEFAULT NULL");
+		
+		tl.createColumn(dd, c1);
+		tl.createColumn(dd, c2);
+		tl.createColumn(dd, c3);
+		tl.createColumn(dd, c4);
+		tl.createColumn(dd, c5);
+	}
 	
+	private void writeToTable(String table) {
+		
+		String sql = "INSERT INTO " + table + " SET " +
+				"DateCreated=NOW()," +
+				"SrcFile=" + getSrcFile() + "," +
+				"DestTable=" + getDestTable() + "," +
+				"Description='" + ql.escape(toString()) + "'," +
+				"Errors=" + getErrors() + ";";
+		
+		System.out.println(sql);
+		
+		ql.update(dd, sql);
+		
+		//System.out.println("");
+	}
 	
+	private String getDestTable() {
+	  String s = null;
+	  if (dstTable != null) {
+	  	s = "'" + ql.escape(dstTable) + "'";
+	  }
+	  return s;
+  }
+
+	private String getSrcFile() {
+		String s = null;
+		if (srcFile != null) {
+			s = "'" + ql.escape(srcFile.getAbsolutePath()) + "'";
+		}
+	  return s;
+  }
+
+	private String getErrors() {
+		
+		String s = null;
+		
+		if (errors.size() > 0) {
+			s += "'";
+		}
+		
+		for (int i=0; i < errors.size(); i++) {
+			s += ql.escape(errors.get(i));
+			s += "~~~~~~~~~~~~~~~~~~\n";
+		}
+		
+		if (errors.size() > 0) {
+			s += "'";
+		}
+		
+		return s;
+	}
 	
+	public void setSourceFile(File file) {
+		this.srcFile = file;
+	}
 	
+	public void setDestTable(String table) {
+		this.dstTable = table;
+	}
 	
 }

@@ -101,14 +101,14 @@ public class DestinationData_v2 {
   private long millisecondsStart = 0;
   
   /**
-   * turn on logging to a table
+   * turn on/off logging to a table
    */
-  private boolean loggingToTable = false;
+  private boolean loggingToTable = true;
   
   /**
    * logging to table name
    */
-  private String loggingTable = "logging_import";
+  private String loggingTable = "_auto_log";
  
   /**
    * constructor
@@ -180,4 +180,16 @@ public class DestinationData_v2 {
     long seconds = (long) (howLong * .001);
     System.out.println("milliseconds: " + howLong + " seconds: " + seconds);
   }
+
+	public void setLogToTable(boolean b) {
+		this.loggingToTable = b;
+  }
+	
+	public boolean getLogToTable() {
+		return loggingToTable;
+	}
+	
+	public String getLoggingTable() {
+		return loggingTable;
+	}
 }
