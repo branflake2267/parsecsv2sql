@@ -83,8 +83,11 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     tl = TransformLibFactory.getLib(dd.databaseData.getDatabaseType());
     csv = new Csv();
     
+    stats.setSupportingLibraries(cl,ql,tl);
+    
     ql.setStats(stats);
     tl.setStats(stats);
+    
   }
   
   /**
@@ -96,6 +99,9 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   protected void parseFile(int fileIndex, File file) {
     this.file = file;
 
+    stats.setSourceFile(file);
+    stats.setDestTable(dd.table);
+    
     // count file lines
     countLinesInFile();
     
@@ -123,6 +129,9 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     
     // print report
     stats.print();
+    
+    // save log to table
+    stats.saveToTable(dd.databaseData, dd.getLogToTable(), dd.getLoggingTable());
     
     // finished
     csvRead.close();
