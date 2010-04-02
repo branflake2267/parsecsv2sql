@@ -103,7 +103,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     stats.setDestTable(dd.table);
     
     // count file lines
-    countLinesInFile();
+    countLinesInFile(file);
     
     // open the csv file for reading
     openFileAndRead();
@@ -137,9 +137,9 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     csvRead.close();
   }
   
-  private void countLinesInFile() {
+  private void countLinesInFile(File file) {
 	  FileUtil fu = new FileUtil();
-	  long fileLineCount = fu.getFileLineCount(sd.file);
+	  long fileLineCount = fu.getFileLineCount(file);
 	  stats.setFileLineCount(fileLineCount);
   }
 
