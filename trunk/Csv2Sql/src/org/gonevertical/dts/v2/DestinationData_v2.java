@@ -75,9 +75,6 @@ public class DestinationData_v2 {
   // Also will need Identity Columns listed
   public boolean createIndexs = true;
 
-  // when no field names exist in the first row, make this true
-  public boolean firstRowHasNoFieldNames = false;
-
   // save the source file into the records srcFile= /home/branflake2267/home.txt
   public boolean setSrcFileIntoColumn = false;
   
@@ -87,10 +84,20 @@ public class DestinationData_v2 {
   // stop at column, don't process any columns over this count. 0 process all
   public int stopProcessingAtRowCount = 0;
   
+  /**
+   * stop importing at row 
+   *   -1 = don't stop
+   */
   public int stopAtRow = -1;
   
+  /**
+   * comparison before update - TODO more doc
+   */
   public FieldData[] compareBeforeUpdate = null;
   
+  /**
+   * logging time start
+   */
   private long millisecondsStart = 0;
   
   /**
@@ -103,6 +110,9 @@ public class DestinationData_v2 {
    */
   private String loggingTable = "logging_import";
  
+  /**
+   * constructor
+   */
   public DestinationData_v2() {
     setStart();
   }
