@@ -182,8 +182,8 @@ public class StatData {
 		s += "sqlStatementAlterCount: " + sqlAlterCount + "\n";
 		s += "sqlStatementInsertCount: " + sqlInsertCount + "\n";
 		s += "sqlStatementUpdateCount: " + sqlUpdateCount + "\n";
-		s += "sqlStatementNullCount: " + sqlNullCount;
-		s += "saveStatementsCount (update/insert): " + saveCount + "\n";
+		s += "sqlStatementNullCount: " + sqlNullCount + "\n";
+		s += "saveStatementsCount: " + saveCount + "\n";
 		
 		return s;
 	}
