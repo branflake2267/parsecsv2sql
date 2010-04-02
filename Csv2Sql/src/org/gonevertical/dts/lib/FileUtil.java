@@ -32,14 +32,14 @@ public class FileUtil {
    * @param file
    * @return
    */
-  public int getFileLineCount(File file) {
+  public long getFileLineCount(File file) {
     if (file == null) {
       System.out.println("Error: Your file was null.");
       return 0;
     }
     FileInputStream fis = null;
     DataInputStream dis = null;
-    int i = 0;
+    long i = 0;
     try {
       fis = new FileInputStream(file);
       dis = new DataInputStream(fis);
@@ -183,7 +183,7 @@ public class FileUtil {
    * @param regex
    * @return
    */
-  public int findLineCount(File dir, String regex) {
+  public long findLineCount(File dir, String regex) {
     if (dir.isDirectory() == false) {
       System.out.println("Error: dir is supposed to be a directory, not a file.");
       return 0;
@@ -198,7 +198,7 @@ public class FileUtil {
     }
     
     // now get the line count
-    int linecount = getFileLineCount(foundFile);
+    long linecount = getFileLineCount(foundFile);
     
     return linecount;
   }

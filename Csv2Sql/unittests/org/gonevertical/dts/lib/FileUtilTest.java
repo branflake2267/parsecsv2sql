@@ -37,7 +37,7 @@ public class FileUtilTest {
 
   @Test
   public void testGetFileLineCount() {
-    int linecount = fileUtil.getFileLineCount(new File(execPath + "/data/test/linecount.txt"));
+    long linecount = fileUtil.getFileLineCount(new File(execPath + "/data/test/linecount.txt"));
     assertEquals(10, linecount);
   }
 
@@ -70,8 +70,8 @@ public class FileUtilTest {
   public void testFindLineCount() {
     File file = new File(execPath + "/data/test/template1.txt");
     File dir = new File(execPath + "/data/test");
-    int lineCount = fileUtil.getFileLineCount(file);
-    int foundCount = fileUtil.findLineCount(dir, "\\$");
+    long lineCount = fileUtil.getFileLineCount(file);
+    long foundCount = fileUtil.findLineCount(dir, "\\$");
     assertEquals(lineCount, foundCount);
   }
   

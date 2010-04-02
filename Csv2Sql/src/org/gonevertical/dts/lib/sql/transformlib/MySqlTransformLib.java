@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
-import org.gonevertical.dts.data.ImportStatData;
+import org.gonevertical.dts.data.StatData;
 import org.gonevertical.dts.data.UserDbData;
 import org.gonevertical.dts.lib.StringUtil;
 import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
@@ -22,12 +22,12 @@ public class MySqlTransformLib implements TransformLib {
 
   private MySqlQueryLib ql = new MySqlQueryLib();
   
-	private ImportStatData stats;
+	private StatData stats;
   
   public MySqlTransformLib() {
   }
   
-  public void setStats(ImportStatData stats) {
+  public void setStats(StatData stats) {
   	this.stats = stats;
   	ql.setStats(stats);
   }

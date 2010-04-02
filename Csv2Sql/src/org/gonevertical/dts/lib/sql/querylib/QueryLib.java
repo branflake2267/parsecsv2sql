@@ -5,13 +5,13 @@ import java.sql.ResultSet;
 import java.util.Date;
 
 import org.gonevertical.dts.data.DatabaseData;
-import org.gonevertical.dts.data.ImportStatData;
+import org.gonevertical.dts.data.StatData;
 
 public interface QueryLib {
 
   public String getType();
   
-  public void setStats(ImportStatData stats);
+  public void setStats(StatData stats);
   
   public String escape(String s);
   

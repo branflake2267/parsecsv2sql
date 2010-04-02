@@ -14,7 +14,7 @@ import org.gonevertical.dts.v2.Optimise_v2;
 import org.gonevertical.dts.v2.ProcessImport;
 
 
-public class Run_Import_ZipCodes_All {
+public class Run_Import_ZipCodes_All_wSubstituteHeader {
 
   // source data point
   private static SourceData sourceData = null;
@@ -36,11 +36,23 @@ public class Run_Import_ZipCodes_All {
     } catch (URISyntaxException e) {
       e.printStackTrace();
     }
-    String execPath = executionlocation.getParent();
-    String pathToFile = execPath + "/data/import/zip_codes.csv"; 
     
-    // source
+    // files system root location
+    String execPath = executionlocation.getParent();
+    
+    // source settings
     sourceData = new SourceData();
+
+    // header
+    File file = new File(execPath + "/data/import/zip_codes_onlyheader.csv");
+    boolean ignoreFirstRow = false;
+    char delimiter = ",".charAt(0);
+    sourceData.setSubstitueHeaders(file, ignoreFirstRow, delimiter);
+    
+    sourceData.setIgnoreLastRow(true);
+    
+    // data
+    String pathToFile = execPath + "/data/import/zip_codes_noheader.csv"; 
     sourceData.delimiter = ",".charAt(0);
     sourceData.file = new File(pathToFile);
     
@@ -55,7 +67,7 @@ public class Run_Import_ZipCodes_All {
 
     // database settings
     DatabaseData databaseData = new DatabaseData(DatabaseData.TYPE_MYSQL, "localhost", "3306", "test", "test#", "test");
-    String table = "import_zipcodes_test_all";
+    String table = "import_zipcodes_test_all_wsubheader";
     
     
     // destination settings

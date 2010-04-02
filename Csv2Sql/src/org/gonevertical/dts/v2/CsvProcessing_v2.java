@@ -9,8 +9,9 @@ import java.util.Comparator;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.FieldData;
 import org.gonevertical.dts.data.FieldDataComparator;
-import org.gonevertical.dts.data.ImportStatData;
+import org.gonevertical.dts.data.StatData;
 import org.gonevertical.dts.data.SourceData;
+import org.gonevertical.dts.lib.FileUtil;
 import org.gonevertical.dts.lib.csv.Csv;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;
@@ -52,7 +53,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   private boolean returnToOptimise = false;
   
   // keep track of stats of whats going on
-  private ImportStatData stats = new ImportStatData();
+  private StatData stats = new StatData();
   
   /**
    * constructor
@@ -95,6 +96,9 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   protected void parseFile(int fileIndex, File file) {
     this.file = file;
 
+    // count file lines
+    countLinesInFile();
+    
     // open the csv file for reading
     openFileAndRead();
 
@@ -120,10 +124,17 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     // print report
     stats.print();
     
+    // finished
     csvRead.close();
   }
   
-  private void createIdentitiesIndex() {
+  private void countLinesInFile() {
+	  FileUtil fu = new FileUtil();
+	  long fileLineCount = fu.getFileLineCount(sd.file);
+	  stats.setFileLineCount(fileLineCount);
+  }
+
+	private void createIdentitiesIndex() {
     if (dd.identityColumns == null) {
       return;
     }
@@ -167,6 +178,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   
   /**
    * setup columns from csv header
+   *  (this will move the csv reader one row foward)
    */
   private void setupColumns() {
   	
@@ -201,7 +213,9 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    * @return
    */
   private ColumnData[] processColumnsToColumnData(String[] header) {
-    ColumnData[] columnData = new ColumnData[header.length];
+    
+  	ColumnData[] columnData = new ColumnData[header.length];
+    
     for(int i=0; i < header.length; i++) {
       columnData[i] = new ColumnData();
       columnData[i].setTable(dd.table);
@@ -217,11 +231,14 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
       // change Column Name by using Field matching
       header[i] = changeColumnName(header[i]);
       
-      if (dd != null && 
-          dd.firstRowHasNoFieldNames == true && 
-          i < header.length - 1) { 
+      // does the first row have header/column names?
+      if (sd != null && 
+      		sd.getHeadersFile() == null && // has no header file
+      		sd.getIgnoreFirstRow() == true && // first row is set to ignore
+      		i < header.length - 1) { // its at the first row
         columnData[i].setColumnName(" "); // this will change into 'c0','c1',... column names
-      } else {
+        
+      } else { // first row has the column names
         columnData[i].setColumnName(header[i]);
       }
       
@@ -299,30 +316,50 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    */
   private void iterateRowsData(int indexFile) {
     rowIndex = 0;
+    stats.setRowCount(rowIndex);
     
-    // when the first row is data, need to move up one row to start
-    if ((dd != null && dd.firstRowHasNoFieldNames == true) || 
-    		(sd.getHeadersFile() != null && sd.getSkipFirstRowBcOfSubHeaders() == false)) {
+    // move count up one when skipping first one, so index count matches
+    if ((sd != null && 
+    		sd.getHeadersFile() == null && // don't move count one if there is a substitue header 
+    		sd.getIgnoreFirstRow() == false) // when ignore first row, move back count
+    		) {  
       rowIndex--;
     }
+
     
+    // start looping through the records
     try {
       while (csvRead.readRecord()) {
-        process(rowIndex, csvRead);
+      	
+      	if (sd.getIgnoreFirstRow() == true && rowIndex == 0) {
+      		// skip
+      		System.out.println("skipping frist row :" + rowIndex);
+      	
+      	} else if (sd.getIgnoreLastRow() == true && rowIndex == stats.getFileLineCount()-1) { // TODO - does the rowIndex-- mess this up
+      		System.out.println("skipping last row: " + rowIndex);
+      		
+      	} else {
+      		process(rowIndex, csvRead);
+      	}
         
-        // optimise early - this will cause a
+        
+        // optimise early - this will cause optimising after so many rows, then will start agian
         if (dd != null && dd.optimise == true && dd.optimise_RecordsToExamine == rowIndex) {
           returnToOptimise = true;
           return;
         }
         
         // stop early
-        if (dd != null && dd.stopAtRow == rowIndex) {
+        if (dd != null && dd.stopAtRow == rowIndex && rowIndex != -1) {
           return;
         }
+        
         rowIndex++;
+      
+        // keep track of row count
         stats.setAddRowCount();
       }
+      
     } catch (IOException e) {
       System.out.println("Error: Can't loop through data!");
       e.printStackTrace();

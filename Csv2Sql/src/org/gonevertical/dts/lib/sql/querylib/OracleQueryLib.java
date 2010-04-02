@@ -10,18 +10,18 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.gonevertical.dts.data.DatabaseData;
-import org.gonevertical.dts.data.ImportStatData;
+import org.gonevertical.dts.data.StatData;
 
 
 public class OracleQueryLib implements QueryLib {
 
 	// keep track of what is going on
-  private ImportStatData stats;
+  private StatData stats;
 
 	public OracleQueryLib() {
   }
   
-  public void setStats(ImportStatData stats) {
+  public void setStats(StatData stats) {
   	this.stats = stats;
   }
 
