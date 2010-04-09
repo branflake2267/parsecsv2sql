@@ -162,6 +162,10 @@ public class FileUtil {
     
     File[] files = dir.listFiles();
     
+    if (files == null) {
+    	System.out.println("No files to search");
+    }
+    
     File foundFile = null;
     for (int i=0; i < files.length; i++) {
       if (files[i].isFile() == true) {
