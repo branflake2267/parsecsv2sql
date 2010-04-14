@@ -538,7 +538,7 @@ public class ColumnData implements Cloneable {
     boolean b = false;
     if (value == null) {
       b = true;
-    } else if (value != null && value.length() <= 65536) { //65536 bytes 2^16
+    } else if (value != null || value.length() <= 65536) { //65536 bytes 2^16
       b = true;
     }
     return b;
@@ -622,7 +622,12 @@ public class ColumnData implements Cloneable {
   }
 
   private void alterColumnToBiggerSize(DatabaseData dd) {
-    int l = value.getBytes().length;
+    int l = 0;
+    if (value == null) {
+      l = 255;
+    } else {
+      l = value.getBytes().length;
+    }
 
     if (columnType.contains("text") == true) {
       if (l >= 255) {
