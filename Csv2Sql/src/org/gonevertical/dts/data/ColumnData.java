@@ -538,7 +538,7 @@ public class ColumnData implements Cloneable {
     boolean b = false;
     if (value == null) {
       b = true;
-    } else if (value.length() <= 65536) { //65536 bytes 2^16
+    } else if (value != null && value.length() <= 65536) { //65536 bytes 2^16
       b = true;
     }
     return b;
