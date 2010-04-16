@@ -15,6 +15,7 @@ import java.util.Iterator;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.FieldData;
+import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;
 import org.gonevertical.dts.lib.sql.querylib.QueryLib;
@@ -130,6 +131,11 @@ public class Transfer implements Runnable, Cloneable {
   private String orderBy;
   
   /**
+   * delete source after copy/transfer
+   */
+	private boolean deleteSource = false;
+  
+  /**
    * Transfer data object setup 
    * 
    * @param database_src
@@ -234,6 +240,26 @@ public class Transfer implements Runnable, Cloneable {
       processSrc_Mash();
     }
     
+  }
+  
+  public void showDifferenceInTables(String fromTable, String toTable) {
+  	this.tableLeft = fromTable;
+    this.tableRight = toTable;
+  	
+    ColumnData[] left = tl_src.queryColumns(database_src, tableLeft, null);
+    ColumnData[] right = tl_des.queryColumns(database_des, tableRight, null);
+  	
+    ColumnData[] diff = cl_src.difference(left, right);
+    
+    if (diff == null) {
+    	System.out.println("Nothing Different");
+    	return;
+    }
+    
+    for (int i=0; i < diff.length; i++) {
+    	String name = diff[i].getName();
+    	System.out.println("diff: " + name);
+    }
   }
 
   /**
@@ -924,7 +950,7 @@ public class Transfer implements Runnable, Cloneable {
     long count = doIdentsExistAlready(database_des);
     
     String fields = getFields();
-    String where = getSql_ForPrimaryKeys();
+    String where = getSql_ForPrimaryKeys_ForDest();
     
     String sql = "";
     if (count > 0) { // update
@@ -940,20 +966,40 @@ public class Transfer implements Runnable, Cloneable {
     
     ql_des.update(database_des, sql, false);
     
+    deleteSourceRecord();
+    
     index--;
   }
   
-  private void testColumnValueSizes(ColumnData[] columnData) {
+  private void deleteSourceRecord() {
+  	
+  	if (deleteSource == false) {
+  		return;
+  	}
+	  
+  	String where = getSql_ForPrimaryKeys_ForSrc();
+  	
+  	String sql = "DELETE FROM " + tableLeft + " WHERE " + where;
+  	System.out.println(sql);
+  	ql_src.update(database_des, sql);
+  	
+  }
+
+	private void testColumnValueSizes(ColumnData[] columnData) {
     for (int i=0; i < columnData.length; i++) {
       columnData[i].alterColumnSizeBiggerIfNeedBe(database_des);
     }
   }
   
   private String getFields() {
-    String sql = "";
-    for (int i=0; i < columnData_des.length; i++) {
-      String column = columnData_des[i].getColumnName();
-      String value = columnData_des[i].getValue();
+    
+    // TODO maybe we do want to transfer primary key 
+  	ColumnData[] cols = cl_des.prunePrimaryKey(columnData_des);
+  	
+  	String sql = "";
+    for (int i=0; i < cols.length; i++) {
+      String column = cols[i].getColumnName();
+      String value = cols[i].getValue();
       
       if (value != null && value.trim().length() == 0) {
         value = null;
@@ -967,10 +1013,11 @@ public class Transfer implements Runnable, Cloneable {
       }
       
       sql += "" + column + "=" + svalue;
-      if (i < columnData_des.length -1) {
+      if (i < cols.length -1) {
         sql += ",";
       }
     }
+    
     return sql;
   }
   
@@ -1146,7 +1193,7 @@ public class Transfer implements Runnable, Cloneable {
   private long doIdentsExistAlready(DatabaseData databaseData) {
     String sql = "Select COUNT(*) as t " +
     		"FROM " + databaseData.getDatabase() + "." + tableRight + " " +
-    		"WHERE " + getSql_ForPrimaryKeys();
+    		"WHERE " + getSql_ForPrimaryKeys_ForDest();
     //System.out.println(sql);
     long count = ql_des.queryLong(database_des, sql);
     return count;
@@ -1156,7 +1203,32 @@ public class Transfer implements Runnable, Cloneable {
    * get where query for keys
    * @return
    */
-  private String getSql_ForPrimaryKeys() {
+  private String getSql_ForPrimaryKeys_ForDest() {
+    
+    String sql = "";
+    int is = 0;
+    for (int i=0; i < columnData_des.length; i++) {
+      if (columnData_des[i].getIsPrimaryKey() == true) {
+        
+        if (is >= 1) {
+          sql += " AND ";
+        }
+        
+        sql += "(" + columnData_des[i].getColumnName() + "='" + ql_src.escape(columnData_des[i].getValue()) + "')";
+        
+        is++;
+      }
+    }
+    
+    return sql;
+  }
+  
+  /**
+   * get sql query for src ident
+   * 
+   * @return
+   */
+  private String getSql_ForPrimaryKeys_ForSrc() {
     
     String sql = "";
     int is = 0;
@@ -1333,6 +1405,10 @@ public class Transfer implements Runnable, Cloneable {
 
   public void setOrderBy(String orderBy) {
     this.orderBy = orderBy;
+  }
+
+	public void deleteSource(boolean b) {
+		this.deleteSource = b;
   }
 
   

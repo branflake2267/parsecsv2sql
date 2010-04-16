@@ -673,6 +673,23 @@ public class OracleColumnLib implements ColumnLib {
     cols.toArray(r);
     return r;
   }
+  
+  public ColumnData[] difference(ColumnData[] columnData_Left, ColumnData[] columnData_Right) {
+  	
+  	ArrayList<ColumnData> cols = new ArrayList<ColumnData>();
+  	
+  	for(int i=0; i < columnData_Left.length; i++) {
+  		ColumnData forColumnData = columnData_Left[i];
+  		int index = searchColumnByName_NonComp(columnData_Right, forColumnData);
+  		if (index < 0) {
+  			cols.add(columnData_Left[i]);
+  		}
+  	}
+  	
+  	ColumnData[] r = new ColumnData[cols.size()];
+    cols.toArray(r);
+    return r;
+  }
 
   /**
    * add column into object array
