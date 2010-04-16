@@ -981,7 +981,7 @@ public class Transfer implements Runnable, Cloneable {
   	
   	String sql = "DELETE FROM " + tableLeft + " WHERE " + where;
   	System.out.println(sql);
-  	ql_src.update(database_des, sql);
+  	ql_src.update(database_src, sql);
   	
   }
 
@@ -1214,7 +1214,7 @@ public class Transfer implements Runnable, Cloneable {
           sql += " AND ";
         }
         
-        sql += "(" + columnData_des[i].getColumnName() + "='" + ql_src.escape(columnData_des[i].getValue()) + "')";
+        sql += "(" + columnData_des[i].getColumnName() + "='" + ql_des.escape(columnData_des[i].getValue()) + "')";
         
         is++;
       }
@@ -1232,14 +1232,14 @@ public class Transfer implements Runnable, Cloneable {
     
     String sql = "";
     int is = 0;
-    for (int i=0; i < columnData_des.length; i++) {
-      if (columnData_des[i].getIsPrimaryKey() == true) {
+    for (int i=0; i < columnData_src.length; i++) {
+      if (columnData_src[i].getIsPrimaryKey() == true) {
         
         if (is >= 1) {
           sql += " AND ";
         }
         
-        sql += "(" + columnData_des[i].getColumnName() + "='" + ql_src.escape(columnData_des[i].getValue()) + "')";
+        sql += "(" + columnData_src[i].getColumnName() + "='" + ql_src.escape(columnData_src[i].getValue()) + "')";
         
         is++;
       }
