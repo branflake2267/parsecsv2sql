@@ -2,8 +2,11 @@
 
 = How To Run CSV 2 SQL =
 
+= Examples In Tests =
+ Look for the examples in source tests and unit tests.
+
 == Reference == 
- [DestinationData] - what the vars do.
+ this is verison one below.
 
 {{{
 /**
