@@ -77,6 +77,8 @@ public interface ColumnLib {
 
   public ColumnData[] merge(ColumnData[] columnData, ColumnData addColumnData);
   
+  public ColumnData[] difference(ColumnData[] columnData_Left, ColumnData[] columnData_Right);
+  
   public String getSql_AlterColumns(DatabaseData dd, ColumnData[] columnData);
   
   public String getSql_ModifyColumns(ColumnData[] columnData);
