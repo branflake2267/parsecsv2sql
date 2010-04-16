@@ -1,7 +1,7 @@
 #summary Destination Data Definitions
 
 = Destination Data Vars =
- What the vars do. 
+ What the vars do. This is an older version below. Look at source.
 
 {{{
 public class DestinationData {
