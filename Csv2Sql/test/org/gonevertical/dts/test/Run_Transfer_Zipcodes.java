@@ -53,6 +53,7 @@ public class Run_Transfer_Zipcodes {
     Transfer transfer = new Transfer(dd_src, dd_dst);
     transfer.setOffsetLimit(1000); // how many records to read at a time, its low here for testing
     transfer.setThreadsToSpawn(4);
+    transfer.deleteSource(true);
     transfer.transferAllFields(fromTable, toTable);
     
     transfer = null;
@@ -60,6 +61,7 @@ public class Run_Transfer_Zipcodes {
     transfer = new Transfer(dd_src, dd_dst);
     transfer.setOffsetLimit(1000); // how many records to read at a time, its low here for testing
     transfer.setThreadsToSpawn(4);
+   
     transfer.transferAllFields(fromTable, toTable);
     
   }
