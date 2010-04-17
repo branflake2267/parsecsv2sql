@@ -952,6 +952,11 @@ public class Transfer implements Runnable, Cloneable {
     String fields = getFields();
     String where = getSql_ForPrimaryKeys_ForDest();
     
+    if (fields == null || fields.trim().length() == 0) {
+      System.out.println("skipping save()"); // probably b/c only primary key, and/or one to many is the only thing being used
+      return;
+    }
+    
     String sql = "";
     if (count > 0) { // update
       sql = "UPDATE " + tableRight + " SET " + fields + " WHERE " + where; 
