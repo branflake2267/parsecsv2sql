@@ -18,7 +18,6 @@ import org.gonevertical.dts.lib.sql.querylib.QueryLib;
 import org.gonevertical.dts.lib.sql.querymulti.QueryLibFactory;
 import org.gonevertical.dts.lib.sql.transformlib.TransformLib;
 import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
-import org.gonevertical.dts.process.Transfer;
 
 /**
  * 

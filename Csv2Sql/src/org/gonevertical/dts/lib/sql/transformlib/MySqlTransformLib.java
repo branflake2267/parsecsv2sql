@@ -13,7 +13,6 @@ import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.StatData;
 import org.gonevertical.dts.data.UserDbData;
 import org.gonevertical.dts.lib.StringUtil;
-import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
 import org.gonevertical.dts.lib.sql.columnlib.MySqlColumnLib;
 import org.gonevertical.dts.lib.sql.querylib.MySqlQueryLib;
 

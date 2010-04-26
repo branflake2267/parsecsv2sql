@@ -1,7 +1,6 @@
 package org.gonevertical.dts.v2;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -9,8 +8,8 @@ import java.util.Comparator;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.FieldData;
 import org.gonevertical.dts.data.FieldDataComparator;
-import org.gonevertical.dts.data.StatData;
 import org.gonevertical.dts.data.SourceData;
+import org.gonevertical.dts.data.StatData;
 import org.gonevertical.dts.lib.FileUtil;
 import org.gonevertical.dts.lib.csv.Csv;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;

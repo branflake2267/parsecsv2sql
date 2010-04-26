@@ -88,6 +88,7 @@ public class FileProcessing_v2 {
         if (c == 0) {
           dropTable();
         }
+        
         // process this file
         csvProcess.parseFile(i, files[i]);
         

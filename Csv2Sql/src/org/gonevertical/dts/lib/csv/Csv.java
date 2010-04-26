@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import org.gonevertical.dts.data.ColumnData;
-
 import com.csvreader.CsvReader;
 
 public class Csv {
