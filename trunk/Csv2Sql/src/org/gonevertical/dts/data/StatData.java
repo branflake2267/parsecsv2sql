@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 
-import org.gonevertical.dts.lib.StringUtil;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 import org.gonevertical.dts.lib.sql.querylib.QueryLib;
 import org.gonevertical.dts.lib.sql.transformlib.TransformLib;

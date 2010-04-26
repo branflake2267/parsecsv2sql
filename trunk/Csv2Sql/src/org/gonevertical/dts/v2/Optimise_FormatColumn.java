@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.gonevertical.dts.data.ColumnData;
-import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.lib.datetime.DateTimeParser;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;

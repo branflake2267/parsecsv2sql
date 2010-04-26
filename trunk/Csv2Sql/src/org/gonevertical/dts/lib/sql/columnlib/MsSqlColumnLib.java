@@ -11,7 +11,6 @@ import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.ColumnDataComparator;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.lib.sql.querylib.MsSqlQueryLib;
-import org.gonevertical.dts.lib.sql.querylib.MySqlQueryLib;
 import org.gonevertical.dts.lib.sql.transformlib.MsSqlTransformLib;
 
 

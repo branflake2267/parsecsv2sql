@@ -15,7 +15,6 @@ import java.util.Iterator;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.FieldData;
-import org.gonevertical.dts.lib.sql.MySqlTransformUtil;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;
 import org.gonevertical.dts.lib.sql.querylib.QueryLib;

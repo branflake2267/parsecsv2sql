@@ -22,32 +22,21 @@
  ************************************************************************/
 package org.gonevertical.dts.lib.openoffice;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 import org.gonevertical.dts.lib.csv.Csv;
 import org.odftoolkit.odfdom.OdfFileDom;
-
 import org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument;
-import org.odftoolkit.odfdom.doc.number.OdfNumberDateStyle;
-import org.odftoolkit.odfdom.doc.number.OdfNumberStyle;
-import org.odftoolkit.odfdom.doc.number.OdfNumberTimeStyle;
 import org.odftoolkit.odfdom.doc.office.OdfOfficeAutomaticStyles;
 import org.odftoolkit.odfdom.doc.office.OdfOfficeSpreadsheet;
 import org.odftoolkit.odfdom.doc.office.OdfOfficeStyles;
-import org.odftoolkit.odfdom.doc.style.OdfStyleParagraphProperties;
 import org.odftoolkit.odfdom.doc.style.OdfStyle;
-import org.odftoolkit.odfdom.doc.style.OdfStyleTableColumnProperties;
-import org.odftoolkit.odfdom.doc.style.OdfStyleTableRowProperties;
+import org.odftoolkit.odfdom.doc.style.OdfStyleParagraphProperties;
 import org.odftoolkit.odfdom.doc.style.OdfStyleTextProperties;
 import org.odftoolkit.odfdom.doc.table.OdfTable;
 import org.odftoolkit.odfdom.doc.table.OdfTableCell;
-import org.odftoolkit.odfdom.doc.table.OdfTableColumn;
 import org.odftoolkit.odfdom.doc.table.OdfTableRow;
-import org.odftoolkit.odfdom.doc.table.OdfTableTitle;
 import org.odftoolkit.odfdom.doc.text.OdfTextParagraph;
 import org.odftoolkit.odfdom.dom.attribute.office.OfficeValueTypeAttribute;
 import org.odftoolkit.odfdom.dom.element.OdfStyleBase;
