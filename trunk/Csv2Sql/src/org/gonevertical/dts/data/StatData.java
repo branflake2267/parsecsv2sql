@@ -19,6 +19,21 @@ public class StatData {
 	private TransformLib tl;
 	
 	/**
+	 * database connection
+	 */
+	private DatabaseData dd;
+	
+	/**
+	 * working on this file
+	 */
+	private File srcFile;
+	
+	/**
+	 * putting the data here
+	 */
+	private String dstTable;
+	
+	/**
 	 * track micro time start
 	 */
 	private long startTime;
@@ -64,23 +79,18 @@ public class StatData {
 	private long rowCount = 0;
 	
 	/**
+	 * how many lines in the file
+	 */
+	private long fileLineCount = 0;
+	
+	/**
 	 * keep track of errors
 	 */
 	private ArrayList<String> errors = new ArrayList<String>();
 
 	/**
-	 * how many lines in the file
+	 * constructor
 	 */
-	private long fileLineCount = 0;
-	
-	private DatabaseData dd;
-	
-	private File srcFile;
-	
-	private String dstTable;
-
-
-	
 	public StatData() {
 	}
 
@@ -101,7 +111,22 @@ public class StatData {
 	 * start the stats - set the time
 	 */
 	public void start() {
+		reset();
 		startTime = new Date().getTime();
+	}
+	
+	private void reset() {
+		startTime = 0;
+		endTime = 0;
+		sqlNullCount = 0;
+		sqlTotalCount = 0;
+		sqlInsertCount = 0;
+		sqlUpdateCount = 0;
+		sqlAlterCount = 0;
+		saveCount = 0;
+		rowCount = 0;
+		fileLineCount = 0;
+		errors = new ArrayList<String>();
 	}
 	
 	/**

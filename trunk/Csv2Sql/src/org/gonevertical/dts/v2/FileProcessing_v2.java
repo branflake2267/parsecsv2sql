@@ -90,10 +90,10 @@ public class FileProcessing_v2 {
     int c = 0;
     for (int i=0; i < files.length; i++) {
 
-      logger.info("File: " + files[i].getName());
+      logger.info("Check if we can process this File/Directory: " + files[i].getName());
 
       if (skipFile(files[i]) == true) { // skip files we don't want like "~.file"
-        logger.info("skipping this file: " + files[i].getName());
+        logger.info("File is Registered to Skip: Skipping this file: " + files[i].getName());
         
       } else if (files[i].isFile() == true) { // process file
         
@@ -103,7 +103,7 @@ public class FileProcessing_v2 {
         }
         
         // process this file
-        csvProcess.parseFile(i, files[i]);
+        csvProcess.processCsvFile(i, files[i]);
         
         // first time optimisation will cause this to happen
         if (csvProcess.getReturnToOptimise() == true) {
@@ -131,7 +131,7 @@ public class FileProcessing_v2 {
   	if (files != null && count > 0) {
   		return;
   	}
-  	logger.error("FileProcessing.notifyOnZeroFiles() Should you have a file to process? sourceData.file: " + sourceData.file);
+  	logger.error("FileProcessing.notifyOnZeroFiles(): Should you have a file to process? sourceData.file: " + sourceData.file);
   }
 
 	/**
@@ -147,6 +147,7 @@ public class FileProcessing_v2 {
       
     // open office hidden file, which happens while looking at the csv file
     } else if (file.getName().toLowerCase().contains("~lock") == true) {
+    	logger.info("Registered skip file: " + file.getName());
       b = true;
     }
     return b;

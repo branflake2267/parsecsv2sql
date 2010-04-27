@@ -45,6 +45,8 @@ public class ProcessImport {
       dd.dropTable = false;
       runImport();
     }
+    
+    logger.info("ProcessImport.runImport(): Finished with processing import: sourceData.file: " + sourceData.file.getName());
   }
   
   /**
