@@ -537,8 +537,11 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     
     FieldData[] c = dd.compareBeforeUpdate;
     for (int i=0; i < c.length; i++) {
-      ColumnData forColumnData = new ColumnData(primKeyColumn.getTable(), c[i].destinationField, "TEXT");
+      
+    	ColumnData forColumnData = new ColumnData(primKeyColumn.getTable(), c[i].destinationField, "TEXT");
+      
       int index = cl.searchColumnByName_NonComp(columnData, forColumnData);
+      
       if (index > -1) {
         String sql = "SELECT " + c[i].destinationField + " FROM " + primKeyColumn.getTable() + " " + where;
         String beforeValue = columnData[index].getValue();
@@ -547,8 +550,9 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
         if (Integer.parseInt(beforeValue) < Integer.parseInt(inTableValue)) {
           b = true;
         }
-        dd.debug("CsvProcessing_v2.compareBefore(): forTable:" + dd.table + ": before: " + beforeValue + " < inTable: " + inTableValue + " result: " + b);
+        logger.trace("CsvProcessing_v2.compareBefore(): forTable:" + dd.table + ": before: " + beforeValue + " < inTable: " + inTableValue + " result: " + b);
       }
+      
     }
     
     return b;
