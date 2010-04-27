@@ -335,5 +335,9 @@ public class StatData {
 		
 		return b;
 	}
+
+	public long getSaveCount() {
+	  return saveCount;
+  }
 	
 }
