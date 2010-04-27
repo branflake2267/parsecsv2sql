@@ -1,8 +1,11 @@
 package org.gonevertical.dts.v2;
 
+import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.SourceData;
 
 public class ProcessImport {
+	
+	private Logger logger = Logger.getLogger(ProcessImport.class);
 
   // data start point
   private SourceData sourceData = null;

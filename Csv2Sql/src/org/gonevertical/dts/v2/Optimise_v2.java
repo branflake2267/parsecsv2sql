@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.lib.StringUtil;
 import org.gonevertical.dts.lib.datetime.DateTimeParser;
@@ -28,6 +29,8 @@ import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
  * 
  */
 public class Optimise_v2 {
+	
+	private Logger logger = Logger.getLogger(Optimise_v2.class);
 
   //supporting libraries
   private QueryLib ql = null;

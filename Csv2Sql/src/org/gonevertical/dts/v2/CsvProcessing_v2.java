@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
 
+import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.FieldData;
 import org.gonevertical.dts.data.FieldDataComparator;
@@ -23,6 +24,8 @@ import com.csvreader.CsvReader;
 
 public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
 
+	private Logger logger = Logger.getLogger(CsvProcessing_v2.class);
+	
   // supporting libraries
   private QueryLib ql = null;
   private TransformLib tl = null;
@@ -132,10 +135,35 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     // save log to table
     stats.saveToTable(dd.databaseData, dd.getLogToTable(), dd.getLoggingTable());
     
+    // check to see if line count match insert/update count, notify if not
+    compareLinesToInsertUpdate();
+    
+    // are there errors from processing this file?
+    isThereErros();
+    
     // finished
     csvRead.close();
   }
   
+  private void isThereErros() {
+  	if (stats.hasErrors() == false) {
+  		return;
+  	}
+  	logger.error("CSVProcessing.parseFile() has errors. " + file.getName());
+  }
+
+	private void compareLinesToInsertUpdate() {
+  	boolean b = stats.doesLineCountMatchSaveCount(sd.getIgnoreFirstRow(), sd.getIgnoreLastRow());
+  	if (b == false) {
+  		logger.error("CsvProcessing.compareLinesToInsertUpdate(): FileLineCount doesn't match what sqlSaveCount." + file.getName());
+  	}
+  }
+
+	/**
+   * count how many lines are in the file, this is how many records should go into the database.
+   * 
+   * @param file
+   */
   private void countLinesInFile(File file) {
 	  FileUtil fu = new FileUtil();
 	  long fileLineCount = fu.getFileLineCount(file);
@@ -149,9 +177,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    
     String sql = cl.getSql_IdentitiesIndex(dd.databaseData, columnData);
     if (sql == null) {
-      //System.out.println("ERROR: createIdentitiesIndex(): Fix the identities.");
-      //System.exit(1);
-      System.out.println("skipping identities indexing, probably already created. createIdentitiesIndex()");
+      logger.info("skipping identities indexing, probably already created. createIdentitiesIndex()");
       return;
     }
     ql.update(dd.databaseData, sql);
@@ -339,12 +365,11 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     try {
       while (csvRead.readRecord()) {
       	
-      	if (sd.getIgnoreFirstRow() == true && rowIndex == 0) {
-      		// skip
-      		System.out.println("skipping frist row :" + rowIndex);
+      	if (sd.getIgnoreFirstRow() == true && rowIndex == 0) {// skip
+      		logger.info("skipping frist row :" + rowIndex);
       	
       	} else if (sd.getIgnoreLastRow() == true && rowIndex == stats.getFileLineCount()-1) { // TODO - does the rowIndex-- mess this up
-      		System.out.println("skipping last row: " + rowIndex);
+      		logger.info("skipping last row: " + rowIndex);
       		
       	} else {
       		process(rowIndex, csvRead);
@@ -369,8 +394,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
       }
       
     } catch (IOException e) {
-      System.out.println("Error: Can't loop through data!");
-      e.printStackTrace();
+      logger.error("iterateRowsData(): Can't loop through data", e);
     }
   }
   
@@ -387,7 +411,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     try {
       values = reader.getValues();
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error(e);
     }
     
     // pre-process values in row
@@ -621,8 +645,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     for (int i=0; i < values.length; i++) {
       s += ", " + values[i];
     }
-
-    System.out.println(index + ". " + s);
+    
+    logger.info(index + ". " + s);
   }
   
   private ColumnData[] stopAtColumnsCount(ColumnData[] columns) {

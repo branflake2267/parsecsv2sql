@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.StatData;
@@ -19,6 +20,8 @@ import org.gonevertical.dts.lib.sql.querylib.MySqlQueryLib;
 
 public class MySqlTransformLib implements TransformLib {
 
+	private Logger logger = Logger.getLogger(MySqlTransformLib.class);
+	
   private MySqlQueryLib ql = new MySqlQueryLib();
   
 	private StatData stats;
@@ -95,7 +98,9 @@ public class MySqlTransformLib implements TransformLib {
     	"(" + 
         "`" + primaryKeyName + "` BIGINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (`" + primaryKeyName + "`) " + 
       ") ENGINE = MyISAM;";
-    System.out.println("createTable: " + sql);
+    
+    logger.info("createTable: " + sql);
+    
     ql.update(dd, sql);
   }
   
@@ -214,7 +219,7 @@ public class MySqlTransformLib implements TransformLib {
     } catch (SQLException e) {
       System.err.println("Error: queryColumns(): " + sql);
       setTrackError(e.toString());
-      e.printStackTrace();
+      logger.error(e);
     }
     return columns;
   }
@@ -242,7 +247,7 @@ public class MySqlTransformLib implements TransformLib {
     } catch (SQLException e) {
       System.err.println("Error: queryPrimaryKey(): " + sql);
       setTrackError(e.toString());
-      e.printStackTrace();
+      logger.error(e);
     } 
     return column;
   }
@@ -268,7 +273,7 @@ public class MySqlTransformLib implements TransformLib {
     } catch (SQLException e) {
       System.err.println("Error: queryPrimaryKey(): " + sql);
       setTrackError(e.toString());
-      e.printStackTrace();
+      logger.error(e);
     } 
     return b;
   }
@@ -305,7 +310,7 @@ public class MySqlTransformLib implements TransformLib {
     }
     
     if (columnData.getTable() == null) {
-      System.out.println("createColumn(): ColumnData doesn't have a table set");
+      logger.info("createColumn(): ColumnData doesn't have a table set");
     }
     
     String type = columnData.getType();
@@ -330,7 +335,9 @@ public class MySqlTransformLib implements TransformLib {
     }
     String sql = "ALTER TABLE `" + dd.getDatabase() + "`.`" + table + "` " +
     		"ADD COLUMN `" + columnData.getColumnName() + "`  " + type + ";";
-    System.out.println("MySqlTransformUtil.createColumn(): " + sql);
+    
+    logger.info("MySqlTransformUtil.createColumn(): " + sql);
+    
     ql.update(dd, sql);
     
     return columnData;
@@ -498,7 +505,7 @@ public class MySqlTransformLib implements TransformLib {
     int i2 = columnData.length - 1; // count down total
     for (int i = 0; i < columnData.length; i++) {
 
-      System.out.println(i2 + ". checking column is Empty?: " + columnData[i].getColumnName() + " for data.");
+      logger.info(i2 + ". checking column is Empty?: " + columnData[i].getColumnName() + " for data.");
       
       if (doesColumnContainData(dd, columnData[i]) == false && 
           queryIsColumnPrimarykey(dd, columnData[i]) == false) {
@@ -552,7 +559,7 @@ public class MySqlTransformLib implements TransformLib {
     } catch (SQLException e) {
       System.err.println("Error: queryString(): " + sql);
       setTrackError(e.toString());
-      e.printStackTrace();
+      logger.error(e);
     } 
     return s;
   }
@@ -621,7 +628,7 @@ public class MySqlTransformLib implements TransformLib {
     } catch (SQLException e) {
       System.err.println("Error: deleteIndexForColumn(): " + sql);
       setTrackError(e.toString());
-      e.printStackTrace();
+      logger.error(e);
     }
 
     return indexesToRestore;
@@ -667,7 +674,9 @@ public class MySqlTransformLib implements TransformLib {
    */
   public void deleteIndex(DatabaseData dd, String table, String indexName) {
     String sql = "DROP INDEX `" + indexName + "` ON `" + table + "`;";
-    System.out.println("deleteIndex: " + sql);
+   
+    logger.info("deleteIndex: " + sql);
+    
     ql.update(dd, sql);
   }
   
@@ -687,7 +696,9 @@ public class MySqlTransformLib implements TransformLib {
     if (indexSql != null) {
       sql += ", " + indexSql;
     }
-    System.out.println("Transform: alterColum(): " + sql);
+    
+    logger.info("Transform: alterColum(): " + sql);
+    
     ql.update(dd, sql);
   }
   
@@ -712,7 +723,9 @@ public class MySqlTransformLib implements TransformLib {
     if (indexSql != null) {
       sql += ", " + indexSql;
     }
-    System.out.println("Transform: alterColum(): " + sql);
+    
+    logger.info("Transform: alterColum(): " + sql);
+    
     ql.update(dd, sql);
   }
   
@@ -725,14 +738,14 @@ public class MySqlTransformLib implements TransformLib {
 
   private String checkIndexTextLength(DatabaseData dd, ColumnData[] columnData, String index) {
     
-    System.out.println("index: " + index);
+    logger.info("index: " + index);
     if (index.contains(",") == true) {
       String colstr = StringUtil.getValue("\\((.*)\\)$", index);
       String[] cols = colstr.split(",");
       ColumnData[] newIndex = new ColumnData[cols.length];
       for (int i=0; i < cols.length; i++) {
         String colname = StringUtil.getValue("`(.*)`", cols[i]);
-        System.out.println(colname);
+        logger.info(colname);
         int cIndex = new MySqlColumnLib().searchColumnByName_UsingComparator(columnData, colname);
         if (cIndex > -1) {
           ColumnData c = columnData[cIndex];
@@ -743,7 +756,7 @@ public class MySqlTransformLib implements TransformLib {
       }
       String csql = new MySqlColumnLib().getSql_Index_Multi(newIndex);
       index = index.replaceAll("\\(.*\\)$", "(" + csql + ")");
-      System.out.println("replace: " + index);
+      logger.info("replace: " + index);
     }
    
     return index;
@@ -766,9 +779,7 @@ public class MySqlTransformLib implements TransformLib {
         indexes.add(index);
       }
     } catch (Exception e) {
-      e.printStackTrace();
-      System.out.println("ERROR: showCreateIndex(): findMatch: regex error");
-      setTrackError(e.toString());
+      logger.error("ERROR: showCreateIndex(): findMatch: regex error", e);
     }
   
     String[] r = new String[indexes.size()];
@@ -805,7 +816,7 @@ public class MySqlTransformLib implements TransformLib {
         index = index.replaceFirst("(\\([0-9]+\\))", "");
       } catch (Exception e) {
       	setTrackError(e.toString());
-        e.printStackTrace();
+        logger.error(e);
       }
     } 
     
