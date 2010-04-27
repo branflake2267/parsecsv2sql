@@ -182,7 +182,7 @@ public class Optimise_v2 {
     // only analyze text columns
     if (destinationData.optimise_TextOnlyColumnTypes == true && 
         columnData.getType().toLowerCase().contains("text") == false) {
-      logger.info("checkColumn(): skipping b/c destinationData.optimise_TextOnlyColumnTypes=true and columnData.getType().toLowerCase().contains(\"text\") = false");
+      logger.trace("checkColumn(): skipping b/c destinationData.optimise_TextOnlyColumnTypes=true and columnData.getType().toLowerCase().contains(\"text\") = false");
       return;
     }
       

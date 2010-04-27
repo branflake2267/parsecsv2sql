@@ -27,35 +27,36 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
 	private Logger logger = Logger.getLogger(CsvProcessing_v2.class);
 	
   // supporting libraries
-  private QueryLib ql = null;
-  private TransformLib tl = null;
-  private ColumnLib cl = null;
+  private QueryLib ql;
+  private TransformLib tl;
+  private ColumnLib cl;
   
-  private Csv csv = null;
+  private Csv csv;
   
   // csv reader 2.0
-  private CsvReader csvRead = null;
+  private CsvReader csvRead;
 
   // work on this file
-  private File file = null;
+  private File file;
   
   // data source
-  private SourceData sd = null;
+  private SourceData sd;
   
   // data destination
-  private DestinationData_v2 dd = null;
+  private DestinationData_v2 dd;
 
   // columns being imported 
-  private ColumnData[] columnData = null;
+  private ColumnData[] columnData;
   
-  private ColumnData[] defaultColumns = null;
+  private ColumnData[] defaultColumns;
   
-  private int rowIndex = 0;
+  // track the row position
+  private int rowIndex;
   
-  private boolean returnToOptimise = false;
+  private boolean returnToOptimise;
   
   // keep track of stats of whats going on
-  private StatData stats = new StatData();
+  private StatData stats = new StatData();;
   
   /**
    * constructor
@@ -63,9 +64,6 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   public CsvProcessing_v2(SourceData sourceData, DestinationData_v2 destinationData) {
     this.sd = sourceData;
     this.dd = destinationData;
-    
-    // start keeping track of stats
-    stats.start();
     
     // preprocess these settings
     if (destinationData.ffsd != null) {
@@ -93,14 +91,16 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   }
   
   /**
-   * parse the csv and insert it into sql
+   * process the csv records out of the file
    * 
    * @param fileIndex
    * @param file
    */
-  protected void parseFile(int fileIndex, File file) {
+  protected void processCsvFile(int fileIndex, File file) {
     this.file = file;
-
+    
+    // set stats
+    stats.start();
     stats.setSourceFile(file);
     stats.setDestTable(dd.table);
     
@@ -144,7 +144,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     // if no updates or inserts where done tell me?
     isThereUpdatesAndInserts();
     
-    // finished
+    // closed the csv 
     csvRead.close();
   }
   
@@ -164,14 +164,21 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   	logger.error("CsvProcessing.parseFile() has errors. File: " + file.getName() + " sourceData.file: " + sd.file.getName() + "\n\n" + stats.toString());
   }
 
+	/**
+	 * compare how many lines where counted, to the lines inserted and updated into the database, 
+	 *   was the same amount saved?
+	 */
 	private void compareLinesToSaveCount() {
-  	boolean b = stats.doesLineCountMatchSaveCount(sd.getIgnoreFirstRow(), sd.getIgnoreLastRow());
+  	
+		boolean b = stats.doesLineCountMatchSaveCount(sd.getIgnoreFirstRow(), sd.getIgnoreLastRow());
+  	
   	if (b == false) {
   		logger.error("CsvProcessing.compareLinesToSaveCount(): " +
   				"Import FileLineCount doesn't match what sqlSaveCount:\n " +
   				"File:" + file.getName() + " sourceData.file: " + sd.file.getName() + "\n" +
   				"FileLineCount: " + stats.getFileLineCount() + " saveCount: " + stats.getSaveCount() + "\n\n " + stats.toString());
   	}
+  	
   }
 
 	/**
@@ -480,31 +487,34 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
      
     String sql = "";
     if (primaryKeyId > 0) {
+    	
       ColumnData primaryKeyColumn = new ColumnData();
       primaryKeyColumn.setTable(dd.table);
       primaryKeyColumn.setIsPrimaryKey(true);
       primaryKeyColumn.setColumnName(dd.primaryKeyName);
       primaryKeyColumn.setValue(primaryKeyId);
       
-      boolean skip = compareBefore(columnData, primaryKeyColumn);
-      if (skip == true) {
-        dd.debug("skipping b/c of compare.!!!!!!!!!!!!!!!!!!");
+      // using a compare of the previously stored data
+      if (compareBefore(columnData, primaryKeyColumn) == true) {
+        logger.trace("skipping b/c of compare.!!!!!!!!!!!!!!!!!!");
         return;
       }
+      
       ColumnData[] u = cl.merge(columnData, defaultColumns[1]); // add update column
       u = cl.merge(u, primaryKeyColumn);
       sql = cl.getSql_Update(u);
+      
     } else { 
       ColumnData[] i = cl.merge(columnData, defaultColumns[0]); // add insert column
       sql = cl.getSql_Insert(i);
     }
     
-    dd.debug(rowIndex + ". SAVE(): " + sql);
+    logger.trace(rowIndex + ". SAVE(): " + sql);
     
     ql.update(dd.databaseData, sql, false);
+    
     // TODO - deal with truncation error ~~~~~~~~~~~~~~~~~~~~~~~~~~
     // TODO - truncation should rarely happen here, b/c this is tested for earlier.
-    // TODO - set loggin
     
     stats.setSaveCount();
   }
