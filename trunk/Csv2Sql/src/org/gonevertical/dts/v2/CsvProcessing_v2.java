@@ -168,7 +168,9 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   	boolean b = stats.doesLineCountMatchSaveCount(sd.getIgnoreFirstRow(), sd.getIgnoreLastRow());
   	if (b == false) {
   		logger.error("CsvProcessing.compareLinesToSaveCount(): " +
-  				"Import FileLineCount doesn't match what sqlSaveCount: File:" + file.getName() + " sourceData.file: " + sd.file.getName());
+  				"Import FileLineCount doesn't match what sqlSaveCount:\n " +
+  				"File:" + file.getName() + " sourceData.file: " + sd.file.getName() + "\n" +
+  				"FileLineCount: " + stats.getFileLineCount() + " saveCount + " + stats.getSaveCount() + "\n\n " + stats.toString());
   	}
   }
 
