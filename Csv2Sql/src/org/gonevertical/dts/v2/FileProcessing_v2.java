@@ -92,7 +92,7 @@ public class FileProcessing_v2 {
 
       logger.info("File: " + files[i].getName());
 
-      if (skipFile(files[i]) == true) { // skip file
+      if (skipFile(files[i]) == true) { // skip files we don't want like "~.file"
         logger.info("skipping this file: " + files[i].getName());
         
       } else if (files[i].isFile() == true) { // process file
@@ -127,10 +127,11 @@ public class FileProcessing_v2 {
    * @param files
    */
   private void notifyOnZeroFiles(File[] files) {
-  	if (files != null && files.length > 0) {
+  	int count = countFilesInDirectory(files);
+  	if (files != null && count > 0) {
   		return;
   	}
-  	logger.warn("FileProcessing.notifyOnZeroFiles() Should you have a file to process? sourceData.file: " + sourceData.file);
+  	logger.error("FileProcessing.notifyOnZeroFiles() Should you have a file to process? sourceData.file: " + sourceData.file);
   }
 
 	/**
@@ -244,21 +245,29 @@ public class FileProcessing_v2 {
     return r;
   }
 	
-	 /**
-   * how many real files are we going to process, this delegates the drop table
+
+  /**
+   * count files that we can import
    * 
    * @param files
    * @return
    */
-  @Deprecated
-  private int howManyFilesAreThere(File[] files) {
-    int is = 0;
+  private int countFilesInDirectory(File[] files) {
+  	if (files == null) {
+  		return 0;
+  	}
+  	
+    int count = 0;
+    
     for (int i=0; i < files.length; i++) {
-      if (files[i].isFile()) {
-        is++;
+      
+    	if (files[i].isFile() && skipFile(files[i]) == false) {
+        count++;
       }
+    	
     }
-    return is;
+    
+    return count;
   }
   
 }

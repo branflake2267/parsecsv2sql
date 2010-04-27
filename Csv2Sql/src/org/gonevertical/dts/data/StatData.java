@@ -322,4 +322,18 @@ public class StatData {
 		return b;
 	}
 	
+	public boolean hasUpdatesAndInserts() {
+		boolean b = false;
+		
+		if (sqlInsertCount > 0) {
+			b = true;
+		}
+		
+		if (sqlUpdateCount > 0) {
+			b = true;
+		}
+		
+		return b;
+	}
+	
 }
