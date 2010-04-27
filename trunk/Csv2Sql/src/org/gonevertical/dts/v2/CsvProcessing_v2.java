@@ -136,26 +136,39 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     stats.saveToTable(dd.databaseData, dd.getLogToTable(), dd.getLoggingTable());
     
     // check to see if line count match insert/update count, notify if not
-    compareLinesToInsertUpdate();
+    compareLinesToSaveCount();
     
     // are there errors from processing this file?
     isThereErros();
+    
+    // if no updates or inserts where done tell me?
+    isThereUpdatesAndInserts();
     
     // finished
     csvRead.close();
   }
   
-  private void isThereErros() {
-  	if (stats.hasErrors() == false) {
+  private void isThereUpdatesAndInserts() {
+  	if (stats != null && stats.hasUpdatesAndInserts() == true) {
   		return;
   	}
-  	logger.error("CSVProcessing.parseFile() has errors. " + file.getName());
+  	logger.error("CsvProcessing.isThereUpdatesAndInserts(): " +
+  			"For some reason there where no Inserts or Updates done. " +
+  			"File:" + file.getName() + " sourceData.file: " + sd.file.getName() + " stats.fileLineCount: " + stats.getFileLineCount());
   }
 
-	private void compareLinesToInsertUpdate() {
+	private void isThereErros() {
+  	if (stats != null && stats.hasErrors() == false) {
+  		return;
+  	}
+  	logger.error("CsvProcessing.parseFile() has errors. File: " + file.getName() + " sourceData.file: " + sd.file.getName());
+  }
+
+	private void compareLinesToSaveCount() {
   	boolean b = stats.doesLineCountMatchSaveCount(sd.getIgnoreFirstRow(), sd.getIgnoreLastRow());
   	if (b == false) {
-  		logger.error("CsvProcessing.compareLinesToInsertUpdate(): FileLineCount doesn't match what sqlSaveCount." + file.getName());
+  		logger.error("CsvProcessing.compareLinesToSaveCount(): " +
+  				"Import FileLineCount doesn't match what sqlSaveCount: File:" + file.getName() + " sourceData.file: " + sd.file.getName());
   	}
   }
 
