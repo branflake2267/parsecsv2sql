@@ -4,12 +4,16 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 
+import org.apache.log4j.Logger;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 import org.gonevertical.dts.lib.sql.querylib.QueryLib;
 import org.gonevertical.dts.lib.sql.transformlib.TransformLib;
+import org.gonevertical.dts.v2.CsvProcessing_v2;
 
 public class StatData {
-
+	
+	private Logger logger = Logger.getLogger(CsvProcessing_v2.class);
+	
 	private ColumnLib cl;
 	private QueryLib ql;
 	private TransformLib tl;
@@ -152,6 +156,8 @@ public class StatData {
 	 */
 	public void setTrackError(String error) {
 		errors.add("rowIndex: " + rowCount + " :: " + error);
+		
+		logger.error("StatData().setTrackError:\n" + error);
 	}
 	
 	/**
@@ -283,6 +289,37 @@ public class StatData {
 	
 	public void setDestTable(String table) {
 		this.dstTable = table;
+	}
+
+	/**
+	 * does the line count match the insert/update count
+	 * @return
+	 */
+	public boolean doesLineCountMatchSaveCount(boolean ignoreFirstRow, boolean ignoreLastRow) {
+		boolean b = false;
+		
+		long flc = fileLineCount;
+		if (ignoreFirstRow == true) {
+			flc--;
+		}
+		
+		if (ignoreLastRow == true) {
+			flc--;
+		}
+		
+		if (flc == saveCount) { 
+			b = true;
+		}
+		
+	  return b;
+  }
+	
+	public boolean hasErrors() {
+		boolean b = false;
+		if (errors != null && errors.size() > 0) {
+			b = true;
+		}
+		return b;
 	}
 	
 }

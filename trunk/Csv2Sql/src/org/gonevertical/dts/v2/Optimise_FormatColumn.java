@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.lib.datetime.DateTimeParser;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
@@ -16,6 +17,8 @@ import org.gonevertical.dts.lib.sql.transformlib.TransformLib;
 import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
 
 public class Optimise_FormatColumn implements Runnable {
+	
+	private Logger logger = Logger.getLogger(Optimise_FormatColumn.class);
 
 	public static final int FORMAT_INT = 1;
 	public static final int FORMAT_DATETIME = 2;

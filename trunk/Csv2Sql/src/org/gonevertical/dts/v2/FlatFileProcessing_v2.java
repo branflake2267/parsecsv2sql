@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.FlatFileSettingsData;
 import org.gonevertical.dts.lib.datetime.DateTimeParser;
 
@@ -18,6 +19,8 @@ import org.gonevertical.dts.lib.datetime.DateTimeParser;
  *
  */
 public class FlatFileProcessing_v2 {
+	
+	private Logger logger = Logger.getLogger(FlatFileProcessing_v2.class);
 
   public final static int MODE_SQLIMPORT = 1;
   

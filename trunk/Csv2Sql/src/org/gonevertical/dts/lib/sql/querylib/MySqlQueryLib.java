@@ -8,11 +8,15 @@ import java.sql.Statement;
 import java.util.Date;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.StatData;
+import org.gonevertical.dts.v2.CsvProcessing_v2;
 
 
 public class MySqlQueryLib implements QueryLib {
+	
+	private Logger logger = Logger.getLogger(MySqlQueryLib.class);
 
 	// keep track of what is going on
   private StatData stats;
@@ -76,7 +80,7 @@ public class MySqlQueryLib implements QueryLib {
     } catch (SQLException e) {
       System.err.println("Error: getResultSetSize()");
       setTrackError(e.toString());
-      e.printStackTrace();
+      logger.error(e);
     } 
     return size;
   }
@@ -102,7 +106,7 @@ public class MySqlQueryLib implements QueryLib {
       System.err.println("Error: queryBoolean(): " + sql);
       System.err.println("servletConn:" + dd.getConnetionByConext() + " Server: " + dd.getServer());
       setTrackError(e.toString());
-      e.printStackTrace();
+      logger.error(e);
     } finally {
       conn = null;
       select = null;
@@ -130,7 +134,7 @@ public class MySqlQueryLib implements QueryLib {
     } catch (SQLException e) {
       System.err.println("Error: queryInteger(): " + sql);
       System.err.println("servletConn:" + dd.getConnetionByConext() + " Server: " + dd.getServer());
-      e.printStackTrace();
+      logger.error(e);
     } finally {
       conn = null;
       select = null;
@@ -159,7 +163,7 @@ public class MySqlQueryLib implements QueryLib {
       System.err.println("Error: queryInteger(): " + sql);
       System.err.println("servletConn:" + dd.getConnetionByConext() + " Server: " + dd.getServer());
       setTrackError(e.toString());
-      e.printStackTrace();
+      logger.error(e);
     } finally {
       conn = null;
       select = null;
@@ -188,7 +192,7 @@ public class MySqlQueryLib implements QueryLib {
       System.err.println("Error: queryString(): " + sql);
       System.err.println("servletConn:" + dd.getConnetionByConext() + " Server: " + dd.getServer());
       setTrackError(e.toString());
-      e.printStackTrace();
+      logger.error(e);
     } finally {
       conn = null;
       select = null;
@@ -217,7 +221,7 @@ public class MySqlQueryLib implements QueryLib {
       System.err.println("Error: queryDouble(): " + sql);
       System.err.println("servletConn:" + dd.getConnetionByConext() + " Server: " + dd.getServer());
       setTrackError(e.toString());
-      e.printStackTrace();
+      logger.error(e);
     } finally {
       conn = null;
       select = null;
@@ -248,7 +252,7 @@ public class MySqlQueryLib implements QueryLib {
       System.err.println("Error: queryBigDecimal(): " + sql);
       System.err.println("servletConn:" + dd.getConnetionByConext() + " Server: " + dd.getServer());
       setTrackError(e.toString());
-      e.printStackTrace();
+      logger.error(e);
     } finally {
       conn = null;
       select = null;
@@ -288,7 +292,7 @@ public class MySqlQueryLib implements QueryLib {
       System.err.println("Error: queryIntegersToCsv(): " + sql);
       System.err.println("servletConn:" + dd.getConnetionByConext() + " Server: " + dd.getServer());
       setTrackError(e.toString());
-      e.printStackTrace();
+      logger.error(e);
     } finally {
       conn = null;
       select = null;
@@ -330,7 +334,7 @@ public class MySqlQueryLib implements QueryLib {
       System.err.println("Error: queryStringToCsv(): " + sql);
       System.err.println("servletConn:" + dd.getConnetionByConext() + " Server: " + dd.getServer());
       setTrackError(e.toString());
-      e.printStackTrace();
+      logger.error(e);
     } finally {
       conn = null;
       select = null;
@@ -369,7 +373,7 @@ public class MySqlQueryLib implements QueryLib {
       System.err.println("Error: update(): " + sql);
       System.err.println("servletConn:" + dd.getConnetionByConext() + " Server: " + dd.getServer());
       setTrackError(e.toString());
-      e.printStackTrace();
+      logger.error(e);
     } finally {
       conn = null;
       update = null;
@@ -408,7 +412,7 @@ public class MySqlQueryLib implements QueryLib {
       System.err.println("Error: update(): " + sql);
       System.err.println("servletConn:" + dd.getConnetionByConext() + " Server: " + dd.getServer());
       setTrackError(e.toString());
-      e.printStackTrace();
+      logger.error(e);
     } finally {
       conn = null;
       update = null;
@@ -437,7 +441,7 @@ public class MySqlQueryLib implements QueryLib {
       System.err.println("Mysql Statement Error:" + sql);
       System.err.println("servletConn:" + dd.getConnetionByConext() + " Server: " + dd.getServer());
       setTrackError(e.toString());
-      e.printStackTrace();
+      logger.error(e);
     } finally {
       conn = null;
       select = null;
@@ -472,7 +476,7 @@ public class MySqlQueryLib implements QueryLib {
       System.err.println("Mysql Statement Error:" + sql);
       System.err.println("servletConn:" + dd.getConnetionByConext() + " Server: " + dd.getServer());
       setTrackError(e.toString());
-      e.printStackTrace();
+      logger.error(e);
     } finally {
       conn = null;
       select = null;
@@ -509,7 +513,7 @@ public class MySqlQueryLib implements QueryLib {
       System.err.println("Mysql Statement Error:" + sql);
       System.err.println("servletConn:" + dd.getConnetionByConext() + " Server: " + dd.getServer());
       setTrackError(e.toString());
-      e.printStackTrace();
+      logger.error(e);
     } finally {
       conn = null;
       select = null;

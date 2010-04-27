@@ -15,10 +15,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
+import org.gonevertical.dts.v2.FileProcessing_v2;
 
 import com.csvreader.CsvReader;
 
 public class FileUtil {
+	
+	private Logger logger = Logger.getLogger(FileUtil.class);
 
   public FileUtil() {
   }
@@ -31,7 +35,7 @@ public class FileUtil {
    */
   public long getFileLineCount(File file) {
     if (file == null) {
-      System.out.println("Error: Your file was null.");
+      logger.warn("Error: Your file was null.");
       return 0;
     }
     FileInputStream fis = null;
@@ -49,9 +53,9 @@ public class FileUtil {
       fis.close();
       dis.close();
     } catch (FileNotFoundException e) {
-      e.printStackTrace();
+      logger.error(e);
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error(e);
     }
     return i;
   }
@@ -65,7 +69,7 @@ public class FileUtil {
    */
   public boolean findInFile(File file, String regex) {
     if (file == null) {
-      System.out.println("Error: Your file was null.");
+      logger.warn("Error: Your file was null.");
       return false;
     }
     FileInputStream fis = null;
@@ -90,9 +94,9 @@ public class FileUtil {
       bis.close();
       dis.close();
     } catch (FileNotFoundException e) {
-      e.printStackTrace();
+      logger.error(e);
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error(e);
     }
     return found;
   }
@@ -107,7 +111,7 @@ public class FileUtil {
    */
   public void replaceInFileByLine(File file, String regexFind, String regexReplace) {
     if (file == null) {
-      System.out.println("Error: Your file was null.");
+      logger.warn("Error: Your file was null.");
       return;
     }
     String tmpName = file.getAbsolutePath() + ".tmp";
@@ -134,9 +138,9 @@ public class FileUtil {
       bis.close();
       dis.close();
     } catch (FileNotFoundException e) {
-      e.printStackTrace();
+      logger.error(e);
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error(e);
     }
     File rf = new File(tmpName);
     rf.renameTo(file);
@@ -153,14 +157,14 @@ public class FileUtil {
   public File findInDir(File dir, String regex) {
     
     if (dir.isDirectory() == false) {
-      System.out.println("Error: dir is supposed to be a directory, not a file.");
+      logger.warn("Error: dir is supposed to be a directory, not a file.");
       return null;
     }
     
     File[] files = dir.listFiles();
     
     if (files == null) {
-    	System.out.println("No files to search");
+    	logger.warn("No files to search");
     }
     
     File foundFile = null;
@@ -186,7 +190,7 @@ public class FileUtil {
    */
   public long findLineCount(File dir, String regex) {
     if (dir.isDirectory() == false) {
-      System.out.println("Error: dir is supposed to be a directory, not a file.");
+      logger.warn("Error: dir is supposed to be a directory, not a file.");
       return 0;
     }
     
@@ -194,7 +198,7 @@ public class FileUtil {
     File foundFile = findInDir(dir, regex);
     
     if (foundFile == null) {
-      System.out.println("findLineCount: couldn't find file");
+      logger.warn("findLineCount: couldn't find file");
       return 0;
     }
     
@@ -258,7 +262,7 @@ public class FileUtil {
   public void createDirectory(String path) {
     
     if (path == null | path.length() == 0) {
-      System.out.println("createDirectory path was null");
+      logger.warn("createDirectory path was null");
       return;
     }
     
@@ -298,8 +302,7 @@ public class FileUtil {
     try {     
       reader = new CsvReader(file.toString(), delimiter);
     } catch (FileNotFoundException e) {
-      System.err.println("doesFileHeaderMatchStr: Could not open CSV Reader");
-      e.printStackTrace();
+      logger.error("doesFileHeaderMatchStr: Could not open CSV Reader", e);
     }
     
     if (reader == null) {
@@ -311,8 +314,7 @@ public class FileUtil {
       reader.readHeaders();
       header = reader.getHeaders();
     } catch (IOException e) {
-      System.out.println("doesFileHeaderMatchStr: could not read headers");
-      e.printStackTrace();
+      logger.error("doesFileHeaderMatchStr: could not read headers", e);
     }
     
     if (header == null) {
@@ -346,8 +348,7 @@ public class FileUtil {
     try {     
       reader = new CsvReader(file.toString(), delimiter);
     } catch (FileNotFoundException e) {
-      System.err.println("doesFileHeaderMatchStr: Could not open CSV Reader");
-      e.printStackTrace();
+      logger.error("doesFileHeaderMatchStr: Could not open CSV Reader", e);
     }
     
     if (reader == null) {
@@ -359,8 +360,7 @@ public class FileUtil {
       reader.readHeaders();
       header = reader.getHeaders();
     } catch (IOException e) {
-      System.out.println("doesFileHeaderMatchStr: could not read headers");
-      e.printStackTrace();
+      logger.error("doesFileHeaderMatchStr: could not read headers", e);
     }
 
     if (header == null) {
@@ -382,8 +382,7 @@ public class FileUtil {
   		Matcher m = p.matcher(file.getName());
   		b = m.find();
   	} catch (Exception e) {
-  		System.out.println("doesFileNameMatch: regex error");
-  		e.printStackTrace();
+  		logger.error("doesFileNameMatch: regex error", e);
   	}
 
   	return b;
@@ -421,7 +420,8 @@ public class FileUtil {
   		String newExt = "_" + index + "." + ext;
   		newFileName = m.replaceAll(newExt);
   	} catch (Exception e) {
-  		System.out.println("findMatch: regex error");
+  	  Logger logger = Logger.getLogger(FileUtil.class);
+  		logger.error("findMatch: regex error", e);
   	}
   	return newFileName;
   }
@@ -437,7 +437,7 @@ public class FileUtil {
   	try {
   		in = new FileReader(inputFile);
   	} catch (FileNotFoundException e) {
-  		e.printStackTrace();
+  		logger.error(e);
   	}
   	FileWriter out = null;
   	try {
@@ -447,14 +447,14 @@ public class FileUtil {
   			out.write(c);
   		}
   	} catch (IOException e) {
-  		e.printStackTrace();
+  		logger.error(e);
   	}
 
   	try {
   		in.close();
   		out.close();
   	} catch (IOException e) {
-  		e.printStackTrace();
+  		logger.error(e);
   	}
   }
 
