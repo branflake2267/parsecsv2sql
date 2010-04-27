@@ -154,14 +154,14 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   	}
   	logger.error("CsvProcessing.isThereUpdatesAndInserts(): " +
   			"For some reason there where no Inserts or Updates done. " +
-  			"File:" + file.getName() + " sourceData.file: " + sd.file.getName() + " stats.fileLineCount: " + stats.getFileLineCount());
+  			"File:" + file.getName() + " sourceData.file: " + sd.file.getName() + " stats.fileLineCount: " + stats.getFileLineCount() + "\n\n" + stats.toString());
   }
 
 	private void isThereErros() {
   	if (stats != null && stats.hasErrors() == false) {
   		return;
   	}
-  	logger.error("CsvProcessing.parseFile() has errors. File: " + file.getName() + " sourceData.file: " + sd.file.getName());
+  	logger.error("CsvProcessing.parseFile() has errors. File: " + file.getName() + " sourceData.file: " + sd.file.getName() + "\n\n" + stats.toString());
   }
 
 	private void compareLinesToSaveCount() {
@@ -170,7 +170,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   		logger.error("CsvProcessing.compareLinesToSaveCount(): " +
   				"Import FileLineCount doesn't match what sqlSaveCount:\n " +
   				"File:" + file.getName() + " sourceData.file: " + sd.file.getName() + "\n" +
-  				"FileLineCount: " + stats.getFileLineCount() + " saveCount + " + stats.getSaveCount() + "\n\n " + stats.toString());
+  				"FileLineCount: " + stats.getFileLineCount() + " saveCount: " + stats.getSaveCount() + "\n\n " + stats.toString());
   	}
   }
 
