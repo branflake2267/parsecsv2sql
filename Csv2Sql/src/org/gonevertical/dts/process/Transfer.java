@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.FieldData;
@@ -21,6 +22,7 @@ import org.gonevertical.dts.lib.sql.querylib.QueryLib;
 import org.gonevertical.dts.lib.sql.querymulti.QueryLibFactory;
 import org.gonevertical.dts.lib.sql.transformlib.TransformLib;
 import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
+import org.gonevertical.dts.v2.CsvProcessing_v2;
 
 
 /**
@@ -36,6 +38,8 @@ import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
  *
  */
 public class Transfer implements Runnable, Cloneable {
+	
+	private Logger logger = Logger.getLogger(Transfer.class);
 
   // what kind of transfer process is going on
   public static final int MODE_TRANSFER_ALL = 1;
@@ -251,13 +255,13 @@ public class Transfer implements Runnable, Cloneable {
     ColumnData[] diff = cl_src.difference(left, right);
     
     if (diff == null) {
-    	System.out.println("Nothing Different");
+    	logger.info("Transerver.showDifferenceInTables(): Nothing Different");
     	return;
     }
     
     for (int i=0; i < diff.length; i++) {
     	String name = diff[i].getName();
-    	System.out.println("diff: " + name);
+    	logger.info("Transerver.showDifferenceInTables(): diff table: " + name);
     }
   }
 
@@ -377,7 +381,8 @@ public class Transfer implements Runnable, Cloneable {
   	}
   	
     String sql = "SELECT COUNT(*) AS t FROM " + database_src.getDatabase() + "." + tableLeft + " " + where;
-    //System.out.println("sql" + sql);
+    logger.trace("Transfer.setTotal(): " + sql);
+    
     total = ql_src.queryLong(database_src, sql);
     index = total;
   }
@@ -432,7 +437,7 @@ public class Transfer implements Runnable, Cloneable {
         try {
 	        threads[threadCount].join();
         } catch (InterruptedException e) {
-	        e.printStackTrace();
+	        logger.error(e);
         }
     	}
     	
@@ -446,11 +451,9 @@ public class Transfer implements Runnable, Cloneable {
   }
   
   public void run() {
-  	System.out.println("Start of thread " + threadCount + " offset: " + offset + " limit: " + limit);
+  	logger.info("Start of thread " + threadCount + " offset: " + offset + " limit: " + limit);
   	
   	processSrcForPaging(offset, limit);
-  	
-  	//System.out.println("End of thread " + threadCount + " offset: " + offset + " limit: " + limit);
   }
 
 	private void setThread(int threadCount) {
@@ -510,7 +513,8 @@ public class Transfer implements Runnable, Cloneable {
     sql += getSrcWhere();
     sql += getOrderBy();
     
-    System.out.println(sql);
+    logger.info("Transfer.processSrc_WithOutPaging(): " + sql);
+    
     
     Connection conn = null;
     Statement select = null;
@@ -544,8 +548,7 @@ public class Transfer implements Runnable, Cloneable {
       select = null;
       conn = null;
     } catch (SQLException e) {
-      System.err.println("Mysql Statement Error:" + sql);
-      e.printStackTrace();
+      logger.error(e);
     } finally {
       conn = null;
       select = null;
@@ -615,7 +618,7 @@ public class Transfer implements Runnable, Cloneable {
       //sql = sql.replaceAll("", "");
     //}
     
-    //System.out.println("Thread: " + threadCount + " sql: " + sql);
+    logger.trace("Thread: " + threadCount + " sql: " + sql);
     
     Connection conn = null;
     Statement select = null;
@@ -630,7 +633,7 @@ public class Transfer implements Runnable, Cloneable {
         for (int i=0; i < columnData_src.length; i++) {
           String value = result.getString(columnData_src[i].getColumnName());
           columnData_src[i].setValue(value);
-          ///System.out.println("\t\t Thread. " + threadCount + " "  + columnData_src[i].getColumnName() + "=" + value);
+          logger.trace("\t\t Thread. " + threadCount + " "  + columnData_src[i].getColumnName() + "=" + value);
         }
         
         // one to many relationships processing
@@ -652,8 +655,7 @@ public class Transfer implements Runnable, Cloneable {
       select = null;
       conn = null;
     } catch (SQLException e) {
-      System.err.println("Mysql Statement Error:" + sql);
-      e.printStackTrace();
+      logger.error(e);
     } finally {
       conn = null;
       select = null;
@@ -668,7 +670,8 @@ public class Transfer implements Runnable, Cloneable {
   	}
   	
     String sql = "SELECT COUNT(*) AS t FROM " + tableLeft + "" + where;
-    System.out.println("sql" + sql);
+    logger.info("Transfer.processSrc_Mash(): " + sql);
+    
     total = ql_src.queryLong(database_src, sql);
     index = total;
     
@@ -692,7 +695,8 @@ public class Transfer implements Runnable, Cloneable {
       }
       
       processSrc_Mash(offset, limit);
-      //System.out.println("offset: " + offset + " limit: " + limit);
+      
+      logger.trace("Transfer.processSrc_Mash(): offset: " + offset + " limit: " + limit);
     }
     
   }
@@ -711,7 +715,7 @@ public class Transfer implements Runnable, Cloneable {
     sql += getOrderBy();
     sql += " LIMIT " + offset + ", " + limit + ";";
     
-    System.out.println("sql: " + sql);
+    logger.info("Transfer.processSrc_Mash(): " + sql);
     
     Connection conn = null;
     Statement select = null;
@@ -730,8 +734,7 @@ public class Transfer implements Runnable, Cloneable {
       select = null;
       conn = null;
     } catch (SQLException e) {
-      System.err.println("Mysql Statement Error:" + sql);
-      e.printStackTrace();
+      logger.error("Tansfer.Processrc_Mash(): Error: ", e);
     }
   }
   
@@ -756,7 +759,7 @@ public class Transfer implements Runnable, Cloneable {
     sql += getSrcWhere();
     sql += getOrderBy();
     
-    System.out.println("sql: " + sql);
+    logger.info("Transfer.processSrc_Mash(): " + sql);
     
     Connection conn = null;
     Statement select = null;
@@ -789,8 +792,7 @@ public class Transfer implements Runnable, Cloneable {
       select = null;
       conn = null;
     } catch (SQLException e) {
-      System.err.println("Mysql Statement Error:" + sql);
-      e.printStackTrace();
+      logger.error(e);
     }
   }
   
@@ -840,7 +842,7 @@ public class Transfer implements Runnable, Cloneable {
     
     String datafields = getFields_OneToMany(columnData);
     if (datafields == null) {
-      //System.out.println("saveOneToMany(): no one to many value to insert");
+      logger.trace("Transfer.saveOneToMany(): no one to many value to insert.");
       return;
     }
     
@@ -861,7 +863,7 @@ public class Transfer implements Runnable, Cloneable {
       sql = "INSERT INTO " + columnData.getTable() + " SET " + datafields;
       
     }
-    System.out.println("\t\t" + sql);
+    logger.trace("Transfer.saveOneToMany(): " + sql);
     ql_des.update(database_des, sql);
   }
 
@@ -875,7 +877,7 @@ public class Transfer implements Runnable, Cloneable {
     String sql = "SELECT " + oneToManyTablePrimaryKey.getColumnName() + " " +
     		"FROM " + columnData.getTable() + " WHERE " + where;
     
-    //System.out.println("checking onetomany: " + sql);
+    logger.trace("Transfer.getOneToManyId(): " + sql);
     
     long id = 0;
     Connection conn = null;
@@ -895,8 +897,7 @@ public class Transfer implements Runnable, Cloneable {
       result = null;
       conn.close();
     } catch (SQLException e) {
-      System.err.println("Error: " + sql);
-      e.printStackTrace();
+      logger.error(e);
     } finally {
       conn = null;
       select = null;
@@ -914,7 +915,7 @@ public class Transfer implements Runnable, Cloneable {
   
   private void deleteOneToMany(String table, String where) {
   	String sql = "DELETE FROM " + table + " WHERE " + where;
-  	System.out.println("\t\t Deleting duplicate one to many");
+  	logger.trace("Transfer.deleteOneToMany(): Deleting duplicate one to many");
 	  ql_des.update(database_des, sql);
   }
 
@@ -952,7 +953,9 @@ public class Transfer implements Runnable, Cloneable {
     String where = getSql_ForPrimaryKeys_ForDest();
     
     if (fields == null || fields.trim().length() == 0) {
-      System.out.println("skipping save()"); // probably b/c only primary key, and/or one to many is the only thing being used
+      logger.warn("Transfer.save(): skipping save(). " +
+      		"probably b/c we only have a primary key and/or one to many is the only thing being used. " +
+      		"Its possible your only moving one to many records. Ignore this if only moving one to many.");
       return;
     }
     
@@ -966,7 +969,7 @@ public class Transfer implements Runnable, Cloneable {
 
     testColumnValueSizes(columnData_des);
     
-    System.out.println(index + " Transfer.save(): " + sql);
+    logger.trace(index + " Transfer.save(): " + sql);
     
     ql_des.update(database_des, sql, false);
     
@@ -984,7 +987,7 @@ public class Transfer implements Runnable, Cloneable {
   	String where = getSql_ForPrimaryKeys_ForSrc();
   	
   	String sql = "DELETE FROM " + tableLeft + " WHERE " + where;
-  	System.out.println(sql);
+  	logger.trace("Transfer.deleteSourceRecord(): " + sql);
   	ql_src.update(database_src, sql);
   	
   }
@@ -1099,7 +1102,7 @@ public class Transfer implements Runnable, Cloneable {
     String sql = "SELECT * FROM " + tableRight + " WHERE " +
       "(" + desPrimKeyColName + "='" +  ql_src.escape(srcPrimKeyValue) + "')";
     
-    //System.out.println("getDestinationValuesToCompareWith(): " + sql);
+    logger.trace("getDestinationValuesForComparison(): " + sql);
     
     boolean b = false;
     Connection conn = null;
@@ -1124,8 +1127,7 @@ public class Transfer implements Runnable, Cloneable {
       select = null;
       conn = null;
     } catch (SQLException e) {
-      System.err.println("Mysql Statement Error:" + sql);
-      e.printStackTrace();
+      logger.error(e);
     }
     
     if (b == false) {
@@ -1157,6 +1159,7 @@ public class Transfer implements Runnable, Cloneable {
   private void getDestinationValuesToCompareWith_OneToMany(String where, ColumnData src, ColumnData des) {
   
     String sql = "SELECT * FROM " + des.getTable() + " WHERE " + where + ";";
+    logger.trace("Transfer.getDestinationValuesToCompareWith_OneToMany(): " + sql);
     
     boolean b = false;
     Connection conn = null;
@@ -1177,8 +1180,7 @@ public class Transfer implements Runnable, Cloneable {
       select = null;
       conn = null;
     } catch (SQLException e) {
-      System.err.println("Mysql Statement Error:" + sql);
-      e.printStackTrace();
+      logger.error(e);
     }
     
     if (b == false) {
@@ -1198,7 +1200,7 @@ public class Transfer implements Runnable, Cloneable {
     String sql = "Select COUNT(*) as t " +
     		"FROM " + databaseData.getDatabase() + "." + tableRight + " " +
     		"WHERE " + getSql_ForPrimaryKeys_ForDest();
-    //System.out.println(sql);
+    logger.trace("Transfer.doIdentsExistAlready(): " + sql);
     long count = ql_des.queryLong(database_des, sql);
     return count;
   }
@@ -1277,7 +1279,7 @@ public class Transfer implements Runnable, Cloneable {
         desValue = "";
       }
       
-      //System.out.println("TEST: overwriteBlanOnly: " + onlyOverwriteBlank + " srcValue: " + columnData_src[i].getValue() + " des: " + columnData_des[i].getValue());
+      logger.trace("TEST: overwriteBlanOnly: " + onlyOverwriteBlank + " srcValue: " + columnData_src[i].getValue() + " des: " + columnData_des[i].getValue());
       
       // overwrite dest policy defined here
       if ( 
@@ -1291,7 +1293,7 @@ public class Transfer implements Runnable, Cloneable {
       } else {
       	columnData_des[i].setValue(columnData_des[i].getValue());
       }
-      //System.out.println("test:");
+      
     }
    
   }
@@ -1322,7 +1324,7 @@ public class Transfer implements Runnable, Cloneable {
       columnData_des_oneToMany[i].setValue(columnData_src_oneToMany[i].getValue());
     }
    
-    //System.out.println("Pause");
+   
   }
 
   public void setCompareDestValues(boolean b) {
@@ -1362,7 +1364,7 @@ public class Transfer implements Runnable, Cloneable {
     try {
 	    cloned = (Transfer) super.clone();
     } catch (CloneNotSupportedException e) {
-	    e.printStackTrace();
+	    logger.error(e);
     }
     
     // copy object arrays by cloning each object

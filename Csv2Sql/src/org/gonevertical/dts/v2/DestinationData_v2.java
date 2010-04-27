@@ -147,6 +147,12 @@ public class DestinationData_v2 {
     //}
   }
   
+  /**
+   * changing logging into log4J 
+   * 
+   * @param s
+   */
+  @Deprecated
   public void debug(String s) {
     if (debug == 0) {
       
