@@ -170,6 +170,10 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
 	 */
 	private void compareLinesToSaveCount() {
 
+		if (returnToOptimise == true) {
+			return;
+		}
+		
 		boolean b = stats.doesLineCountMatchSaveCount(sd);
   	
   	if (b == false) {
