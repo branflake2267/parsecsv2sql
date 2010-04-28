@@ -169,8 +169,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
 	 *   was the same amount saved?
 	 */
 	private void compareLinesToSaveCount() {
-  	
-		boolean b = stats.doesLineCountMatchSaveCount(sd.getIgnoreFirstRow(), sd.getIgnoreLastRow());
+
+		boolean b = stats.doesLineCountMatchSaveCount(sd);
   	
   	if (b == false) {
   		logger.error("CsvProcessing.compareLinesToSaveCount(): " +
