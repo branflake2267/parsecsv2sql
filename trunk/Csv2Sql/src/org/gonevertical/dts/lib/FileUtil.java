@@ -447,7 +447,7 @@ public class FileUtil {
   			out.write(c);
   		}
   	} catch (IOException e) {
-  		logger.error(e);
+  		logger.error("FileUtil.copyFile Error: ", e);
   	}
 
   	try {
