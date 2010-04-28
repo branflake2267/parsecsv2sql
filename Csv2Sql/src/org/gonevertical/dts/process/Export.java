@@ -74,7 +74,7 @@ public class Export {
   
   // do not export the primary key (default is false)
   // set to true if you really want the primary key exported
-  private boolean exportPrimaryKey = false;
+  private boolean exportPrimaryKey = true;
   
   // add to the file name
   private String name;
