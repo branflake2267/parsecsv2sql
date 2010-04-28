@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.lib.FileUtil;
@@ -21,6 +22,8 @@ import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
 
 
 public class Export {
+	
+	private Logger logger = Logger.getLogger(Export.class);
   
   public static final int EXPORTAS_CSV = 1;
   public static final int EXPORTAS_SQL = 2;
@@ -210,9 +213,9 @@ public class Export {
     
     String sql = "SELECT ";
     sql += cl.getSql_Names(columnData) + " ";
-    sql += "FROM `" + table + "` ";
+    sql += "FROM " + table + " ";
     
-    if (whereSql != null) {
+    if (whereSql != null && whereSql.trim().length() != 0) {
       sql += " WHERE " + whereSql;
     }
     
@@ -328,6 +331,7 @@ public class Export {
       out = new BufferedWriter(new FileWriter(file, false));
     } catch (IOException e) {
       e.printStackTrace();
+      logger.error("Export.openFile(): Error Opening File: ", e);
     }
   }
   
