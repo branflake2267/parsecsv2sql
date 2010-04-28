@@ -320,15 +320,19 @@ public class StatData {
 	 * does the line count match the insert/update count
 	 * @return
 	 */
-	public boolean doesLineCountMatchSaveCount(boolean ignoreFirstRow, boolean ignoreLastRow) {
+	public boolean doesLineCountMatchSaveCount(SourceData sd) {
 		boolean b = false;
 		
 		long flc = fileLineCount;
-		if (ignoreFirstRow == true) {
+		
+		
+		if (sd.getIgnoreFirstRow() == true) {
+			//flc++;
+		} else {
 			flc--;
 		}
 		
-		if (ignoreLastRow == true) {
+		if (sd.getIgnoreLastRow() == true) {
 			flc--;
 		}
 		
