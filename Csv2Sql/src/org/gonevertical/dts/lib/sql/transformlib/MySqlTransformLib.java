@@ -219,7 +219,7 @@ public class MySqlTransformLib implements TransformLib {
     } catch (SQLException e) {
       System.err.println("Error: queryColumns(): " + sql);
       setTrackError(e.toString());
-      logger.error(e);
+      logger.error("Optimise.queryColumns(): ", e);
     }
     return columns;
   }
@@ -247,7 +247,7 @@ public class MySqlTransformLib implements TransformLib {
     } catch (SQLException e) {
       System.err.println("Error: queryPrimaryKey(): " + sql);
       setTrackError(e.toString());
-      logger.error(e);
+      logger.error("Optimise.queryPrimaryKey(): ", e);
     } 
     return column;
   }
@@ -273,7 +273,7 @@ public class MySqlTransformLib implements TransformLib {
     } catch (SQLException e) {
       System.err.println("Error: queryPrimaryKey(): " + sql);
       setTrackError(e.toString());
-      logger.error(e);
+      logger.error("Optimise.queryIsColumnPrimarykey()", e);
     } 
     return b;
   }
@@ -559,7 +559,7 @@ public class MySqlTransformLib implements TransformLib {
     } catch (SQLException e) {
       System.err.println("Error: queryString(): " + sql);
       setTrackError(e.toString());
-      logger.error(e);
+      logger.error("showCreateTable():", e);
     } 
     return s;
   }
@@ -628,7 +628,7 @@ public class MySqlTransformLib implements TransformLib {
     } catch (SQLException e) {
       System.err.println("Error: deleteIndexForColumn(): " + sql);
       setTrackError(e.toString());
-      logger.error(e);
+      logger.error("Optimise.deleteIndexForColumn(): Error: ", e);
     }
 
     return indexesToRestore;
@@ -816,7 +816,7 @@ public class MySqlTransformLib implements TransformLib {
         index = index.replaceFirst("(\\([0-9]+\\))", "");
       } catch (Exception e) {
       	setTrackError(e.toString());
-        logger.error(e);
+        logger.error("changeIndexFromTexttoVarchar()", e);
       }
     } 
     
