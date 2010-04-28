@@ -85,8 +85,8 @@ public class Optimise_v2 {
     String where = "`Field` NOT LIKE 'Auto_%'"; // all columns except auto columns
     columnData = tl.queryColumns(destinationData.databaseData, destinationData.table, where);
     if (columnData == null) {
-      System.out.println("no columns to optimise");
-      System.exit(1);
+      logger.info("no columns to optimise, Exiting");
+      return;
     }
     
     markColumnsThatAreIdents();
@@ -139,8 +139,8 @@ public class Optimise_v2 {
     String where = "`Field` NOT LIKE 'Auto_%'"; // all columns except auto columns
     columnData = tl.queryColumns(destinationData.databaseData, destinationData.table, where);
     if (columnData == null) {
-      System.out.println("no columns to optimise");
-      System.exit(1);
+      logger.info("no columns to optimise, exiting");
+      return;
     }
     
     markColumnsThatAreIdents();
@@ -248,7 +248,7 @@ public class Optimise_v2 {
   
   private int getMaxLength(ColumnData columnData) {
     String sql = cl.getSql_GetMaxCharLength(destinationData.databaseData, columnData);
-    System.out.println("checking column length: " + sql);
+    logger.info("checking column length: " + sql);
     int maxCharLength = ql.queryInteger(destinationData.databaseData, sql);
     return maxCharLength;
   }
@@ -312,7 +312,7 @@ public class Optimise_v2 {
   private void analyzeColumnType(ColumnData columnData) {
     
     if (columnData.getType().contains("text") == false) {
-      System.out.println("analyzeColumnType(): Type already defined in columnData, skipping and going with column definition.");
+      logger.info("Optimise.analyzeColumnType(): Type already defined in columnData, skipping and going with column definition.");
       return;
     }
     
@@ -336,7 +336,7 @@ public class Optimise_v2 {
         "FROM " + destinationData.databaseData.getDatabase() + "." + columnData.getTable() + " " +
         "" + ignoreNullValues + " " + random + " " + getLimitQuery() + ";"; 
       
-    System.out.println("Analyzing Column For Type: " + columnData.getColumnName() + " query: " + sql);
+    logger.info("Analyzing Column For Type: " + columnData.getColumnName() + " query: " + sql);
 
     Connection conn = null;
     Statement select = null;
@@ -782,6 +782,7 @@ public class Optimise_v2 {
   				threads[0].join();
   			} catch (InterruptedException e) {
   				e.printStackTrace();
+  				logger.error("Optimise.formatColumn_ToInt(): Thread Join Error: ", e);
   			}
   		}
   	}
@@ -856,6 +857,7 @@ public class Optimise_v2 {
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
+      logger.error("Optimise.getTableDistinctIdentCount(): Error:", e);
     }
     return c;
   }
@@ -891,7 +893,7 @@ public class Optimise_v2 {
     destinationData.databaseData.getDatabase() + "." + destinationData.table + " " +
     		"GROUP BY "+ idents_Columns + " HAVING count(*) > 1;"; 
 
-    System.out.println(sql);
+    logger.info(sql);
     
     try {
       Connection conn = destinationData.databaseData.getConnection();
@@ -924,7 +926,7 @@ public class Optimise_v2 {
     String sql = "SELECT "+ idents_Columns + " FROM " + 
       destinationData.databaseData.getDatabase() + "." + destinationData.table + " " + where; 
 
-    System.out.println(index + ". " + sql);
+    logger.info(sql);
     
     try {
       Connection conn = destinationData.databaseData.getConnection();
@@ -948,6 +950,7 @@ public class Optimise_v2 {
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
+      logger.error("Optimise.processDuplicate() Error:", e);
     }
   }
 
@@ -989,6 +992,7 @@ public class Optimise_v2 {
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
+      logger.error("Optimise.deleteDuplicates(): Error:", e);
     }
     
   }
@@ -999,7 +1003,7 @@ public class Optimise_v2 {
     
     String sql = "DELETE FROM " + destinationData.databaseData.getDatabase() + "." + destinationData.table + " WHERE " + where; 
     
-    System.out.println("sql: " + sql);
+    logger.info(sql);
     
     ql.update(destinationData.databaseData, sql);
   }
