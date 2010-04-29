@@ -9,8 +9,13 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
+import org.gonevertical.dts.v2.CsvProcessing_v2;
+
 public class DatabaseData {
   
+	private Logger logger = Logger.getLogger(DatabaseData.class);
+	
   // location
   private String host;
   private String port;
@@ -230,6 +235,7 @@ public class DatabaseData {
     } catch (Exception e) {
       System.err.println("~~~~~ " + url + "~~~~ ERROR: getConn_MySql(): connection error: " + e.getMessage() + " " + "getConn_MySql: url:" + url + " user: " + username + " driver: " + driver);
       e.printStackTrace();
+      logger.error("DatabaseData.getConn_MySql(): ", e);
       recursionCheck++;
       if (recursionCheck < 3) {
       	System.out.println(recursionCheck + ". Trying connection agian");
@@ -243,6 +249,7 @@ public class DatabaseData {
         conn.setReadOnly(true);
       } catch (SQLException e) {
         e.printStackTrace();
+        logger.error("DatabaseData.getConn_MySql(): ", e);
       }
     }
     
@@ -276,6 +283,7 @@ public class DatabaseData {
     } catch (Exception e) {
       System.err.println("ERROR: getConn_MsSql(): connection error: " + e.getMessage());
       e.printStackTrace();
+      logger.error("DatabaseData.getConn_MsSql(): ", e);
     }
     return conn;
   }
@@ -298,6 +306,7 @@ public class DatabaseData {
     } catch (Exception e) {
       System.err.println("ERROR: getConn_Oracle(): connection error: " + e.getMessage());
       e.printStackTrace();
+      logger.error("DatabaseData.getConn_Oracle(): ", e);
     }
     
     if (conn == null) {
@@ -349,6 +358,7 @@ public class DatabaseData {
       } catch (NamingException e) {
         System.out.println("ERROR: getContextConnetion(): NO datasource");
         e.printStackTrace();
+        logger.error("DatabaseData.getconnectionByContext(): ", e);
       }
 
       
@@ -362,6 +372,7 @@ public class DatabaseData {
     } catch (SQLException e) {
       System.out.println("ERROR: getContextConnetion(): couldn't get servlet connection: " + contextRefName);
       e.printStackTrace();
+      logger.error("DatabaseData.getConnectionByContext(): ", e);
     }
     
     //BasicDataSource bds = (BasicDataSource) dataSourcePool;
@@ -386,6 +397,8 @@ public class DatabaseData {
     } catch (NamingException e) {
       System.out.println("ERROR: initContext(): Could not get InitalContext");
       e.printStackTrace();
+      Logger logger = Logger.getLogger(DatabaseData.class);
+      logger.error("DatabaseData.initContext(): ", e);
     }
   
     Context ctx = null;
@@ -395,6 +408,8 @@ public class DatabaseData {
       System.out.println("ERROR: initContext(): Could not init Context");
       e.printStackTrace();
       System.out.println("DatabaseData().initContext() Exiting!!!!! Setup the context: " + sctx);
+      Logger logger = Logger.getLogger(DatabaseData.class);
+      logger.error("DatabaseData.initContext(): Exiting:", e);
       System.exit(1);
     }
 
@@ -410,6 +425,8 @@ public class DatabaseData {
     } catch (NamingException e) {
       System.out.println("ERROR: initContext(): Could not get InitalContext");
       e.printStackTrace();
+      Logger logger = Logger.getLogger(DatabaseData.class);
+      logger.error("DatabaseData.initContext(): ", e);
     }
   
     Context ctx = null;
@@ -419,6 +436,8 @@ public class DatabaseData {
       System.out.println("ERROR: initContext(): Could not init Context");
       e.printStackTrace();
       System.out.println("DatabaseData().initContext() Exiting!!!!! Setup the context: " + context_url);
+      Logger logger = Logger.getLogger(DatabaseData.class);
+      logger.error("DatabaseData.initContext(): Exiting", e);
       System.exit(1);
     }
 
