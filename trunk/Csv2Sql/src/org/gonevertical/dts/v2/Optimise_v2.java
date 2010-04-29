@@ -821,7 +821,7 @@ public class Optimise_v2 {
   
   private long getTableRecordCount() {
     String sql = "SELECT COUNT(*) AS t FROM " + destinationData.databaseData.getDatabase() + "." + destinationData.table + ";";
-    System.out.println(sql);
+    logger.info(sql);
     return ql.queryLong(destinationData.databaseData, sql);
   }
   
@@ -837,7 +837,7 @@ public class Optimise_v2 {
     String sql = "SELECT DISTINCT " + idents_Columns + " FROM " + 
       destinationData.databaseData.getDatabase() + "." + destinationData.table + ";"; 
 
-    System.out.println(sql);
+    logger.info(sql);
     
     long c = 0;
     try {
@@ -855,7 +855,6 @@ public class Optimise_v2 {
       conn.close();
       conn = null;
     } catch (SQLException e) {
-      System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
       logger.error("Optimise.getTableDistinctIdentCount(): Error:", e);
     }
@@ -882,7 +881,7 @@ public class Optimise_v2 {
     long c = getTableHasDuplicates();
     
     if (c == 0) {
-     System.out.println("No duplicates exist for the identities.");
+     logger.info("No duplicates exist for the identities.");
      return;
     }
     
@@ -915,6 +914,7 @@ public class Optimise_v2 {
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
+      logger.error("deleteDuplicates():", e);
     }
   }
   
@@ -967,7 +967,7 @@ public class Optimise_v2 {
     String sql = "SELECT " + destinationData.primaryKeyName + " FROM " + 
     destinationData.databaseData.getDatabase() + "." + destinationData.table + " WHERE " + where; 
  
-    System.out.println("sql" + sql);
+    logger.info(sql);
     
     try {
       Connection conn = destinationData.databaseData.getConnection();
