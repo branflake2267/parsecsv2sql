@@ -181,7 +181,10 @@ public class DateTimeParser {
   
   private String checkAll(DateFormat df) {
     String s = "";
-    if (checkforFormat_monthYearTogether() == true) {  // keep letter type first - like matching jan or Janurary
+    if (checkIfPhoneNumber() == true) { // phone number 123-123-1234 is not a date
+    	isDate = false;
+    	s = datetime;
+    } else if (checkforFormat_monthYearTogether() == true) {  // keep letter type first - like matching jan or Janurary
       s = df.format(date);
       isDate = true;
     } else if (checkforFormat_monthYear() == true) {  // keep letter type first - like matching jan or Janurary
@@ -251,7 +254,10 @@ public class DateTimeParser {
    */
   private String checkExplicit(DateFormat df) {
     String s = "";
-    if (checkforFormat_monthYearTogether() == true) {  // keep letter type first - like matching jan or Janurary
+    if (checkIfPhoneNumber() == true) { // phone number 123-123-1234 is not a date
+    	isDate = false;
+    	
+    } else if (checkforFormat_monthYearTogether() == true) {  // keep letter type first - like matching jan or Janurary
       s = df.format(date);
       isDate = true;
     } else if (checkforFormat_monthYear() == true) {  // keep letter type first - like matching jan or Janurary
@@ -301,7 +307,22 @@ public class DateTimeParser {
     return s;
   }
   
-  /**
+  private boolean checkIfPhoneNumber() {
+	  String regex = "[0-9]{3}-[0-9]{3}-[0-9]{4}"; //123-123-1234 is not a date
+	  boolean found = false;
+  	try {
+      Pattern p = Pattern.compile(regex);
+      Matcher m = p.matcher(datetime);
+      found = m.find();
+    } catch (Exception e) {
+      System.out.println("findMatch: regex error");
+      found = false;
+    }
+  	
+	  return found;
+  }
+
+	/**
    * match jan09 orJan2009 
    * 
    * @return
