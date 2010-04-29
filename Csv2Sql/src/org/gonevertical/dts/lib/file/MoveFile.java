@@ -4,10 +4,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.apache.log4j.Logger;
 import org.gonevertical.dts.lib.FileUtil;
 
 
 public class MoveFile extends FileUtil {
+	
+	private Logger logger = Logger.getLogger(MoveFile.class);
 
   // what to match and move to where
   private ArrayList<MoveFileData> moveFileData = null;

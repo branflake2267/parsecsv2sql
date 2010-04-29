@@ -1,5 +1,7 @@
 package org.gonevertical.dts.data;
 
+import org.apache.log4j.Logger;
+
 /**
  * Destination values - controls insert/update methods
  * 
@@ -8,6 +10,8 @@ package org.gonevertical.dts.data;
  */
 public class DestinationData {
 
+	private Logger logger = Logger.getLogger(DestinationData.class);
+	
   private DatabaseData databaseData = null;
 
   // TODO moving to databaseData object

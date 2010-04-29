@@ -2,8 +2,12 @@ package org.gonevertical.dts.data;
 
 import java.util.Comparator;
 
+import org.apache.log4j.Logger;
+
 public class ColumnDataComparator implements Comparator<ColumnData> {
 
+	private Logger logger = Logger.getLogger(ColumnDataComparator.class);
+	
   public static final int NAME = 1;
   
   // default type is by column name

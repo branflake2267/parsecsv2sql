@@ -4,10 +4,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
+
 import com.csvreader.CsvReader;
 
 public class Csv {
 
+	private Logger logger = Logger.getLogger(Csv.class);
+	
   public Csv() {
   }
   
@@ -15,18 +19,18 @@ public class Csv {
     CsvReader csvRead = null;
     try {
       if (Character.toString(delimiter) == null) {
-        System.out.println("openFileAndRead: You forgot to set a delimiter. Exiting.");
+        logger.fatal("Csv.open(): openFileAndRead: You forgot to set a delimiter. Exiting.");
         System.exit(1);
       }
     } catch (Exception e1) {
-      System.out.println("openFileAndRead: You forgot to set a delimiter. Exiting.");
+    	logger.fatal("Csv.open(): You forgot to set a delimiter. Exiting.", e1);
       e1.printStackTrace();
       System.exit(1);
     }
     try {     
       csvRead = new CsvReader(file.toString(), delimiter);
     } catch (FileNotFoundException e) {
-      System.err.println("CSV Reader, Could not open CSV Reader");
+      logger.error("Csv.CsvReader(): Could not open CSV Reader", e);
       e.printStackTrace();
     }
     return csvRead;
@@ -38,7 +42,7 @@ public class Csv {
       csvRead.readHeaders();
       columns = csvRead.getHeaders();
     } catch (IOException e) {
-      System.out.println("Csv.getColumnsFromCsv(): couln't read header");
+      logger.error("Csv.getColumns(): couln't read headers: ", e);
       e.printStackTrace();
     }
     return columns;

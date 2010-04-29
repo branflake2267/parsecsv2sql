@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;
@@ -19,6 +20,8 @@ import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
 
 
 public class MySqlReplication {
+	
+	private Logger logger = Logger.getLogger(MySqlReplication.class);
 
   // supporting libraries
   private QueryLib ql = null;

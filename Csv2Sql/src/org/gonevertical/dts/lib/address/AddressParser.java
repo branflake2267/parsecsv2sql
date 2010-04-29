@@ -4,7 +4,11 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 public class AddressParser {
+	
+	private Logger logger = Logger.getLogger(AddressParser.class);
 
   // states
   private String statesAb = "AA,AE,AF,AK,AL,AP,AR,AS,AZ,CA,CO,CT,DC,DE,FL,FM,GA,HI,IA,ID,IL,IN,KS,KY,LA,MA,MD,ME,MH,MI,MN,MO,MP,MS,MT,NC,ND,NE,NH,NJ,NM,NV,NY,OH,OK,OR,PA,PR,PW,RI,SC,SD,TN,TX,UT,VA,VI,VT,WA,WI,WV,WY";

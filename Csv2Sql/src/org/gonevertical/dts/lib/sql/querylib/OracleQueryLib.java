@@ -8,11 +8,14 @@ import java.sql.Statement;
 import java.util.Date;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.StatData;
 
 
 public class OracleQueryLib implements QueryLib {
+	
+	private Logger logger = Logger.getLogger(OracleQueryLib.class);
 
 	// keep track of what is going on
   private StatData stats;

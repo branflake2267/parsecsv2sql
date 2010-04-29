@@ -199,6 +199,7 @@ public class StatData {
 	 */
 	public void print() {
 		System.out.println(this.toString());
+		logger.info(this.toString());
 	}
 	
 	public String toString() {
@@ -214,6 +215,7 @@ public class StatData {
 		s += "sqlStatementUpdateCount: " + sqlUpdateCount + "\n";
 		s += "sqlStatementNullCount: " + sqlNullCount + "\n";
 		s += "saveStatementsCount: " + saveCount + "\n";
+		s += "ErrorCount: " + errors.size();
 		
 		return s;
 	}
@@ -265,11 +267,9 @@ public class StatData {
 				"Description='" + ql.escape(toString()) + "'," +
 				"Errors=" + getErrors() + ";";
 		
-		System.out.println(sql);
+		logger.info(sql);
 		
 		ql.update(dd, sql);
-		
-		//System.out.println("");
 	}
 	
 	private String getDestTable() {

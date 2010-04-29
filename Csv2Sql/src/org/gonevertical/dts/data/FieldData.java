@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 
+import org.apache.log4j.Logger;
+
 /**
  * match source field and transform them into the destination field
  * 
@@ -13,6 +15,8 @@ import java.util.HashMap;
  *
  */
 public class FieldData implements Comparable<FieldData> {
+	
+	private Logger logger = Logger.getLogger(FieldData.class);
   
   public final static int CHANGECASE_LOWER = 1;
   public final static int CHANGECASE_UPPER = 2;

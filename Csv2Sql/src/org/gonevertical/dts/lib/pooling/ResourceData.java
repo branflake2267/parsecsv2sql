@@ -6,7 +6,11 @@ import java.util.Iterator;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
 
+import org.apache.log4j.Logger;
+
 public class ResourceData {
+	
+	private Logger logger = Logger.getLogger(ResourceData.class);
 
 	private String name = null;
 	
