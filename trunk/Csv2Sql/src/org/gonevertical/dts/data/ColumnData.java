@@ -251,7 +251,7 @@ public class ColumnData implements Cloneable {
           BigDecimal bd = new BigDecimal(value);
           value = bd.toString();
         } catch (NumberFormatException e) {
-          value = "0";
+          value = null;
           testTypeThrow = true;
         }
       }
@@ -280,7 +280,7 @@ public class ColumnData implements Cloneable {
           BigDecimal bd = new BigDecimal(value);
           value = bd.toString();
         } catch (NumberFormatException e) {
-          value = "0";
+          value = null;
           testTypeThrow = true;
         }
       }
