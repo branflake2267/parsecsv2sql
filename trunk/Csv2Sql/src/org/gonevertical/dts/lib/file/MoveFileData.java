@@ -5,9 +5,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.apache.log4j.Logger;
+
 import com.csvreader.CsvReader;
 
 public class MoveFileData {
+	
+	private Logger logger = Logger.getLogger(MoveFileData.class);
 
   public static final int MATCH_HEADERS = 1;
   public static final int MATCH_FILENAME = 2;

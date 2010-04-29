@@ -86,7 +86,7 @@ public class Optimise_FormatColumn implements Runnable {
     String sql = "SELECT " + cpriKey.getColumnName() + ", `" + columnData.getColumnName() + "` " +
         "FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "` LIMIT " + offset + ", " + limit + ";"; 
     
-    System.out.println(sql);
+    logger.info(sql);
     
     try {
       Connection conn = destinationData.databaseData.getConnection();
@@ -117,12 +117,17 @@ public class Optimise_FormatColumn implements Runnable {
     
     String value = "0";
     try {
-	    value = columnData.getValue();
+	    
+    	value = columnData.getValue();
+	    
 	    if (value == null) {
 	      value = "0";
+	    
 	    } else if (value.trim().length() == 0) {
-	      value = "0";
+	    	value = "0";
+	    	
 	    } else {
+	    	
 	      try {
 	        // change (1234) to negative
 	        if (value != null && value.matches("[\\(].*[\\)]")) {
@@ -137,17 +142,19 @@ public class Optimise_FormatColumn implements Runnable {
 	        value = bd.toString();
 	      } catch (NumberFormatException e) {
 	        value = "0";
-	      } 
+	      }
+	      
 	    }
+	    
     } catch (Exception e) {
+    	value = "0";
 	    e.printStackTrace();
 	    logger.error("updateColumn_Int(): getting value error:", e);
-	    value = "0";
     }
 
     columnData.setValue(value);
     
-   logger.info(index + ". column: " + columnData.getColumnName() + " (is an int) was before: " + before + " after: " + value);
+    logger.info(index + ". column: " + columnData.getColumnName() + " (is an int) was before: " + before + " after: " + value);
 
     // is there room for the transformation values
     columnData.alterColumnSizeBiggerIfNeedBe(destinationData.databaseData);
@@ -195,17 +202,31 @@ public class Optimise_FormatColumn implements Runnable {
 
 
 	private void updateColumn_Date(ColumnData cpriKey, ColumnData columnData) {
+		
 		String datetime = columnData.getValue();
 		String tranformed = dtp.getDateMysql(datetime);
+		
+		if (dtp.isDate == false) {
+			tranformed = null;
+		}
 
-		if (datetime == null) {
-			tranformed = null;
-		} else if (datetime.trim().length() == 0) {
-			tranformed = null;
-		} 
+		try {
+			
+	    if (datetime == null) {
+	    	tranformed = null;
+	    	
+	    } else if (datetime != null && datetime.trim().length() == 0) {
+	    	tranformed = null;
+	    }
+	    
+    } catch (Exception e) {
+	    e.printStackTrace();
+	    logger.error("updatecolumn_Date()", e);
+    } 
 
 		columnData.setValue(tranformed);
-		destinationData.debug(index + ". column: " + columnData.getColumnName() + " datetime before: " + datetime + " after: " + tranformed);
+		
+		logger.info(index + ". column: " + columnData.getColumnName() + " datetime before: " + datetime + " after: " + tranformed);
 
 		// is there room for the transformation values
 		columnData.alterColumnSizeBiggerIfNeedBe(destinationData.databaseData);

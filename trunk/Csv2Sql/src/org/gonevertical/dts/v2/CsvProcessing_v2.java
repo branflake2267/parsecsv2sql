@@ -154,14 +154,16 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   	}
   	logger.error("CsvProcessing.isThereUpdatesAndInserts(): " +
   			"For some reason there where no Inserts or Updates done. " +
-  			"File:" + file.getName() + " sourceData.file: " + sd.file.getName() + " stats.fileLineCount: " + stats.getFileLineCount() + "\n\n" + stats.toString());
+  			"File:" + file.getName() + " sourceData.file: " + sd.file.getName() + " " +
+  					"stats.fileLineCount: " + stats.getFileLineCount() + "\n\n" + stats.toString());
   }
 
 	private void isThereErros() {
   	if (stats != null && stats.hasErrors() == false) {
   		return;
   	}
-  	logger.error("CsvProcessing.parseFile() has errors. File: " + file.getName() + " sourceData.file: " + sd.file.getName() + "\n\n" + stats.toString());
+  	logger.error("CsvProcessing.parseFile() has errors. File: " + file.getName() + " " +
+  			"sourceData.file: " + sd.file.getName() + "\n\n" + stats.toString());
   }
 
 	/**
@@ -224,7 +226,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     // open the csv file for reading
     openFileAndRead();
 
-    // compare version 1 
+    // TODO compare version 1 
     
     return false;
   }
@@ -420,7 +422,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
       }
       
     } catch (IOException e) {
-      logger.error("iterateRowsData(): Can't loop through data", e);
+      logger.error("CsvProcessing.iterateRowsData(): Can't loop through data", e);
+      e.printStackTrace();
     }
   }
   
@@ -437,7 +440,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     try {
       values = reader.getValues();
     } catch (IOException e) {
-      logger.error(e);
+      logger.error("CsvProcessing.process():", e);
+      e.printStackTrace();
     }
     
     // pre-process values in row
@@ -500,7 +504,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
       
       // using a compare of the previously stored data
       if (compareBefore(columnData, primaryKeyColumn) == true) {
-        logger.trace("skipping b/c of compare.!!!!!!!!!!!!!!!!!!");
+        logger.info("skipping b/c of compare. Are you sure you wanted this feature?");
         return;
       }
       
@@ -513,7 +517,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
       sql = cl.getSql_Insert(i);
     }
     
-    logger.trace(rowIndex + ". SAVE(): " + sql);
+    logger.info(rowIndex + ". SAVE(): " + sql);
     
     ql.update(dd.databaseData, sql, false);
     

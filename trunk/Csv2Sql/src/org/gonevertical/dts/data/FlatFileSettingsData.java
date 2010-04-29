@@ -2,7 +2,11 @@ package org.gonevertical.dts.data;
 
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
+
 public class FlatFileSettingsData {
+	
+	private Logger logger = Logger.getLogger(FlatFileSettingsData.class);
 
   //set all the settings into this object array
   private ArrayList<FlatFileSettingsData> settings = new ArrayList<FlatFileSettingsData>();

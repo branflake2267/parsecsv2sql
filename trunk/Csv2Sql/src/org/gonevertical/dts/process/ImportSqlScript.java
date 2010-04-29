@@ -6,10 +6,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 
+import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.DatabaseData;
 
 
 public class ImportSqlScript {
+	
+	private Logger logger = Logger.getLogger(ImportSqlScript.class);
 
   public DatabaseData dd = null;
   

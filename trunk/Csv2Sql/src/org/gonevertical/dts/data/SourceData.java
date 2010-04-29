@@ -2,7 +2,11 @@ package org.gonevertical.dts.data;
 
 import java.io.File;
 
+import org.apache.log4j.Logger;
+
 public class SourceData {
+	
+	private Logger logger = Logger.getLogger(SourceData.class);
  
 	// file or directory
 	public File file;

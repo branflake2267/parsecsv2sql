@@ -7,12 +7,16 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 /**
  * TODO not sure how I will do the international months yet
  * 
  * Experimental stage
  */
 public class DateTimeParser {
+	
+	private Logger logger = Logger.getLogger(DateTimeParser.class);
 
   /*
    * some formats I have seen. php strtotime is the ultimate

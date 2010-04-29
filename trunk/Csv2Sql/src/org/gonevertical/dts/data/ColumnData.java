@@ -3,13 +3,17 @@ package org.gonevertical.dts.data;
 import java.math.BigDecimal;
 
 import org.apache.commons.lang.WordUtils;
+import org.apache.log4j.Logger;
 import org.gonevertical.dts.lib.StringUtil;
 import org.gonevertical.dts.lib.datetime.DateTimeParser;
 import org.gonevertical.dts.lib.sql.transformlib.MySqlTransformLib;
+import org.gonevertical.dts.v2.CsvProcessing_v2;
 
 
 public class ColumnData implements Cloneable {
 
+	private Logger logger = Logger.getLogger(ColumnData.class);
+	
   // change value case
   public final static int CHANGECASE_LOWER = 1;
   public final static int CHANGECASE_UPPER = 2;
@@ -114,24 +118,32 @@ public class ColumnData implements Cloneable {
    */
   public void setValue(String value) {
   	
-  	if (value != null) {
-  		value = value.trim();
-  	}
-  	
-  	// always set empty to null 
-  	// TODO make this optional to turn this off
-  	if (value != null && value.length() == 0) {
-  		value = null;
-  	}
+  	try {
+  		
+	    if (value != null) {
+	    	value = value.trim();
+	    }
+	    
+	    // always set empty to null 
+	    // TODO make this optional to turn this off
+	    if (value != null && value.length() == 0) {
+	    	value = null;
+	    }
 
-  	// optional: if change case is set on, change the case of the value
-    if (value != null && changeCase > 0) {
-      value = changeCase(value);
-    }
+	    // optional: if change case is set on, change the case of the value
+	    if (value != null && changeCase > 0) {
+	      value = changeCase(value);
+	    }
 
-    // optional: run regex on the value
-    if (value != null && regex != null) {
-      value = StringUtil.getValue(regex, value);
+	    // optional: run regex on the value
+	    if (value != null && regex != null) {
+	      value = StringUtil.getValue(regex, value);
+	    }
+	    
+    } catch (Exception e) {
+    	this.value = null;
+	    e.printStackTrace();
+	    logger.error("ColumnData.setValue(): Value Error:", e);
     }
     
     this.value = value;
@@ -143,7 +155,17 @@ public class ColumnData implements Cloneable {
    * @param value
    */
   public void setValue(Long value) {
-    this.value = Long.toString(value);
+    try {
+    	if (value != null) {
+    		this.value = Long.toString(value);
+    	} else {
+    		this.value = null;
+    	}
+    } catch (Exception e) {
+	    e.printStackTrace();
+	    logger.error("setValue(Long): Long Value Error: ", e);
+	    this.value = null;
+    }
   }
 
   /**
@@ -155,26 +177,33 @@ public class ColumnData implements Cloneable {
   public String getValue() {
     String v = null;
 
-    if (valueIsFunction != null) {
-      v = valueIsFunction;
-    } else {
-      v = this.value;
-    }
+    try {
+	    if (valueIsFunction != null) {
+	      v = valueIsFunction;
+	    } else {
+	      v = this.value;
+	    }
 
-    // the next only affect given types
-    // if type is int, check to be sure its an int
-    if (columnType.toLowerCase().contains("int") == true | 
-        columnType.toLowerCase().contains("dec") == true) {
-      v = getValueAsInt(value);
-    }
+	    // the next only affect given types
+	    // if type is int, check to be sure its an int
+	    if (columnType.toLowerCase().contains("int") == true | 
+	        columnType.toLowerCase().contains("dec") == true) {
+	      v = getValueAsInt(value);
+	    }
 
-    // if type is datetime, lets deal with it now
-    if (columnType.toLowerCase().contains("datetime") == true) {
-      v = getValueAsDateTime(value);
-    }
-    
-    if (v != null && v.trim().length() == 0) {
-      v = null;
+	    // if type is datetime, lets deal with it now
+	    if (columnType.toLowerCase().contains("datetime") == true) {
+	      v = getValueAsDateTime(value);
+	    }
+	    
+	    if (v != null && v.trim().length() == 0) {
+	      v = null;
+	    }
+	    
+    } catch (Exception e) {
+	    e.printStackTrace();
+	    logger.error("ColumnData.getValue() Error", e);
+	    v = null;
     }
 
     return v;

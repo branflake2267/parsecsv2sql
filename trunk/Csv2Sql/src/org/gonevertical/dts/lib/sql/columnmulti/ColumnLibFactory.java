@@ -1,5 +1,6 @@
 package org.gonevertical.dts.lib.sql.columnmulti;
 
+import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 
@@ -7,7 +8,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 public class ColumnLibFactory {
-
+	
   public static ColumnLib getLib(int databaseType) {
     
     Injector ci = Guice.createInjector(new ColumnModule());

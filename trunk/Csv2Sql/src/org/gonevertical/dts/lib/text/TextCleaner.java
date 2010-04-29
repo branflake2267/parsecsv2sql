@@ -2,7 +2,11 @@ package org.gonevertical.dts.lib.text;
 
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
+
 public class TextCleaner {
+	
+	private Logger logger = Logger.getLogger(TextCleaner.class);
  
   private ArrayList<String> removeRegex = null;
   

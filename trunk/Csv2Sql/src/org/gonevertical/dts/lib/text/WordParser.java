@@ -2,7 +2,11 @@ package org.gonevertical.dts.lib.text;
 
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
+
 public class WordParser {
+	
+	private Logger logger = Logger.getLogger(WordParser.class);
 
   private TextCleaner textCleaner = new TextCleaner();
   

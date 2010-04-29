@@ -4,7 +4,11 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 public class StringUtil {
+	
+	private Logger logger = Logger.getLogger(StringUtil.class);
 
   /**
    * find a match in a string

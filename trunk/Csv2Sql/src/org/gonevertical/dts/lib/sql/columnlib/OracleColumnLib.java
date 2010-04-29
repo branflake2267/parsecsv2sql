@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
+import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.ColumnDataComparator;
 import org.gonevertical.dts.data.DatabaseData;
@@ -14,6 +15,8 @@ import org.gonevertical.dts.lib.sql.querylib.MySqlQueryLib;
 import org.gonevertical.dts.lib.sql.transformlib.MySqlTransformLib;
 
 public class OracleColumnLib implements ColumnLib {
+	
+	private Logger logger = Logger.getLogger(OracleColumnLib.class);
 
   public OracleColumnLib() {
   }
