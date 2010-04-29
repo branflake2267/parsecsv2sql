@@ -106,6 +106,7 @@ public class Optimise_FormatColumn implements Runnable {
     } catch (SQLException e) {
       System.err.println("Mysql Statement Error:" + sql);
       e.printStackTrace();
+      logger.error("formatColumn_ToInt():", e);
     }
     
   }
@@ -114,32 +115,38 @@ public class Optimise_FormatColumn implements Runnable {
 
     String before = columnData.getValue();
     
-    String value = columnData.getValue();
-    if (value == null) {
-      value = "0";
-    } else if (value.trim().length() == 0) {
-      value = "0";
-    } else {
-      try {
-        // change (1234) to negative
-        if (value != null && value.matches("[\\(].*[\\)]")) {
-          value = value.replaceAll("[\\)\\(]", "");
-          value = "-" + value;
-        }
-        // take out all non digit characters except . - and 0-9
-        if (value != null) {
-          value = value.replaceAll("[^0-9\\.\\-]", ""); 
-        }
-        BigDecimal bd = new BigDecimal(value);
-        value = bd.toString();
-      } catch (NumberFormatException e) {
-        value = "0";
-      } 
+    String value = "0";
+    try {
+	    value = columnData.getValue();
+	    if (value == null) {
+	      value = "0";
+	    } else if (value.trim().length() == 0) {
+	      value = "0";
+	    } else {
+	      try {
+	        // change (1234) to negative
+	        if (value != null && value.matches("[\\(].*[\\)]")) {
+	          value = value.replaceAll("[\\)\\(]", "");
+	          value = "-" + value;
+	        }
+	        // take out all non digit characters except . - and 0-9
+	        if (value != null) {
+	          value = value.replaceAll("[^0-9\\.\\-]", ""); 
+	        }
+	        BigDecimal bd = new BigDecimal(value);
+	        value = bd.toString();
+	      } catch (NumberFormatException e) {
+	        value = "0";
+	      } 
+	    }
+    } catch (Exception e) {
+	    e.printStackTrace();
+	    logger.error("updateColumn_Int(): getting value error:", e);
     }
 
     columnData.setValue(value);
     
-    destinationData.debug(index + ". column: " + columnData.getColumnName() + " (is an int) was before: " + before + " after: " + value);
+   logger.info(index + ". column: " + columnData.getColumnName() + " (is an int) was before: " + before + " after: " + value);
 
     // is there room for the transformation values
     columnData.alterColumnSizeBiggerIfNeedBe(destinationData.databaseData);
@@ -161,7 +168,7 @@ public class Optimise_FormatColumn implements Runnable {
 		String sql = "SELECT " + cpriKey.getColumnName() + ", `" + columnData.getColumnName() + "` " +
 			"FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "` LIMIT " + offset + ", " + limit + ";";
 		
-		System.out.println(sql);
+		logger.info(sql);
 		
 		try {
 			Connection conn = destinationData.databaseData.getConnection();
@@ -181,6 +188,7 @@ public class Optimise_FormatColumn implements Runnable {
 		} catch (SQLException e) {
 			System.err.println("Mysql Statement Error:" + sql);
 			e.printStackTrace();
+			logger.error("formatColumn_ToDateTime():", e);
 		}
 	}
 

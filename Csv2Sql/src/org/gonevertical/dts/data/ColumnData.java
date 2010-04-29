@@ -536,10 +536,14 @@ public class ColumnData implements Cloneable {
 
   private boolean doesValueFit_Text() {
     boolean b = false;
-    if (value == null) {
-      b = true;
-    } else if (value != null && value.length() <= 65536) { //65536 bytes 2^16
-      b = true;
+    try {
+	    if (value == null) {
+	      b = true;
+	    } else if (value != null && value.length() <= 65536) { //65536 bytes 2^16
+	      b = true;
+	    }
+    } catch (Exception e) {
+	    e.printStackTrace();
     }
     return b;
   }
@@ -556,7 +560,7 @@ public class ColumnData implements Cloneable {
 
   private boolean doesValueFit_Int() {
     boolean b = false;
-    if (value.length() <= 9) {
+    if (value != null && value.length() <= 9) {
       b = true;
     }
     return b;
@@ -564,7 +568,7 @@ public class ColumnData implements Cloneable {
 
   private boolean doesValueFit_TinyInt() {
     boolean b = false;
-    if (value.length() <= 1) {
+    if (value != null && value.length() <= 1) {
       b = true;
     }
     return b;
@@ -572,7 +576,7 @@ public class ColumnData implements Cloneable {
 
   private boolean doesValueFit_BigInt() {
     boolean b = false;
-    if (value.length() < 20) {
+    if (value != null && value.length() < 20) {
       b = true;
     }
     return b;
@@ -583,7 +587,7 @@ public class ColumnData implements Cloneable {
     //System.out.println("current left: " + lengthChar_left + " right: " + lengthChar_right);
     boolean b = true;
     char per = ".".charAt(0);
-    if (value.contains(Character.toString(per))) {
+    if (value != null && value.contains(Character.toString(per))) {
       String[] a = value.split("\\.");
       int l = a[0].trim().length();
       int r = a[1].trim().length();
