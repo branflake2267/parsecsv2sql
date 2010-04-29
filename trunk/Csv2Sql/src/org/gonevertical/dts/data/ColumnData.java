@@ -114,9 +114,13 @@ public class ColumnData implements Cloneable {
    */
   public void setValue(String value) {
   	
+  	if (value != null) {
+  		value = value.trim();
+  	}
+  	
   	// always set empty to null 
   	// TODO make this optional to turn this off
-  	if (value != null && value.trim().length() == 0) {
+  	if (value != null && value.length() == 0) {
   		value = null;
   	}
 
