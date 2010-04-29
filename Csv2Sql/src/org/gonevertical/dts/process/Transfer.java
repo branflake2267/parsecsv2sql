@@ -953,7 +953,7 @@ public class Transfer implements Runnable, Cloneable {
     String where = getSql_ForPrimaryKeys_ForDest();
     
     if (fields == null || fields.trim().length() == 0) {
-      logger.warn("Transfer.save(): skipping save(). " +
+      logger.info("Transfer.save(): skipping save(). " +
       		"probably b/c we only have a primary key and/or one to many is the only thing being used. " +
       		"Its possible your only moving one to many records. Ignore this if only moving one to many.");
       return;
