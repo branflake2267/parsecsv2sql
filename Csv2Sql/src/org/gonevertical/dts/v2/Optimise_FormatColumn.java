@@ -142,6 +142,7 @@ public class Optimise_FormatColumn implements Runnable {
     } catch (Exception e) {
 	    e.printStackTrace();
 	    logger.error("updateColumn_Int(): getting value error:", e);
+	    value = "0";
     }
 
     columnData.setValue(value);
