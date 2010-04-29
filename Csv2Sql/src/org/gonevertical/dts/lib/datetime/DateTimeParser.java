@@ -308,7 +308,7 @@ public class DateTimeParser {
   }
   
   private boolean checkIfPhoneNumber() {
-	  String regex = "[0-9]{3}-[0-9]{3}-[0-9]{4}"; //123-123-1234 is not a date
+	  String regex = "^[0-9]{3}[.,\\-\040/]+?[0-9]{3}[.,\\-\040/]+?[0-9]{4}$"; //123-123-1234 is not a date
 	  boolean found = false;
   	try {
       Pattern p = Pattern.compile(regex);
