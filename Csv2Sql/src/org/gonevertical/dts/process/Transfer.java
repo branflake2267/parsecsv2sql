@@ -197,6 +197,13 @@ public class Transfer implements Runnable, Cloneable {
    * @param srcWhere
    */
   public void setWhere(String srcWhere) {
+  	if (srcWhere == null) {
+  		return;
+  	}
+  	if (srcWhere.toLowerCase().contains("where")) {
+  		srcWhere = srcWhere.replaceAll("(i?)where", "");
+  	}
+  			
     this.srcWhere = srcWhere;
   }
   
@@ -969,7 +976,7 @@ public class Transfer implements Runnable, Cloneable {
 
     testColumnValueSizes(columnData_des);
     
-    logger.trace(index + " Transfer.save(): " + sql);
+    logger.info(index + " Transfer.save(): " + sql);
     
     ql_des.update(database_des, sql, false);
     
