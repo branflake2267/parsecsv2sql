@@ -39,6 +39,7 @@ public class CompareTables {
   
   private String srcWhere = null;
   
+  private boolean doesntMatch = false;
   
 	public CompareTables(DatabaseData database_src, DatabaseData database_dest) {
     this.database_src = database_src;
@@ -69,6 +70,7 @@ public class CompareTables {
   }
   
   private void checkTableCount(String leftTable, String rightTable) {
+  	doesntMatch = false;
   	
   	String where = "";
   	if (srcWhere != null) {
@@ -86,13 +88,17 @@ public class CompareTables {
   	String match = "";
   	if (left == right) {
   		 match = "TRUE";
+  		 doesntMatch = false;
   	} else {
   		match = "FALSE";
+  		doesntMatch = true;
   	}
   	System.out.println("LeftTable: " + leftTable + " left: " + left + " RightTable: "+ rightTable + " right: " + right + " " + match + " offby: " + (left-right));
   }
   
   private void checkTableCount(String table) {
+  	doesntMatch = false;
+  	
   	String sql = "SELECT COUNT(*) AS t FROM " + table;
   	
   	long left = ql_src.queryLong(database_src, sql);
@@ -101,8 +107,10 @@ public class CompareTables {
   	String match = "";
   	if (left == right) {
   		 match = "TRUE";
+  		 doesntMatch = false;
   	} else {
   		match = "FALSE";
+  		doesntMatch = true;
   	}
   	System.out.println("table: " + table + " left: " + left + " right: " + right + " " + match + " offby: " + (left-right));
   }
@@ -277,6 +285,10 @@ public class CompareTables {
   
   public void setWhere(String where) {
   	this.srcWhere = where;
+  }
+  
+  public boolean getDoesItMatch() {
+  	return doesntMatch;
   }
   
 }
