@@ -59,7 +59,8 @@ public class FileProcessing_v2 {
       
       if (sourceData.file.isFile() == false) {
       	logger.fatal("FileProcessing.run(): File is not a file; It has to be a valid directory or file. File: " + files[0].getName());
-        System.exit(1);
+        //System.exit(1); // do not run this here b/c in a threaded pool, it shuts down everything
+      	return;
       }
       
     }
