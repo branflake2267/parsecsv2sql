@@ -679,9 +679,9 @@ public class ColumnData implements Cloneable {
         setType("VARCHAR(" + l + ") DEFAULT NULL");
       }
     } else if (columnType.contains("int") == true) {
-      if (value.length() < 8) {
+      if (value != null && value.length() < 8) {
         setType("INT DEFAULT 0");
-      } else if (value.length() >= 8) {
+      } else if (value != null && value.length() >= 8) {
         setType("BIGINT DEFAULT 0");
       } 
     } else if (columnType.contains("dec") == true) {
