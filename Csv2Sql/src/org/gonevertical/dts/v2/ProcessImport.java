@@ -2,6 +2,7 @@ package org.gonevertical.dts.v2;
 
 import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.SourceData;
+import org.gonevertical.dts.data.StatData;
 
 public class ProcessImport {
 	
@@ -54,6 +55,10 @@ public class ProcessImport {
    */
   public void runFindInFile() {
     fileProcessing.findMatchInFile();
+  }
+  
+  public StatData getStats() {
+  	return fileProcessing.getStats();
   }
 
   

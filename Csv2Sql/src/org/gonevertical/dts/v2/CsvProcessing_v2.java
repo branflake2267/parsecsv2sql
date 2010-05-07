@@ -159,7 +159,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   }
 
 	private void isThereErros() {
-  	if (stats != null && stats.hasErrors() == false) {
+  	if (stats != null && stats.getHasErrors() == false) {
   		return;
   	}
   	logger.error("CsvProcessing.parseFile() has errors. File: " + file.getName() + " " +
@@ -585,6 +585,8 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
    
    String sql = "SELECT " + dd.primaryKeyName + " FROM " + dd.table + " " + where;
    
+   logger.info(sql);
+   
    long primaryKeyId = ql.queryLong(dd.databaseData, sql); 
    
    return primaryKeyId; 
@@ -735,6 +737,10 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     boolean r = returnToOptimise;
     returnToOptimise = false;
     return r;
+  }
+
+	public StatData getStats() {
+	  return stats;
   }
   
 }

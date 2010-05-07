@@ -59,6 +59,12 @@ public class SourceData {
 		this.ignoreFirstRow = ignoreFirstRow;
 		this.headerDelimiter = delimiter;
 	}
+	
+	public void setSubstitueHeaders(File file, char delimiter) {
+		this.header = file;
+		this.ignoreFirstRow = false;
+		this.headerDelimiter = delimiter;
+	}
 
 	public File getHeadersFile() {
 		return header;
