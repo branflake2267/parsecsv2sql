@@ -180,9 +180,9 @@ public class StatData {
 	 * @param error
 	 */
 	public void setTrackError(String error) {
-		errors.add("rowIndex: " + rowCount + " :: " + error);
+		errors.add("rowIndex: " + rowCount + " :: " + error + "\n "+ this.toString());
 		
-		logger.error("StatData().setTrackError:\n" + error);
+		logger.error("StatData().setTrackError:\n" + error + "\n " + this.toString());
 	}
 	
 	/**
@@ -325,12 +325,9 @@ public class StatData {
 		
 		long flc = fileLineCount;
 		
-		
-		if (sd.getIgnoreFirstRow() == true) {
-			//flc++;
-		} else {
+		if (sd.getIgnoreFirstRow() == false && sd.getHeadersFile() == null) {
 			flc--;
-		}
+		} 
 		
 		if (sd.getIgnoreLastRow() == true) {
 			flc--;
@@ -343,7 +340,7 @@ public class StatData {
 	  return b;
   }
 	
-	public boolean hasErrors() {
+	public boolean getHasErrors() {
 		boolean b = false;
 		if (errors != null && errors.size() > 0) {
 			b = true;

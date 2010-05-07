@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.SourceData;
+import org.gonevertical.dts.data.StatData;
 import org.gonevertical.dts.lib.FileUtil;
 import org.gonevertical.dts.lib.sql.transformlib.TransformLib;
 import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
@@ -194,7 +195,7 @@ public class FileProcessing_v2 {
       files = new File[1];
       files[0] = sourceData.file;
       if (sourceData.file.isFile() == false) {
-        logger.fatal("File is not a file; It has to be a valid directory or file.");
+        logger.fatal("File is not a file; It has to be a valid directory or file. file:" + sourceData.file.toString());
         System.exit(1);
       }
     }
@@ -270,6 +271,10 @@ public class FileProcessing_v2 {
     }
     
     return count;
+  }
+
+	public StatData getStats() {
+	  return csvProcess.getStats();
   }
   
 }
