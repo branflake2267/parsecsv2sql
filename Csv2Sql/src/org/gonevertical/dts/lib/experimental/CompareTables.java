@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
@@ -13,9 +14,12 @@ import org.gonevertical.dts.lib.sql.querylib.QueryLib;
 import org.gonevertical.dts.lib.sql.querymulti.QueryLibFactory;
 import org.gonevertical.dts.lib.sql.transformlib.TransformLib;
 import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
+import org.gonevertical.dts.v2.CsvProcessing_v2;
 
 public class CompareTables {
 
+	private Logger logger = Logger.getLogger(CompareTables.class);
+	
 	private long limitOffset = 100;
 	
 	//source database settings
@@ -40,6 +44,15 @@ public class CompareTables {
   private String srcWhere = null;
   
   private boolean doesntMatch = false;
+
+	private ColumnData[] columnIdentities;
+
+	private ColumnData[] columnSkip;
+
+	private String sqlOrderBy;
+
+	private boolean failure = false;
+	private int failureCount = 0;
   
 	public CompareTables(DatabaseData database_src, DatabaseData database_dest) {
     this.database_src = database_src;
@@ -66,6 +79,8 @@ public class CompareTables {
   }
   
   public void checkTableCounts(String tableLeft, String tableRight) {
+  	failure = false;
+  	failureCount = 0;
   	checkTableCount(tableLeft, tableRight);
   }
   
@@ -93,7 +108,10 @@ public class CompareTables {
   		match = "FALSE";
   		doesntMatch = true;
   	}
-  	System.out.println("LeftTable: " + leftTable + " left: " + left + " RightTable: "+ rightTable + " right: " + right + " " + match + " offby: " + (left-right));
+  	if (doesntMatch == true) {
+  		logger.error("CompareTables.checkTableCount(): " +
+  				"LeftTable: " + leftTable + " left: " + left + " RightTable: "+ rightTable + " right: " + right + " " + match + " offby: " + (left-right));
+  	}
   }
   
   private void checkTableCount(String table) {
@@ -112,12 +130,21 @@ public class CompareTables {
   		match = "FALSE";
   		doesntMatch = true;
   	}
-  	System.out.println("table: " + table + " left: " + left + " right: " + right + " " + match + " offby: " + (left-right));
+  	logger.info("table: " + table + " left: " + left + " right: " + right + " " + match + " offby: " + (left-right));
   }
 	
+  public void compareTableData(String tableLeft, String tableRight, ColumnData[] columnIdentities, ColumnData[] columnSkip) {
+  	this.columnIdentities = columnIdentities;
+  	this.columnSkip = columnSkip;
+  	compareTableData(tableLeft, tableRight);
+  }
+  
   public void compareTableData(String tableLeft, String tableRight) {
   	this.tableLeft = tableLeft;
   	this.tableRight = tableRight;
+  	
+  	failure = false;
+  	failureCount = 0;
   	
   	setColumnData_All();
   	
@@ -135,17 +162,37 @@ public class CompareTables {
   private void setColumnData_All() {
     columnData_src = tl_src.queryColumns(database_src, tableLeft, null);
     
+    // skip these columns
+    if (columnSkip != null) {
+    	columnData_src = cl_src.prune(columnData_src, columnSkip);
+    }
+    
     columnData_des = new ColumnData[columnData_src.length];
     for(int i=0; i < columnData_src.length; i++) {
+    	
+    	// skip these    	
       columnData_des[i] = new ColumnData();
       columnData_des[i] = (ColumnData) columnData_src[i].clone();
       columnData_des[i].setTable(tableRight);
+    
+      // use identities instead of primary key
+      if (columnIdentities != null) {
+        int index = cl_src.searchColumnByName_UsingComparator(columnIdentities, columnData_des[i]);
+        if (index >= 0) {
+        	columnData_src[i].setIdentity(true);
+        }
+      }
     }
+    
+    
   }
   
   private void processSrc() {
-    String sql = "SELECT COUNT(*) AS t FROM `" + tableLeft + "`;";
-    System.out.println("sql" + sql);
+    
+  	String sql = "SELECT COUNT(*) AS t FROM `" + tableLeft + "`;";
+    
+    logger.trace("sql" + sql);
+    
     long total = ql_src.queryLong(database_src, sql);
     long lim = limitOffset;
     long totalPages = (total / lim);
@@ -169,9 +216,13 @@ public class CompareTables {
   private void processSrc(long offset, long limit) {
 
     ColumnData primKey = cl_src.getPrimaryKey_ColumnData(columnData_src);
-    String where = "";
-    if (primKey != null) {
-      where = "WHERE " + primKey.getColumnName() + " != '' AND " + primKey.getColumnName() + " IS NOT NULL";
+    
+    String where = "WHERE (1=1) ";
+    if (columnIdentities != null) {
+    	where += "";
+    	
+    } else  if (primKey != null) {
+      where += "AND " + primKey.getColumnName() + " != '' AND " + primKey.getColumnName() + " IS NOT NULL";
     }
     
     String columnCsv = cl_src.getSql_Names_WSql(columnData_src, null);
@@ -180,9 +231,10 @@ public class CompareTables {
     sql = "SELECT " + columnCsv + " FROM " + tableLeft + " ";
     sql += where;
     sql += getSrcWhere();
+    sql += getOrderBy();
     sql += " LIMIT " + offset + ", " + limit + ";";
     
-    System.out.println("sql: " + sql);
+    logger.info(sql);
     
     Connection conn = null;
     Statement select = null;
@@ -214,41 +266,75 @@ public class CompareTables {
     }
   }
   
-  private void process() {
+  private String getOrderBy() {
+	  String s = "";
+	  if (sqlOrderBy != null) {
+	  	s = " " + sqlOrderBy + " ";
+	  }
+	  return s;
+  }
+
+	private void process() {
     
   	getDestinationValuesForComparison();
   	
   	String s = "";
+  	boolean overallRowMatch = true;
     for (int i=0; i < columnData_src.length; i++) {
       
     		String leftValue = columnData_src[i].getValue();
       	String rightValue = columnData_des[i].getValue();
       
-      	String match = "";
+      	boolean bmatch = false;
       	if (leftValue == null && rightValue == null) {
-      		match = "TRUE";
+      		bmatch = true;
+      		
       	} else if (leftValue == null | rightValue == null) {
-      		match = "FALSE";
+      		bmatch = false;
+      		
       	} else if (leftValue.equals(rightValue) == true) {
-      		match = "TRUE";
+      		bmatch = true;
+      		
       	} else {
-      		match = "FALSE";
+      		bmatch = false;
       	}
         
-      	s += columnData_src[i].getName() + ": " + match + ", ";
+      	s += "(" + columnData_src[i].getName() + ":" + leftValue + "==" + rightValue + ":" + bmatch + "), ";
+      	
+      	if (bmatch == false) {
+      		overallRowMatch = false;
+      	}
       
     }
-    System.out.println(s);
+    
+    logger.info("Overall: " + overallRowMatch + " ::: " + s);
+ 
+    if (overallRowMatch == false) {
+    	failure = true;
+    	failureCount++;
+    	logger.error("CompareTables.process(): Data is not matching. Overall: " + overallRowMatch + " ::: " + s);
+    }
+  
   }
 
   private void getDestinationValuesForComparison() {
+  	
     String srcPrimKeyValue = cl_src.getPrimaryKey_Value(columnData_src);
     String desPrimKeyColName = cl_des.getPrimaryKey_Name(columnData_des);
     
-    String sql = "SELECT * FROM " + tableRight + " WHERE " +
-      "(" + desPrimKeyColName + "='" +  ql_src.escape(srcPrimKeyValue) + "')";
+    String where = "";
+    if (columnIdentities != null) {
+    	where = getSqlWhereForIdents();
+    } else {
+    	where = "(" + desPrimKeyColName + "='" +  ql_src.escape(srcPrimKeyValue) + "')";
+    }
     
-    //System.out.println("getDestinationValuesToCompareWith(): " + sql);
+    String sql = "";
+    
+    sql = "SELECT * FROM " + tableRight + " WHERE " + where;
+      
+    
+    logger.trace("getDestinationValuesToCompareWith(): " + sql);
     
     boolean b = false;
     Connection conn = null;
@@ -283,12 +369,29 @@ public class CompareTables {
     }
   }
   
-  public void setWhere(String where) {
+  private String getSqlWhereForIdents() {
+	  String sql = cl_src.getSql_IdentitiesWhere(columnData_src);
+	  return sql;
+  }
+
+	public void setWhere(String where) {
   	this.srcWhere = where;
   }
   
   public boolean getDoesItMatch() {
   	return doesntMatch;
   }
+
+	public void setOrderBy(String sqlOrderBy) {
+	  this.sqlOrderBy = sqlOrderBy;
+  }
+
+	public boolean getFailure() {
+	  return failure;
+  }
+	
+	public int getFailureCount() {
+		return failureCount;
+	}
   
 }
