@@ -283,7 +283,7 @@ public class Transfer implements Runnable, Cloneable {
   private void createColumns() {
     
     for (int i=0; i < columnData_src.length; i++) {
-      tl_des.createColumn(database_des, columnData_des[i]);
+      //tl_des.createColumn(database_des, columnData_des[i]);
     }
     
   }

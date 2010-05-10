@@ -526,6 +526,11 @@ public class MsSqlQueryLib implements QueryLib {
    */
   private String fixSyntax_InsertUpdate(String sql) {
   	
+  	// TODO test this later
+  	if (sql.contains("update")) {
+  		return sql;
+  	}
+  	
   	// get beginning
   	String beginning = StringUtil.getValue("(?i)^(.*?set)", sql);
   	sql = sql.replace(beginning, "");
@@ -533,15 +538,21 @@ public class MsSqlQueryLib implements QueryLib {
   	beginning = StringUtil.getValue("(?i)^(.*?)set", beginning);
   	
   	// get end
-  	String end = StringUtil.getValue("(WHERE.*?)$", sql);
+  	String end = StringUtil.getValue("((i?)WHERE.*?)$", sql);
   	if (end == null) {
   		end = "";
   	} else {
   		sql = sql.replace(end, "");
-  		end = StringUtil.getValue(";", end);
+  		if (end.contains(";")) {
+  			end = StringUtil.getValue(";", end);
+  		}
   	}
   	
   	String middle = fixSyntax_getMiddle(sql);
+  	
+  	//if (beginning.toLowerCase().contains("set") == false) {
+  		//beginning = beginning + " SET ";
+  	//}
   	
   	sql = beginning + middle + end;
   	
@@ -577,7 +588,7 @@ public class MsSqlQueryLib implements QueryLib {
   		}
   	}
   	
-  	String middle = "(" + columns + ") VALUES (" + values + ");";
+  	String middle = "(" + columns + ") VALUES (" + values + ") ";
   	
   	return middle;
   }
