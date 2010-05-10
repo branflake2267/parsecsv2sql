@@ -112,6 +112,9 @@ public class CompareTables {
   		logger.error("CompareTables.checkTableCount(): " +
   				"LeftTable: " + leftTable + " left: " + left + " RightTable: "+ rightTable + " right: " + right + " " + match + " offby: " + (left-right));
   	}
+  	
+  	logger.info("CompareTables.checkTableCount(): " +
+				"LeftTable: " + leftTable + " left: " + left + " RightTable: "+ rightTable + " right: " + right + " " + match + " offby: " + (left-right));
   }
   
   private void checkTableCount(String table) {
