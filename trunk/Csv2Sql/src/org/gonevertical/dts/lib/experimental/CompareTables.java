@@ -53,6 +53,8 @@ public class CompareTables {
 
 	private boolean failure = false;
 	private int failureCount = 0;
+
+	private long index;
   
 	public CompareTables(DatabaseData database_src, DatabaseData database_dest) {
     this.database_src = database_src;
@@ -197,6 +199,7 @@ public class CompareTables {
     logger.trace("sql" + sql);
     
     long total = ql_src.queryLong(database_src, sql);
+    index = total;
     long lim = limitOffset;
     long totalPages = (total / lim);
     if (totalPages == 0) {
@@ -253,6 +256,7 @@ public class CompareTables {
           columnData_src[i].setValue(value);
         }
         process();
+        index--;
       }
       result.close();
       select.close();
@@ -310,7 +314,7 @@ public class CompareTables {
       
     }
     
-    logger.info("Overall: " + overallRowMatch + " ::: " + s);
+    logger.info(index + ". Overall: " + overallRowMatch + " ::: " + s);
  
     if (overallRowMatch == false) {
     	failure = true;
