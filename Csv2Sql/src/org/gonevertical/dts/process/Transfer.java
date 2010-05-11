@@ -31,6 +31,8 @@ import org.gonevertical.dts.v2.CsvProcessing_v2;
  * TODO - do i want to add multple idents as the solution of transfering from source with no autoincrement?
  * TODO - how to transfer from source with no auto increment - also set idents on those that it uses
  *        partially done
+ * TODO - auto build the identity index when using identities as keys
+ * TODO - when testing if data exists and the count comes back more than 1, purge duplicates
  * 
  * oracle and microsoft sql need to be able to page with rownumbering
  * 
@@ -137,6 +139,9 @@ public class Transfer implements Runnable, Cloneable {
    * delete source after copy/transfer
    */
 	private boolean deleteSource = false;
+
+	// use identities instead of the primary key
+	private ColumnData[] columnIdentities;
   
   /**
    * Transfer data object setup 
@@ -242,6 +247,9 @@ public class Transfer implements Runnable, Cloneable {
     
     createColumns();
     
+    // if using identities instead of primary key, lets set it up for use
+    setIdentityIntoColumnArrays();
+    
     if (mode == MODE_TRANSFER_ALL) {
       processSrc();
     } else if (mode == MODE_TRANSFER_ONLY) {
@@ -297,6 +305,7 @@ public class Transfer implements Runnable, Cloneable {
       columnData_des[i] = (ColumnData) columnData_src[i].clone();
       columnData_des[i].setTable(tableRight);
     }
+   
   }
   
   private String getSrcWhere() {
@@ -333,6 +342,7 @@ public class Transfer implements Runnable, Cloneable {
       columnData_des[i].setOverwriteWhenBlank(mappedFields[i].onlyOverwriteBlank);
       columnData_des[i].setCase(mappedFields[i].changeCase);
       columnData_des[i].setDeleteExisting(mappedFields[i].deleteExisting);
+         
     }
 
     if (oneToMany != null) {
@@ -957,7 +967,7 @@ public class Transfer implements Runnable, Cloneable {
     long count = doIdentsExistAlready(database_des);
     
     String fields = getFields();
-    String where = getSql_ForPrimaryKeys_ForDest();
+    
     
     if (fields == null || fields.trim().length() == 0) {
       logger.info("Transfer.save(): skipping save(). " +
@@ -968,6 +978,7 @@ public class Transfer implements Runnable, Cloneable {
     
     String sql = "";
     if (count > 0) { // update
+    	String where = getSql_WhereQueryIfDataExists();
       sql = "UPDATE " + tableRight + " SET " + fields + " WHERE " + where; 
       
     } else { // insert
@@ -1198,16 +1209,21 @@ public class Transfer implements Runnable, Cloneable {
   }
 
   /**
-   * does the data exist in the dst table?
+   * Test if the data exists in the dst table? 
+   * 
+   *   TODO - purge duplicates when find count > 1, this will happen when using identities, delete from dst table
    * 
    * @param databaseData
    * @return
    */
   private long doIdentsExistAlready(DatabaseData databaseData) {
-    String sql = "Select COUNT(*) as t " +
+    
+  	String sql = "Select COUNT(*) as t " +
     		"FROM " + databaseData.getDatabase() + "." + tableRight + " " +
-    		"WHERE " + getSql_ForPrimaryKeys_ForDest();
+    		"WHERE " + getSql_WhereQueryIfDataExists();
+    
     logger.trace("Transfer.doIdentsExistAlready(): " + sql);
+    
     long count = ql_des.queryLong(database_des, sql);
     return count;
   }
@@ -1216,24 +1232,31 @@ public class Transfer implements Runnable, Cloneable {
    * get where query for keys
    * @return
    */
-  private String getSql_ForPrimaryKeys_ForDest() {
+  private String getSql_WhereQueryIfDataExists() {
     
-    String sql = "";
-    int is = 0;
-    for (int i=0; i < columnData_des.length; i++) {
-      if (columnData_des[i].getIsPrimaryKey() == true) {
-        
-        if (is >= 1) {
-          sql += " AND ";
+    String sqlWhere = "";
+    if (columnIdentities != null) { // use sql identity to find data
+    	sqlWhere = getSql_WhereForIdents();
+    	
+    } else { // use primary key to find data
+    	
+      int is = 0;
+      for (int i=0; i < columnData_des.length; i++) {
+        if (columnData_des[i].getIsPrimaryKey() == true) {
+          
+          if (is >= 1) {
+            sqlWhere += " AND ";
+          }
+          
+          sqlWhere += "(" + columnData_des[i].getColumnName() + "='" + ql_des.escape(columnData_des[i].getValue()) + "')";
+          
+          is++;
         }
-        
-        sql += "(" + columnData_des[i].getColumnName() + "='" + ql_des.escape(columnData_des[i].getValue()) + "')";
-        
-        is++;
       }
+      
     }
     
-    return sql;
+    return sqlWhere;
   }
   
   /**
@@ -1423,6 +1446,54 @@ public class Transfer implements Runnable, Cloneable {
 	public void deleteSource(boolean b) {
 		this.deleteSource = b;
   }
+
+	public void setIdentities(ColumnData[] columnIdentities) {
+		this.columnIdentities = columnIdentities;
+  }
+	
+	/**
+	 * get identity where query
+	 * @return
+	 */
+	private String getSql_WhereForIdents() {
+	  String sql = cl_src.getSql_IdentitiesWhere(columnData_src);
+	  return sql;
+  }
+	
+	/**
+	 * mark which columns are being used as the identities
+	 *   I'm doing both just in case of future reference
+	 */
+	private void setIdentityIntoColumnArrays() {
+		
+		if (columnIdentities == null) {
+			return;
+		}
+		
+		// use identities instead of primary key
+		for(int i=0; i < columnData_src.length; i++) {
+  		
+      if (columnIdentities != null) {
+        int index = cl_src.searchColumnByName_UsingComparator(columnIdentities, columnData_src[i]);
+        if (index >= 0) {
+        	columnData_src[i].setIdentity(true);
+        }
+      }
+      
+		}
+		
+		for(int i=0; i < columnData_des.length; i++) {
+  		
+      if (columnIdentities != null) {
+        int index = cl_des.searchColumnByName_UsingComparator(columnIdentities, columnData_des[i]);
+        if (index >= 0) {
+        	columnData_des[i].setIdentity(true);
+        }
+      }
+      
+		}
+		
+	}
 
   
 }
