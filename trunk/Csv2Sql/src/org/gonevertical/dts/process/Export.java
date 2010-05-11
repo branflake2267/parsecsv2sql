@@ -241,6 +241,7 @@ public class Export {
     } catch (SQLException e) {
       System.err.println("Error: loopData(): " + sql);
       e.printStackTrace();
+      logger.error("Export.loopData() Error: " + sql, e);
     }
     
   }
