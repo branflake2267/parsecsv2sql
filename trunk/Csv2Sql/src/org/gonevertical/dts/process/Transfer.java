@@ -33,6 +33,8 @@ import org.gonevertical.dts.v2.CsvProcessing_v2;
  *        partially done
  * TODO - auto build the identity index when using identities as keys
  * TODO - when testing if data exists and the count comes back more than 1, purge duplicates
+ * TODO - write test for identity use
+ * TODO - map using columndata and get rid of field data in here.
  * 
  * oracle and microsoft sql need to be able to page with rownumbering
  * 
