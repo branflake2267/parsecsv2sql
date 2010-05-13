@@ -20,7 +20,7 @@ public class CompareTables {
 
 	private Logger logger = Logger.getLogger(CompareTables.class);
 	
-	private long limitOffset = 100;
+	private long limitOffset = 5000;
 	
 	//source database settings
   private DatabaseData database_src = null;
@@ -208,11 +208,11 @@ public class CompareTables {
     long offset = 0;
     long limit = 0;
     for (int i=0; i < totalPages; i++) {
-      if (i==0) {
+      if (i == 0) {
         offset = 0;
         limit = lim;
       } else {
-        offset = ((i + 1 )* lim) - lim;
+        offset = ((i + 1 ) * lim) - lim;
         limit = lim;
       }
       processSrc(offset, limit);
@@ -319,7 +319,9 @@ public class CompareTables {
     if (overallRowMatch == false) {
     	failure = true;
     	failureCount++;
-    	logger.error("CompareTables.process(): Data is not matching. Overall: " + overallRowMatch + " ::: " + s);
+    	
+    	// this is overkill
+    	//logger.error("CompareTables.process(): Data is not matching. Overall: " + overallRowMatch + " ::: " + s);
     }
   
   }
