@@ -7,7 +7,6 @@ import org.apache.log4j.Logger;
 import org.gonevertical.dts.lib.StringUtil;
 import org.gonevertical.dts.lib.datetime.DateTimeParser;
 import org.gonevertical.dts.lib.sql.transformlib.MySqlTransformLib;
-import org.gonevertical.dts.v2.CsvProcessing_v2;
 
 
 public class ColumnData implements Cloneable {

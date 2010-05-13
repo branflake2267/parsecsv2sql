@@ -1,7 +1,7 @@
 package org.gonevertical.dts.test;
 
 import org.gonevertical.dts.data.DatabaseData;
-import org.gonevertical.dts.lib.experimental.CompareTables;
+import org.gonevertical.dts.lib.errorcheck.CompareTables;
 
 public class Run_CompareTableCounts {
 

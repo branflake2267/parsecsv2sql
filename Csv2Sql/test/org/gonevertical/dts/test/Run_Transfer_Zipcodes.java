@@ -6,7 +6,6 @@ import java.net.URISyntaxException;
 import javax.naming.Context;
 
 import org.gonevertical.dts.data.DatabaseData;
-import org.gonevertical.dts.lib.StringUtil;
 import org.gonevertical.dts.lib.pooling.SetupInitialContext;
 import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
 import org.gonevertical.dts.process.Transfer;

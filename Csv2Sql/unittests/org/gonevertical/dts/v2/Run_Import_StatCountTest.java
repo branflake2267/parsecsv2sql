@@ -1,6 +1,6 @@
 package org.gonevertical.dts.v2;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -9,8 +9,6 @@ import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.FieldData;
 import org.gonevertical.dts.data.SourceData;
 import org.gonevertical.dts.data.StatData;
-import org.gonevertical.dts.lib.sql.querymulti.QueryLibFactory;
-import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
 import org.gonevertical.dts.test.Run_Test_Import_v1;
 import org.junit.After;
 import org.junit.Before;
