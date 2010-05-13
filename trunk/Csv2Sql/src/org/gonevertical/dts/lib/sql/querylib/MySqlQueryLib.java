@@ -11,7 +11,6 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.StatData;
-import org.gonevertical.dts.v2.CsvProcessing_v2;
 
 
 public class MySqlQueryLib implements QueryLib {

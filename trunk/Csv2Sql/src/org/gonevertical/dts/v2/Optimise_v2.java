@@ -55,6 +55,8 @@ public class Optimise_v2 {
   private int decb = 0;
   
   private boolean discoverToTable = false;
+
+	private int totalThreadCount = 6;
   
   public Optimise_v2(DestinationData_v2 destinationData) {
     this.destinationData = destinationData;
@@ -665,19 +667,8 @@ public class Optimise_v2 {
   	long limit = 0;
   	for (int i=0; i < tp.intValue(); i++) {
 
-  		if (i==0) {
-  			offset = 0;
-  			limit = lim;
-  		} else {
-  			offset = ((i + 1 ) * lim) - lim;
-  			limit = lim;
-  		}
-
-  		// TODO move this up to class var
-  		int totalThreadCount = 6;
-
   		// spawn more than one thread to copy, in order to do this, connection pooling will need to be setup
-  		Thread[] threads = new Thread[totalThreadCount];
+  		Thread[] threads = new Thread[totalThreadCount ];
   		for (int threadCount=0; threadCount < totalThreadCount; threadCount++) {
 
   			if (i==0) {
@@ -749,7 +740,7 @@ public class Optimise_v2 {
 
   		// spawn more than one thread to copy, in order to do this, connection pooling will need to be setup
   		Thread[] threads = new Thread[totalThreadCount];
-  		for (int threadCount=0; threadCount < totalThreadCount; threadCount++) {
+  		for (int t=0; t < totalThreadCount; t++) {
 
   			if (i==0) {
   				offset = 0;
@@ -763,7 +754,7 @@ public class Optimise_v2 {
   			Optimise_FormatColumn formatColumn = new Optimise_FormatColumn();
   			formatColumn.setData(destinationData, Optimise_FormatColumn.FORMAT_INT, columnData, offset, limit, index);
 
-  			threads[threadCount] = new Thread(formatColumn);
+  			threads[t] = new Thread(formatColumn);
 
   			if (totalThreadCount > 1) {
   				i++;
@@ -772,12 +763,12 @@ public class Optimise_v2 {
   			index = index - lim;
   		}
 
-  		for (int threadCount=0; threadCount < totalThreadCount; threadCount++) {
-  			threads[threadCount].start();
+  		for (int t=0; t < totalThreadCount; t++) {
+  			threads[t].start();
   		}
 
   		// join threads - finish the threads before moving to the next pages
-  		for (int threadCount=0; threadCount < totalThreadCount; threadCount++) { 
+  		for (int t=0; t < totalThreadCount; t++) { 
   			try {
   				threads[0].join();
   			} catch (InterruptedException e) {

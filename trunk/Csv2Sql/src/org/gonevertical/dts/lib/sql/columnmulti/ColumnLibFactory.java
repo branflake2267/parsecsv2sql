@@ -1,6 +1,5 @@
 package org.gonevertical.dts.lib.sql.columnmulti;
 
-import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 

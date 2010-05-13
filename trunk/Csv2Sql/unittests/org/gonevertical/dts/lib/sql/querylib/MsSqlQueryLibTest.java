@@ -1,6 +1,6 @@
 package org.gonevertical.dts.lib.sql.querylib;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -11,7 +11,6 @@ import java.sql.Statement;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.lib.sql.querymulti.QueryLibFactory;
-import org.gonevertical.dts.lib.sql.transformlib.MySqlTransformLib;
 import org.gonevertical.dts.lib.sql.transformlib.TransformLib;
 import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
 import org.junit.After;

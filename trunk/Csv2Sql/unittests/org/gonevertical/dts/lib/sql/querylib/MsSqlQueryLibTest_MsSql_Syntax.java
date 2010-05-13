@@ -1,7 +1,5 @@
 package org.gonevertical.dts.lib.sql.querylib;
 
-import static org.junit.Assert.*;
-
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.lib.sql.querymulti.QueryLibFactory;
 import org.gonevertical.dts.lib.sql.transformlib.TransformLib;

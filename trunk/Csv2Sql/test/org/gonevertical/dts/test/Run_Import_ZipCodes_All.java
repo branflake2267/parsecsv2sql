@@ -3,14 +3,10 @@ package org.gonevertical.dts.test;
 import java.io.File;
 import java.net.URISyntaxException;
 
-import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.FieldData;
 import org.gonevertical.dts.data.SourceData;
-import org.gonevertical.dts.lib.sql.transformlib.MySqlTransformLib;
 import org.gonevertical.dts.v2.DestinationData_v2;
-import org.gonevertical.dts.v2.Indexing;
-import org.gonevertical.dts.v2.Optimise_v2;
 import org.gonevertical.dts.v2.ProcessImport;
 
 
