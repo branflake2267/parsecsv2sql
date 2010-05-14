@@ -59,24 +59,44 @@ public class DateTimeParser {
    * parse the date time into Date
    *   this will return original value if nothing is matched
    *   
-   * @param datetime
+   * @param parseDateTime
    * @return
    */
-  public Date getDate(String datetime) {
-    this.datetime = datetime;
+  public Date getDate(String parseDateTime) {
+    this.datetime = parseDateTime;
     getDate(TYPE_ENG_DATE);
     return date;
   }
   
   /**
-   * does one of the date formats match the value, can this value be parsed as a datetime?
+   * parse datetime and get it in calendar format. 
    * 
-   * @param datetime
+   * @param parseDateTime
+   * @param cal - init the calendar to your locale if you like
    * @return
    */
-  public boolean getIsDate(String datetime) {
+  public Calendar getCalendar(String parseDateTime, Calendar cal) {
+    this.datetime = parseDateTime;
+    getDate(TYPE_ENG_DATE);
+    
+    if (date != null) {
+    	cal = Calendar.getInstance();
+    	cal.setTime(date);
+    } else {
+    	cal = null;
+    }
+    return cal;
+  }
+  
+  /**
+   * does one of the date formats match the value, can this value be parsed as a datetime?
+   * 
+   * @param parseDateTime
+   * @return
+   */
+  public boolean getIsDate(String parseDateTime) {
     isDate = false;
-    this.datetime = datetime;
+    this.datetime = parseDateTime;
     getDate(TYPE_ENG_DATE);
     return isDate;
   }
@@ -89,9 +109,9 @@ public class DateTimeParser {
     return isDate;
   }
   
-  public boolean getIsDateExplicit(String datetime) {
+  public boolean getIsDateExplicit(String parseDateTime) {
     isDate = false;
-    this.datetime = datetime;
+    this.datetime = parseDateTime;
     getDateExplicit(TYPE_MYSQL_DATETIME);
     return isDate;
   }
@@ -108,23 +128,23 @@ public class DateTimeParser {
    * get datetime in string mm/dd/yyyy
    * @return
    */
-  public String getDate_EngString(String datetime) {
-    this.datetime = datetime;
+  public String getDate_EngString(String parseDateTime) {
+    this.datetime = parseDateTime;
     String s = getDate(TYPE_ENG_DATE);
     return s;
   }
 
-  public String getDateMysql(String datetime) {
-    this.datetime = datetime;
+  public String getDateMysql(String parseDateTime) {
+    this.datetime = parseDateTime;
     String s = getDate(TYPE_MYSQL_DATETIME);
     if (isDate == false) {
-      System.out.println("DateTimeParser.getDateMysql(): Can't figure out date format. valueWas: " + datetime);
+      System.out.println("DateTimeParser.getDateMysql(): Can't figure out date format. valueWas: " + parseDateTime);
     }
     return s;
   }
   
-  public String getDateMysqlExplicit(String datetime) {
-    this.datetime = datetime;
+  public String getDateMysqlExplicit(String parseDateTime) {
+    this.datetime = parseDateTime;
     String s = getDateExplicit(TYPE_MYSQL_DATETIME);
     return s;
   }
