@@ -59,11 +59,11 @@ public class DateTimeParser {
    * parse the date time into Date
    *   this will return original value if nothing is matched
    *   
-   * @param dt
+   * @param datetime
    * @return
    */
-  public Date getDate(String dt) {
-    this.datetime = dt;
+  public Date getDate(String datetime) {
+    this.datetime = datetime;
     getDate(TYPE_ENG_DATE);
     return date;
   }
@@ -71,12 +71,12 @@ public class DateTimeParser {
   /**
    * does one of the date formats match the value, can this value be parsed as a datetime?
    * 
-   * @param dt
+   * @param datetime
    * @return
    */
-  public boolean getIsDate(String dt) {
+  public boolean getIsDate(String datetime) {
     isDate = false;
-    this.datetime = dt;
+    this.datetime = datetime;
     getDate(TYPE_ENG_DATE);
     return isDate;
   }
@@ -89,10 +89,10 @@ public class DateTimeParser {
     return isDate;
   }
   
-  public boolean getIsDateExplicit(String dt) {
+  public boolean getIsDateExplicit(String datetime) {
     isDate = false;
-    this.datetime = dt;
-    getDateExplicit(TYPE_MYSQL_DATETIME      );
+    this.datetime = datetime;
+    getDateExplicit(TYPE_MYSQL_DATETIME);
     return isDate;
   }
   
