@@ -165,7 +165,7 @@ public class CompareTables {
   	}
 
   	CompareTablesThread[] ctt = new CompareTablesThread[totalThreadCount];
-  	Thread[] threads = new Thread[totalThreadCount ];
+  	Thread[] threads = new Thread[totalThreadCount];
 
   	long offset = 0;
   	long limit = 0;
