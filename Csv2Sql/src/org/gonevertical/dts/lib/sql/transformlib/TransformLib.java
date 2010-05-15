@@ -79,5 +79,6 @@ public interface TransformLib {
   public void createUser(DatabaseData dd, String userName, String password, String host);
   
   public boolean doesUserExist(DatabaseData dd, String userName, String password, String host);
-  
+ 
+  public String[] getTablesAll(DatabaseData dd);
 }
