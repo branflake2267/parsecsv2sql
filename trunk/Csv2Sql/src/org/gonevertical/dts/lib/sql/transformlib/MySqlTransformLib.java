@@ -854,4 +854,36 @@ public class MySqlTransformLib implements TransformLib {
     return ql.queryBoolean(dd, sql);
   }
   
+  public String[] getTablesAll(DatabaseData dd) {
+  	String sql = "SHOW TABLES FROM " + dd.getDatabase();
+  	String[] table = null;
+  	Connection conn = null;
+    Statement select = null;
+    try {
+      conn = dd.getConnection();
+      select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      table = new String[ql.getResultSetSize(result)];
+      int i = 0;
+      while (result.next()) {
+       table[i] = result.getString(1);
+       i++;
+      }
+      result.close();
+      result = null;
+      select.close();
+      select = null;
+      conn.close();
+    } catch (SQLException e) {
+      System.err.println("Error: getAllTables(): " + sql);
+      System.err.println("servletConn:" + dd.getConnetionByConext() + " Server: " + dd.getServer());
+      logger.error("Error: " + sql + "\n", e);
+      e.printStackTrace();
+    } finally {
+      conn = null;
+      select = null;
+    }
+    return table;
+  }
+  
 }
