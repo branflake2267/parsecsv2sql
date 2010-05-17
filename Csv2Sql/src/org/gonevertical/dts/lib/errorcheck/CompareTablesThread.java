@@ -235,7 +235,7 @@ public class CompareTablesThread implements Runnable {
 
 		String columnCsv = cl_src.getSql_Names_WSql(columnData_src, null);
 
-		String sql = "SELECT "+columnCsv+" FROM " + tableRight + " WHERE " + where;
+		String sql = "SELECT " + columnCsv + " FROM " + tableRight + " WHERE " + where;
 
 
 		logger.trace("RIGHT:" + sql);
