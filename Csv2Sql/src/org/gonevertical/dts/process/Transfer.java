@@ -881,7 +881,7 @@ public class Transfer implements Runnable, Cloneable {
       sql = "INSERT INTO " + columnData.getTable() + " SET " + datafields;
       
     }
-    logger.trace("Transfer.saveOneToMany(): " + sql);
+    logger.info("Transfer.saveOneToMany(): " + sql);
     ql_des.update(database_des, sql);
   }
 
@@ -971,9 +971,9 @@ public class Transfer implements Runnable, Cloneable {
     
     
     if (fields == null || fields.trim().length() == 0) {
-      logger.info("Transfer.save(): skipping save(). " +
-      		"probably b/c we only have a primary key and/or one to many is the only thing being used. " +
-      		"Its possible your only moving one to many records. Ignore this if only moving one to many.");
+      //logger.info("Transfer.save(): skipping save(). " +
+      //		"probably b/c we only have a primary key and/or one to many is the only thing being used. " +
+      //		"Its possible your only moving one to many records. Ignore this if only moving one to many.");
       return;
     }
     
