@@ -398,8 +398,10 @@ public class Transfer implements Runnable, Cloneable {
   		where = " WHERE " + srcWhere;
   	}
   	
-    String sql = "SELECT COUNT(*) AS t FROM " + database_src.getDatabase() + "." + tableLeft + " " + where;
-    logger.trace("Transfer.setTotal(): " + sql);
+  	String db = database_src.getDbCatalogAndTable();
+  	
+    String sql = "SELECT COUNT(*) AS t FROM " + db + "." + tableLeft + " " + where;
+    logger.info("Transfer.setTotal(): " + sql);
     
     total = ql_src.queryLong(database_src, sql);
     index = total;
@@ -673,7 +675,8 @@ public class Transfer implements Runnable, Cloneable {
       select = null;
       conn = null;
     } catch (SQLException e) {
-      logger.error(e);
+    	e.printStackTrace();
+      logger.error("Error " + sql, e);
     } finally {
       conn = null;
       select = null;

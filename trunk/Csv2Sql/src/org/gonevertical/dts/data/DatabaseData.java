@@ -473,4 +473,16 @@ public class DatabaseData {
   public String getServer() {
   	return "Server: " + host + ":" + port + "/" + database;
   }
+  
+  public void setDatabase(String database) {
+  	this.database = database;
+  }
+  
+  public String getDbCatalogAndTable() {
+  	String db = database;
+  	if (tableSchema != null && tableSchema.length() > 0) {
+  		db += "." + tableSchema;
+  	}
+  	return db;
+  }
 }
