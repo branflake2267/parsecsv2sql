@@ -867,6 +867,9 @@ public class Optimise_v2 {
     return columns;
   }
   
+  /**
+   * delete duplicates based on the identities set
+   */
   public void deleteDuplicates() {
     
     long c = getTableHasDuplicates();
@@ -909,6 +912,12 @@ public class Optimise_v2 {
     }
   }
   
+  /**
+   * delete duplicate records
+   * 
+   * @param index
+   * @param uniqueId
+   */
   private void processDuplicate(int index, int uniqueId) {
     
     String idents_Columns = getIdentitiesColumns_inCsv();
