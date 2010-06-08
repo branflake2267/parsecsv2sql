@@ -57,6 +57,8 @@ public class Optimise_v2 {
   private boolean discoverToTable = false;
 
 	private int totalThreadCount = 6;
+
+	private String where;
   
   public Optimise_v2(DestinationData_v2 destinationData) {
     this.destinationData = destinationData;
@@ -807,11 +809,20 @@ public class Optimise_v2 {
     
     long r = tc - tdc;
     
+    logger.info("tableRowCount=" + tc + " tableDistinctCount=" + tdc + " Difference: " + r);
+    
     return r;
   }
   
   private long getTableRecordCount() {
-    String sql = "SELECT COUNT(*) AS t FROM " + destinationData.databaseData.getDatabase() + "." + destinationData.table + ";";
+  	
+    String sqlWhere = "";
+    if (where != null) {
+    	sqlWhere = where;
+    }
+    
+    String sql = "SELECT COUNT(*) AS t " +
+    		"FROM " + destinationData.databaseData.getDatabase() + "." + destinationData.table + " " + sqlWhere + ";";
     logger.info(sql);
     return ql.queryLong(destinationData.databaseData, sql);
   }
@@ -822,11 +833,16 @@ public class Optimise_v2 {
       return 0;
     }
     
+    String sqlWhere = "";
+    if (where != null) {
+    	sqlWhere = where;
+    }
+    
     // get ident columns
     String idents_Columns = getIdentitiesColumns_inCsv();
     
     String sql = "SELECT DISTINCT " + idents_Columns + " FROM " + 
-      destinationData.databaseData.getDatabase() + "." + destinationData.table + ";"; 
+      destinationData.databaseData.getDatabase() + "." + destinationData.table + " " + sqlWhere + ";"; 
 
     logger.info(sql);
     
@@ -867,6 +883,11 @@ public class Optimise_v2 {
     return columns;
   }
   
+  public void deleteDuplicates(String where) {
+  	this.where = where;
+  	deleteDuplicates();
+  }
+  
   /**
    * delete duplicates based on the identities set
    */
@@ -879,19 +900,24 @@ public class Optimise_v2 {
      return;
     }
     
+    String sqlWhere = "";
+    if (where != null) {
+    	sqlWhere = where;
+    }
+    
     String idents_Columns = getIdentitiesColumns_inCsv();
     
     // load the records that indicate they there duplicates
     String sql = "SELECT " + destinationData.primaryKeyName + " FROM " + 
-    destinationData.databaseData.getDatabase() + "." + destinationData.table + " " +
-    		"GROUP BY "+ idents_Columns + " HAVING count(*) > 1;"; 
+    	destinationData.databaseData.getDatabase() + "." + destinationData.table + " " +
+    	sqlWhere +
+    	"GROUP BY "+ idents_Columns + " HAVING count(*) > 1;"; 
 
     logger.info(sql);
     
     try {
       Connection conn = destinationData.databaseData.getConnection();
-      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, 
-          java.sql.ResultSet.CONCUR_READ_ONLY);
+      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
       select.setFetchSize(Integer.MIN_VALUE);
       ResultSet result = select.executeQuery(sql);
       int index = 0; //ql.getResultSetSize(result); TODO change this, b/c its not supported in foward read
@@ -930,8 +956,7 @@ public class Optimise_v2 {
     
     try {
       Connection conn = destinationData.databaseData.getConnection();
-      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, 
-          java.sql.ResultSet.CONCUR_READ_ONLY);
+      Statement select = conn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
       select.setFetchSize(Integer.MIN_VALUE);
       ResultSet result = select.executeQuery(sql);
       while (result.next()) {
