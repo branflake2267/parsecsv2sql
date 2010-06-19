@@ -639,7 +639,8 @@ public class Transfer implements Runnable, Cloneable {
       //sql = sql.replaceAll("", "");
     //}
     
-    logger.trace("Thread: " + threadCount + " sql: " + sql);
+    //logger.debug("Thread: " + threadCount + " sql: " + sql);
+    System.out.println(sql);
     
     Connection conn = null;
     Statement select = null;
