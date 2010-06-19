@@ -37,7 +37,7 @@ public class CompareTables {
   
   private String srcWhere = null;
   
-  private boolean doesntMatch = false;
+  private boolean matches = false;
 
 	private ColumnData[] columnIdentities;
 
@@ -83,12 +83,10 @@ public class CompareTables {
   }
   
   private void checkTableCount(String leftTable, String rightTable) {
-  	doesntMatch = false;
+  	matches = false;
   	
-  	String where = "";
-  	if (srcWhere != null) {
-  		where = " WHERE " + srcWhere;
-  	}
+  	String where = " WHERE (1=1) ";
+  	where += getSrcWhere();
   	
   	String sqlL = "SELECT COUNT(*) AS t FROM " + leftTable + where;
   	String sqlR = "SELECT COUNT(*) AS t FROM " + rightTable + where;
@@ -101,12 +99,12 @@ public class CompareTables {
   	String match = "";
   	if (left == right) {
   		 match = "TRUE";
-  		 doesntMatch = false;
+  		 matches = true;
   	} else {
   		match = "FALSE";
-  		doesntMatch = true;
+  		matches = true;
   	}
-  	if (doesntMatch == true) {
+  	if (matches == false) {
   		logger.error("CompareTables.checkTableCount(): " +
   				"LeftTable: " + leftTable + " left: " + left + " RightTable: "+ rightTable + " right: " + right + " " + match + " offby: " + (left-right));
   	}
@@ -115,8 +113,16 @@ public class CompareTables {
 				"LeftTable: " + leftTable + " left: " + left + " RightTable: "+ rightTable + " right: " + right + " " + match + " offby: " + (left-right));
   }
   
+  private String getSrcWhere() {
+    String s = "";
+    if (srcWhere != null && srcWhere.length() > 0) {
+      s = " AND " + srcWhere;
+    }
+    return s; 
+  }
+  
   private void checkTableCount(String table) {
-  	doesntMatch = false;
+  	matches = false;
   	
   	String sql = "SELECT COUNT(*) AS t FROM " + table;
   	
@@ -126,10 +132,10 @@ public class CompareTables {
   	String match = "";
   	if (left == right) {
   		 match = "TRUE";
-  		 doesntMatch = false;
+  		 matches = false;
   	} else {
   		match = "FALSE";
-  		doesntMatch = true;
+  		matches = true;
   	}
   	logger.info("table: " + table + " left: " + left + " right: " + right + " " + match + " offby: " + (left-right));
   }
@@ -151,8 +157,11 @@ public class CompareTables {
   }
   
   private void processSrc() {
+    
+    String where = " WHERE (1=1) ";
+    where += getSrcWhere();
 
-  	String sql = "SELECT COUNT(*) AS t FROM `" + tableLeft + "`;";
+  	String sql = "SELECT COUNT(*) AS t FROM `" + tableLeft + "` " + where;
 
   	logger.info(sql);
 
@@ -221,8 +230,8 @@ public class CompareTables {
   	this.srcWhere = where;
   }
   
-  public boolean getDoesItMatch() {
-  	return doesntMatch;
+  public boolean getMatches() {
+  	return matches;
   }
 
 	public void setOrderBy(String sqlOrderBy) {
