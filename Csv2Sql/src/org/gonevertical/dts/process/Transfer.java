@@ -34,6 +34,7 @@ import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
  * TODO - when testing if data exists and the count comes back more than 1, purge duplicates
  * TODO - write test for identity use
  * TODO - map using columndata and get rid of field data in here.
+ * TODO - when transfering to a new auto created tables, and using by identities, need to create table first, b/c where query errors
  * 
  * oracle and microsoft sql need to be able to page with rownumbering
  * 
@@ -292,7 +293,7 @@ public class Transfer implements Runnable, Cloneable {
   private void createColumns() {
     
     for (int i=0; i < columnData_src.length; i++) {
-      //tl_des.createColumn(database_des, columnData_des[i]);
+      tl_des.createColumn(database_des, columnData_des[i]);
     }
     
   }
