@@ -102,7 +102,7 @@ public class CompareTables {
   		 matches = true;
   	} else {
   		match = "FALSE";
-  		matches = true;
+  		matches = false;
   	}
   	if (matches == false) {
   		logger.error("CompareTables.checkTableCount(): " +
@@ -132,10 +132,10 @@ public class CompareTables {
   	String match = "";
   	if (left == right) {
   		 match = "TRUE";
-  		 matches = false;
+  		 matches = true;
   	} else {
   		match = "FALSE";
-  		matches = true;
+  		matches = false;
   	}
   	logger.info("table: " + table + " left: " + left + " right: " + right + " " + match + " offby: " + (left-right));
   }
