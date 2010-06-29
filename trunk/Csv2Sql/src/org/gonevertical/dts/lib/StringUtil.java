@@ -114,15 +114,15 @@ public class StringUtil {
 
 	/**
 	 * read sql set parameters
-	 *	like a='b', b='xyz''123', c=null 
+	 *	like a='b', b='xyz''123', c=null, d='aasdf''s''dasdf' 
 	 *
 	 * 
-	 * @param value
+	 * @param sql
 	 * @return
 	 */
-	public static String[] readSqlSplit(String value) {
+	public static String[] readSqlSplit(String sql) {
 
-		if (value == null) {
+		if (sql == null) {
 			return null;
 		}
 
@@ -130,9 +130,9 @@ public class StringUtil {
 		String s = "";
 		boolean encapsulate = false;
 		int marker = 0;
-		for (int i=0; i < value.length(); i++) {
+		for (int i=0; i < sql.length(); i++) {
 
-			char c = value.charAt(i);
+			char c = sql.charAt(i);
 
 			String sc = Character.toString(c);
 

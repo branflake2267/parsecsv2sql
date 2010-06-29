@@ -1,5 +1,6 @@
 package org.gonevertical.dts.lib.sql.querylib;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -12,6 +13,8 @@ import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.StatData;
 import org.gonevertical.dts.lib.StringUtil;
+
+import com.csvreader.CsvReader;
 
 
 /**
@@ -567,10 +570,16 @@ public class MsSqlQueryLib implements QueryLib {
   	
   	String[] split = null;
   	if (sql.contains(",")) {
-  		split = sql.split(",");
+  	  //String regex = "(.*?=.*?'.+?'([\040]+)?)(,|$)";
+      //split = StringUtil.getValues(regex, sql);
+  	  split = StringUtil.readSqlSplit(sql);
   	} else {
   		split = new String[1];
   		split[0] = sql;
+  	}
+  	
+  	if (split == null) {
+  	  logger.error("MsSqlQueryLib.fixSyntax_getMiddle(): Error, couldn't decipher SQL");
   	}
   	
   	String[] c = new String[split.length];
