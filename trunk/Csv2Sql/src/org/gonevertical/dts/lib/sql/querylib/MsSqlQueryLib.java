@@ -372,11 +372,11 @@ public class MsSqlQueryLib implements QueryLib {
       }
       Statement update = conn.createStatement();
       
-      if (sql.toLowerCase().contains("drop") == true ||
-      		sql.toLowerCase().contains("alter") == true ||
-      		sql.toLowerCase().contains("create") == true || 
-      		sql.toLowerCase().contains("update") == true|| 
-      		sql.toLowerCase().contains("delete") == true) { // ms sql is dumb, b/c it can't figure out how to get ID when updating
+      if (sql.substring(0, 9).toLowerCase().matches("^([\040]+)?drop.*") == true ||
+      		sql.substring(0, 9).toLowerCase().matches("^([\040]+)?alter.*") == true ||
+      		sql.substring(0, 9).toLowerCase().matches("^([\040]+)?create.*") == true || 
+      		sql.substring(0, 9).toLowerCase().matches("^([\040]+)?update.*") == true|| 
+      		sql.substring(0, 9).toLowerCase().matches("^([\040]+)?delete.*") == true) { // ms sql is dumb, b/c it can't figure out how to get ID when updating
       	
       	update.execute(sql);
       	
@@ -506,9 +506,8 @@ public class MsSqlQueryLib implements QueryLib {
    */
   public String fixSyntax(String sql) {
   	
-  	if ((sql.toLowerCase().trim().matches("^insert.*") == true || 
-  			sql.toLowerCase().contains("^update.*") == true) && 
-  			sql.toLowerCase().matches(".*?set.*") == true) {
+  	if ((sql.replaceAll("\r", "").replaceAll("\n", "").toLowerCase().trim().matches("^insert.*set.*") == true || 
+  			sql.replaceAll("\r", "").replaceAll("\n", "").toLowerCase().trim().matches("^update.*set.*") == true)) {
   		sql = fixSyntax_InsertUpdate(sql);
   	}
   	
