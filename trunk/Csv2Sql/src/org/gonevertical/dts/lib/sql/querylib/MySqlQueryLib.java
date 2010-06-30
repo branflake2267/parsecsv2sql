@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -504,7 +505,7 @@ public class MySqlQueryLib implements QueryLib {
 		return "MySql";
 	}
 
-	public Date queryDate(DatabaseData dd, String sql) {
+	public Date queryDate(DatabaseData dd, String sql, Calendar cal) {
 		setTrackSql(sql);
 		java.sql.Date sqlDate = null;
 		Connection conn = null;
@@ -514,7 +515,7 @@ public class MySqlQueryLib implements QueryLib {
 			select = conn.createStatement();
 			ResultSet result = select.executeQuery(sql);
 			while (result.next()) {
-				sqlDate = result.getDate(1);
+				sqlDate = result.getDate(1, cal);
 			}
 			select.close();
 			select = null;
