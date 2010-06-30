@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -605,13 +606,40 @@ public class MsSqlQueryLib implements QueryLib {
   	return middle;
   }
 
-	@Override
-  public Date queryDate(DatabaseData dd, String sql) {
-	  // TODO Auto-generated method stub
-	  return null;
+  public Date queryDate(DatabaseData dd, String sql, Calendar cal) {
+    setTrackSql(sql);
+    java.sql.Date sqlDate = null;
+    Connection conn = null;
+    Statement select = null;
+    try {
+      conn = dd.getConnection();
+      select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        sqlDate = result.getDate(1, cal);
+      }
+      select.close();
+      select = null;
+      result.close();
+      result = null;
+      conn.close();
+    } catch (SQLException e) {
+      System.err.println("Mysql Statement Error:" + sql);
+      System.err.println("servletConn:" + dd.getConnetionByConext() + " Server: " + dd.getServer());
+      setTrackError(e.toString());
+      logger.error("Error: " + sql + "\n", e);
+      e.printStackTrace();
+    } finally {
+      conn = null;
+      select = null;
+    }
+
+    Date date = null;
+    if (sqlDate != null) {
+      long time = sqlDate.getTime();
+      date = new Date(time);
+    }
+    return date;
   }
-  
-  
-  
   
 }

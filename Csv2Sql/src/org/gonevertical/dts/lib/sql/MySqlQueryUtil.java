@@ -2,6 +2,7 @@ package org.gonevertical.dts.lib.sql;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.util.Calendar;
 import java.util.Date;
 
 import org.gonevertical.dts.data.DatabaseData;
@@ -73,8 +74,8 @@ public class MySqlQueryUtil {
     return new MySqlQueryLib().queryLongAndConvertToBoolean(dd, sql);
   }
 
-	public static Date queryDate(DatabaseData dd, String sql) {
-	  return new MySqlQueryLib().queryDate(dd, sql);
+	public static Date queryDate(DatabaseData dd, String sql, Calendar cal) {
+	  return new MySqlQueryLib().queryDate(dd, sql, cal);
   }
   
   
