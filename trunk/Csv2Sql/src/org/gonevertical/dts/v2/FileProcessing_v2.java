@@ -80,7 +80,8 @@ public class FileProcessing_v2 {
   private void loop(File[] files) {
   	
   	// warn if no files to work on
-    notifyOnZeroFiles(files);
+    // TODO this is kind of useless when doing so many files at once
+    //notifyOnZeroFiles(files);
   	
   	if (files == null) {
   		return;
