@@ -176,6 +176,11 @@ public class MySqlQueryLib implements QueryLib {
 	}
 
 	public String queryString(DatabaseData dd, String sql) {
+	  
+	  if (sql == null || sql.length() == 0) {
+	    return null;
+	  }
+	  
 		setTrackSql(sql);
 		String s = null;
 		Connection conn = null;
@@ -196,7 +201,7 @@ public class MySqlQueryLib implements QueryLib {
 			System.err.println("Error: queryString(): " + sql);
 			System.err.println("servletConn:" + dd.getConnetionByConext() + " Server: " + dd.getServer());
 			setTrackError(e.toString());
-			logger.error("Error: " + sql + "\n", e);
+			logger.error("Error: sql: " + sql + "\n", e);
 			e.printStackTrace();
 		} finally {
 			conn = null;
