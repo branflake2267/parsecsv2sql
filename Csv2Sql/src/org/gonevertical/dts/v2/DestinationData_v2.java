@@ -198,4 +198,12 @@ public class DestinationData_v2 {
 	public String getLoggingTable() {
 		return loggingTable;
 	}
+
+	public void setSrcFileIntoColumn(boolean b) {
+	  setSrcFileIntoColumn = b;
+	}
+	
+  public boolean getSrcFileIntoColumn() {
+    return setSrcFileIntoColumn;
+  }
 }

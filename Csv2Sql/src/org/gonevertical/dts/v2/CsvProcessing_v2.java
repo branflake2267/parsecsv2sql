@@ -252,6 +252,9 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   	}
   	
     String[] columns = csv.getColumns(cr);
+    
+    columns = extendColumns(columns);
+    
     columnData = processColumnsToColumnData(columns);
     tl.createColumn(dd.databaseData, columnData);
   }
@@ -444,6 +447,9 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
       e.printStackTrace();
     }
     
+    // extend some custom values into the data
+    values = extendValues(index, values);
+    
     // pre-process values in row
     values = preProcessFlatFileValues(index + 1, values);
     
@@ -626,7 +632,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     
     int extendCount = 0;
     
-    if (dd != null && dd.setSrcFileIntoColumn == true) {
+    if (dd != null && dd.getSrcFileIntoColumn() == true) {
      extendCount++; 
     }
     
@@ -638,7 +644,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     }
     
     int b = values.length;
-    if (dd != null && dd.setSrcFileIntoColumn) {
+    if (dd != null && dd.getSrcFileIntoColumn()) {
       c[b] = "SrcFile";
       b++;
     }
@@ -657,7 +663,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     
     int extendCount = 0;
     
-    if (dd != null && dd.setSrcFileIntoColumn == true) {
+    if (dd != null && dd.getSrcFileIntoColumn() == true) {
      extendCount++; 
     }
     
@@ -669,7 +675,7 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
     }
     
     int b = values.length;
-    if (dd != null && dd.setSrcFileIntoColumn) {
+    if (dd != null && dd.getSrcFileIntoColumn()) {
       v[b] = file.getAbsolutePath();
       b++;
     }
