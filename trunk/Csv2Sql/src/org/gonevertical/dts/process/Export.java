@@ -82,6 +82,9 @@ public class Export {
   // set the export source style
   private int exportServerType = DatabaseData.TYPE_MYSQL;
   
+  // this is like from database.table
+  private String database;
+  
   public Export(DatabaseData source, File destinationDirectory) {
     this.src = source;
     this.des = destinationDirectory;
@@ -211,9 +214,14 @@ public class Export {
    */
   private void loopData() {
     
+    String d = "";
+    if (database != null) {
+      d = database;
+    }
+    
     String sql = "SELECT ";
     sql += cl.getSql_Names(columnData) + " ";
-    sql += "FROM " + table + " ";
+    sql += "FROM " + d + "."+ table + " ";
     
     if (whereSql != null && whereSql.trim().length() != 0) {
       sql += " WHERE " + whereSql;
@@ -393,6 +401,14 @@ public class Export {
       setFile();
       openFile();
     }
+  }
+
+  /**
+   * set database like  from database.table
+   * @param database
+   */
+  public void setDatabase(String database) {
+    this.database = database;
   }
   
   
