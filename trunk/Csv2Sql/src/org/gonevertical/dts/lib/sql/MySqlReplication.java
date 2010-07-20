@@ -20,23 +20,23 @@ import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
 
 
 public class MySqlReplication {
-	
-	private Logger logger = Logger.getLogger(MySqlReplication.class);
+
+  private Logger logger = Logger.getLogger(MySqlReplication.class);
 
   // supporting libraries
   private QueryLib ql = null;
   private TransformLib tl = null;
   private ColumnLib cl = null;
-  
+
   // source database
   private DatabaseData dd_src = null;
-  
+
   // destination database
   private DatabaseData dd_des = null;
 
   // tmp directory to store the dump, so to sync
   private File tmpDir;
-  
+
   // master status
   private String statusFile = null;
   private String statusPosition = null;
@@ -45,11 +45,13 @@ public class MySqlReplication {
   private String replicationUsername = null;
   private String replicationPassword = null;
   private String masterHost = null;
-  
+
   private int dryRun = 0;
-  
+
   private ArrayList<String> ignoreTables = new ArrayList<String>();
   
+  private ArrayList<String> onlyDatabase = null;
+
   /**
    * constructor, init setup 
    * 
@@ -67,87 +69,87 @@ public class MySqlReplication {
     this.masterHost = masterHost;
     setSupportingLibraries();
   }
-  
+
   /**
    * guice injects the libraries needed for the database
    */
   private void setSupportingLibraries() {
     // get query library
     ql = QueryLibFactory.getLib(DatabaseData.TYPE_MYSQL);
-    
+
     // get column library
     cl = ColumnLibFactory.getLib(DatabaseData.TYPE_MYSQL);
-    
+
     // get tranformation library
     tl = TransformLibFactory.getLib(DatabaseData.TYPE_MYSQL);
   }
-  
+
   public void setDryRun() {
     dryRun = 1;
   }
-  
+
   public void run() {
-    
+
     // setup the replication user
     setupReplicationUser();
-    
+
     // stop slave just in case doing it again
     stopSlave();
-    
+
     // setup mysql.cnf on master
     setupMasterConf();
-    
+
     // setup mysql.cnf on slave
     setupSlaveConf();
-    
+
     // lock tables up so to get status
     lockTables();
-    
+
     // get master's status
     getMasterStatus();
-    
+
     // use this for syncing slave
     dumpMaster();
-    
+
     // unlock master tables after dump
     unlockTables();
-    
+
     // change to master
     setUpSlave();
-    
+
     // load slave
     loadSlave();
-    
+
     // start the slave threads
     startSlave();
-    
+
     // delete tmp file at the end
     deleteTmpFile();
-    
+
     System.out.println("Finished... Exiting...");
   }
-  
+
   /**
    * 
    */
   private void setupReplicationUser() {
-    
+
     // setup the replication user
     // TODO - if user is already created this will error
     String sqlCreateUser = "CREATE USER '" + replicationUsername + "'@'"+ dd_des.getHost() +"' IDENTIFIED BY '" + replicationPassword + "';";
     System.out.println(sqlCreateUser);
     ql.update(dd_src, sqlCreateUser);
-    
+
     // setup replication user privileges
     String sqlCreateUserPerm = "GRANT REPLICATION SLAVE ON *.*  TO '" + replicationUsername + "'@'" + dd_des.getHost() + "' IDENTIFIED BY '" + replicationPassword + "';";
     System.out.println(sqlCreateUserPerm);
     ql.update(dd_src, sqlCreateUserPerm);
-    
+
     // flush privileges;
     String sql = "FLUSH PRIVILEGES;";
     System.out.println(sql);
     ql.update(dd_src, sql);
-    
+
     // TODO - maybe query the user to see if things are correct?
   }
 
@@ -157,12 +159,12 @@ public class MySqlReplication {
    * TODO - automate later, manual setup for now
    */
   private void setupMasterConf() {
-  
+
     // TODO - add to master my.cnf
     // [mysqld]
     // log-bin=mysql-bin
     // server-id=1
-    
+
     int slaveId = getServerId(1);
     if (slaveId != 1) {
       System.out.println("master server_id variable in my.cnf not set correctly. Its set as on master server_id=" + slaveId);
@@ -171,49 +173,49 @@ public class MySqlReplication {
     } else {
       System.out.println("master serverid = 1, it passes.");
     }
-    
+
   }
-  
+
   /**
    * setup slave conf
    * 
    * TODO - automate later, manual setup for now
    */
   private void setupSlaveConf() {
-    
+
     // TODO - add to slave my.cnf
     // server-id=2
-    
+
     int slaveId = getServerId(2);
     if (slaveId == 1) {
       System.out.println("slave server_id variable in my.cnf not set correctly. It's current setting is server_id=" + slaveId);
       System.out.println("Set Slave server_id=>2 (greater than 1). Exiting....");
       System.exit(1);
     } else {
-      System.out.println("slave server_id="+slaveId+", it passes.");
+      System.out.println("slave server_id=" + slaveId + ", it passes.");
     }
   }
-  
+
   private void lockTables() {
-    
+
     if (dryRun == 1) {
       System.out.println("Won't lock tables now. Skipping b/c of dry run.......");
       return;
     }
-    
+
     String sql = "FLUSH TABLES WITH READ LOCK;";
     System.out.println(sql);
     ql.update(dd_src, sql);
   }
-  
+
   private void unlockTables() {
     String sql = "UNLOCK TABLES;";
     System.out.println(sql);
     ql.update(dd_src, sql);
   }
-  
+
   private void getMasterStatus() {
-    
+
     String sql = "SHOW MASTER STATUS;";
     System.out.println(sql);
     try {
@@ -234,24 +236,57 @@ public class MySqlReplication {
       e.printStackTrace();
     } 
   }
-  
+
   private void dumpMaster() {
     String lock = "";
     if (dryRun != 1) {
       lock = "--lock-all-tables";
     }
-    
+
     String it = getIgnoreTables();
-    
+
+    String databases = getDatabasesForDumping();
+
     String cmd = "mysqldump " +
-    		"-h" + dd_src.getHost() + " " +
-    		"-u" + dd_src.getUsername() + " " +
-    		"-p" + dd_src.getPassword() + " " +
-    		"" + it + " " + 
-    		"" + lock + " " +
-    		"--all-databases > " + getTmpPath() + "/master_dump.sql";
+    "-h" + dd_src.getHost() + " " +
+    "-u" + dd_src.getUsername() + " " +
+    "-p" + dd_src.getPassword() + " " +
+    "" + it + " " + 
+    "" + lock + " " +
+    " " + databases + " > " + getTmpPath() + "/master_dump.sql";
     System.out.println(cmd);
     runShell(cmd);
+  }
+
+  private String getDatabasesForDumping() {
+    String s = "--all-databases";
+    if (onlyDatabase != null) {
+      s = "--databases";
+      for (int i=0; i < onlyDatabase.size(); i++) {
+        s += onlyDatabase.get(i);
+        if (i < onlyDatabase.size() - 1) {
+          s += " ";
+        }
+      }
+    }
+    return s;
+  }
+
+  /**
+   * get database for replicating only 
+   */
+  private String getDatabasesForReplicating() {
+    String s = "--all-databases";
+    if (onlyDatabase != null) {
+      s = "";
+      for (int i=0; i < onlyDatabase.size(); i++) {
+        s += "--replicate-do-db=" + onlyDatabase.get(i);
+        if (i < onlyDatabase.size() - 1) {
+          s += " ";
+        }
+      }
+    }
+    return s;
   }
   
   /**
@@ -264,9 +299,9 @@ public class MySqlReplication {
     System.out.println(cmd);
     runShell(cmd);
   }
-  
+
   private void setUpSlave() {
-    
+
     String sql = "";
     sql += "CHANGE MASTER TO ";
     sql += "MASTER_HOST='" + masterHost + "', "; // master_host_name
@@ -274,17 +309,17 @@ public class MySqlReplication {
     sql += "MASTER_PASSWORD='" + replicationPassword + "', "; // replication_password
     sql += "MASTER_LOG_FILE='" + statusFile + "', "; // recorded_log_file_name
     sql += "MASTER_LOG_POS=" + statusPosition + "; "; // recorded_log_position
-   
+
     System.out.println(sql);
     ql.update(dd_des, sql);
   }
-  
+
   private void startSlave() {
     String sql = "START SLAVE;";
     System.out.println(sql);
     ql.update(dd_des, sql);
   }
-  
+
   /**
    * stop and reset slave before trying anything
    * http://dev.mysql.com/doc/refman/5.4/en/reset-slave.html
@@ -293,30 +328,30 @@ public class MySqlReplication {
     String sql = "STOP SLAVE;";
     System.out.println(sql);
     ql.update(dd_des, sql);
-    
+
     sql = "RESET SLAVE;";
     System.out.println(sql);
     ql.update(dd_des, sql);
-    
+
   }
-  
+
   private String getTmpPath() {
     String path = tmpDir.getPath();
     return path;
   }
-  
+
   private int getServerId(int srcdes) {
-    
+
     String sql = "SHOW VARIABLES like 'server_id'";
     System.out.println(sql);
-    
+
     DatabaseData dd = null;
     if (srcdes == 1) {
       dd = dd_src; 
     } else {
       dd = dd_des;
     }
-    
+
     String sid = null;
     try {
       Connection conn = dd.getConnection();
@@ -336,7 +371,7 @@ public class MySqlReplication {
     }
     return Integer.parseInt(sid);
   }
-  
+
   /**
    * run shell command
    * 
@@ -378,19 +413,30 @@ public class MySqlReplication {
   }
 
   public void addIgnoreTable(String table) {
-	 ignoreTables.add(table);
+    ignoreTables.add(table);
   }
-  
+
   private String getIgnoreTables() {
-	  if (ignoreTables.size() == 0) {
-		  return "";
-	  }
-	  String s = "";
-	  for (int i=0; i < ignoreTables.size(); i++) {
-		  s += " --ignore-table=" + ignoreTables.get(i) + " ";
-	  }
-	  return s;
+    if (ignoreTables.size() == 0) {
+      return "";
+    }
+    String s = "";
+    for (int i=0; i < ignoreTables.size(); i++) {
+      s += " --ignore-table=" + ignoreTables.get(i) + " ";
+    }
+    return s;
   }
   
+  /**
+   * only replicate this database
+   * @param database
+   */
+  public void addReplicateDatabase(String database) {
+    if (onlyDatabase == null) {
+      onlyDatabase = new ArrayList<String>();
+    }
+    onlyDatabase.add(database);
+  }
+
 }
 

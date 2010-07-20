@@ -1,6 +1,5 @@
 package org.gonevertical.dts.lib.sql.querylib;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -14,8 +13,6 @@ import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.StatData;
 import org.gonevertical.dts.lib.StringUtil;
-
-import com.csvreader.CsvReader;
 
 
 /**
