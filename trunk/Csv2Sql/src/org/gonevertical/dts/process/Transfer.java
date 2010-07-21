@@ -144,6 +144,8 @@ public class Transfer implements Runnable, Cloneable {
 
 	// use identities instead of the primary key
 	private ColumnData[] columnIdentities;
+
+  private boolean keepPrimaryKey;
   
   /**
    * Transfer data object setup 
@@ -1024,8 +1026,12 @@ public class Transfer implements Runnable, Cloneable {
   
   private String getFields() {
     
-    // TODO maybe we do want to transfer primary key 
-  	ColumnData[] cols = cl_des.prunePrimaryKey(columnData_des);
+    ColumnData[] cols = null;
+    if (keepPrimaryKey == false) {
+      cols = cl_des.prunePrimaryKey(columnData_des);
+    } else {
+      cols = columnData_des;
+    }
   	
   	String sql = "";
     for (int i=0; i < cols.length; i++) {
@@ -1123,6 +1129,10 @@ public class Transfer implements Runnable, Cloneable {
     String srcPrimKeyValue = cl_src.getPrimaryKey_Value(columnData_src);
     String desPrimKeyColName = cl_des.getPrimaryKey_Name(columnData_des);
     
+    if (srcPrimKeyValue == null || srcPrimKeyValue.length() == 0) {
+      logger.warn("Transfer.getDestinationValuesForComparison(): How come there is no primary key???");
+    }
+    
     String sql = "SELECT * FROM " + tableRight + " WHERE " +
       "(" + desPrimKeyColName + "='" +  ql_src.escape(srcPrimKeyValue) + "')";
     
@@ -1151,6 +1161,7 @@ public class Transfer implements Runnable, Cloneable {
       select = null;
       conn = null;
     } catch (SQLException e) {
+      e.printStackTrace();
       logger.error(e);
     }
     
@@ -1500,6 +1511,10 @@ public class Transfer implements Runnable, Cloneable {
 		}
 		
 	}
+
+  public void setKeepPrimaryKey(boolean b) {
+    this.keepPrimaryKey = b;
+  }
 
   
 }
