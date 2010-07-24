@@ -18,7 +18,14 @@ import org.gonevertical.dts.lib.sql.querymulti.QueryLibFactory;
 import org.gonevertical.dts.lib.sql.transformlib.TransformLib;
 import org.gonevertical.dts.lib.sql.transformmulti.TransformLibFactory;
 
-
+/**
+ * TODO - on server-id=2 , deal with relay log setup, and mysql-bin disabling
+ * TODO - do a test at the end to verify setup
+ * 
+ * 
+ * @author brandon.a.donnelson
+ *
+ */
 public class MySqlReplication {
 
   private Logger logger = Logger.getLogger(MySqlReplication.class);
@@ -126,6 +133,9 @@ public class MySqlReplication {
     // delete tmp file at the end
     deleteTmpFile();
 
+    // show slave status
+    showSlaveStatus();
+    
     System.out.println("Finished... Exiting...");
   }
 
@@ -438,5 +448,26 @@ public class MySqlReplication {
     onlyDatabase.add(database);
   }
 
+  private void showSlaveStatus() {
+    String sql = "SHOW SLAVE STATUS;";
+    DatabaseData dd = dd_des;
+    try {
+      Connection conn = dd.getConnection();
+      Statement select = conn.createStatement();
+      ResultSet result = select.executeQuery(sql);
+      while (result.next()) {
+        System.out.println(result.toString());
+      }
+      select.close();
+      select = null;
+      result.close();
+      result = null;
+      conn.close();
+    } catch (SQLException e) {
+      System.err.println("Error: can't show slave status " + sql);
+      e.printStackTrace();
+    }
+  }
+  
 }
 
