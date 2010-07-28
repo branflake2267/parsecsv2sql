@@ -21,6 +21,11 @@ public class StringUtil {
 		if (regex == null | s == null) {
 			return false;
 		}
+		
+    if (regex != null && regex.contains(")") == false) {
+      System.err.println("oops!!! - you forgot to use parentheses to catch a group"); 
+    }
+		
 		boolean found = false;
 		try {
 			Pattern p = Pattern.compile(regex);
@@ -38,7 +43,9 @@ public class StringUtil {
 			return null;
 		}
 
-		// TODO - tell teh person when he doesn't put in (group) parentheses to capture group
+    if (regex != null && regex.contains(")") == false) {
+      System.err.println("oops!!! - you forgot to use parentheses to catch a group"); 
+    }
 
 		String v = null;
 		try {
@@ -57,8 +64,12 @@ public class StringUtil {
 	}
 
 	public static String[] getValues(String regex, String value) {
-		if (regex == null | value == null) {
+		if (regex == null || value == null) {
 			return null;
+		}
+		
+		if (regex != null && regex.contains(")") == false) {
+		  System.err.println("oops!!! - you forgot to use parentheses to catch a group"); 
 		}
 
 		ArrayList<String> s = new ArrayList<String>();
