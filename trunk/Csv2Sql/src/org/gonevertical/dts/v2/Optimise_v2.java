@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.lib.StringUtil;
 import org.gonevertical.dts.lib.datetime.DateTimeParser;
+import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;
 import org.gonevertical.dts.lib.sql.querylib.QueryLib;
@@ -652,6 +653,8 @@ public class Optimise_v2 {
   
   private void formatColumn_ToDateTime(ColumnData columnData) {
   	
+    setBlanksToNull(columnData);
+    
     String sql = "SELECT COUNT(*) AS t FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "`;"; 
     long total = ql.queryLong(destinationData.databaseData, sql);
     
@@ -712,6 +715,8 @@ public class Optimise_v2 {
   
   private void formatColumn_ToInt(ColumnData columnData) {
 
+    setBlanksToNull(columnData);
+    
   	String sql = "SELECT COUNT(*) as t FROM `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "`;";
   	long total = ql.queryLong(destinationData.databaseData, sql);
 
@@ -782,7 +787,19 @@ public class Optimise_v2 {
   	
   }
   
-  
+  /**
+   * TODO move this to the library so each db is different
+   * 
+   * @param columnData
+   */
+  private void setBlanksToNull(ColumnData columnData) {
+
+    String sql = "UPDATE `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "` " +
+    		"SET " + columnData.getName() + "=NULL WHERE " + columnData.getName() + "='';";
+    System.out.println(sql);
+    ql.update(destinationData.databaseData, sql);
+  }
+
   private void alterColumns() {
     if (alterColumns.size() == 0) {
       return;
