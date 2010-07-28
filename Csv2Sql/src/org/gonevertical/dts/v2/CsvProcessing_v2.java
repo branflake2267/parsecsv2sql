@@ -152,10 +152,11 @@ public class CsvProcessing_v2 extends FlatFileProcessing_v2 {
   	if (stats != null && stats.hasUpdatesAndInserts() == true) {
   		return;
   	}
-  	logger.error("CsvProcessing.isThereUpdatesAndInserts(): " +
-  			"For some reason there where no Inserts or Updates done. " +
-  			"File:" + file.getName() + " sourceData.file: " + sd.file.getName() + " " +
-  					"stats.fileLineCount: " + stats.getFileLineCount() + "\n\n" + stats.toString());
+  	// TODO need to fix the offset for this, when substiting rows, or not
+  	//logger.error("CsvProcessing.isThereUpdatesAndInserts(): " +
+  			//"For some reason there where no Inserts or Updates done. " +
+  			//"File:" + file.getName() + " sourceData.file: " + sd.file.getName() + " " +
+  					//"stats.fileLineCount: " + stats.getFileLineCount() + "\n\n" + stats.toString());
   }
 
 	private void isThereErros() {
