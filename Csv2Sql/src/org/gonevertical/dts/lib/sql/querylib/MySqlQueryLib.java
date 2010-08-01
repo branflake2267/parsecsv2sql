@@ -287,8 +287,8 @@ public class MySqlQueryLib implements QueryLib {
 				csv = "";
 			}
 			while (result.next()) {
-				int id = result.getInt(1);
-				String sid = Integer.toString(id);
+				long id = result.getLong(1);
+				String sid = Long.toString(id);
 				csv += sid;
 				if (i < size-1) { 
 					csv += Character.toString(delimiter);
