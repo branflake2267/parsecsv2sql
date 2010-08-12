@@ -514,7 +514,7 @@ public class Transfer implements Runnable, Cloneable {
     
     // Microsoft/Oracle paging sucks real bad. Why don't they have a built in function, duh!
     if (database_src.getDatabaseType() == DatabaseData.TYPE_MSSQL) {
-      sql += "SELECT * FROM ( ";
+      //sql += "SELECT * FROM ( ";
     }
     
     sql += "SELECT ";
@@ -530,7 +530,8 @@ public class Transfer implements Runnable, Cloneable {
       sql += database_src.getDatabase() + ".";
       sql += database_src.getTableSchema() + ".";
     }
-    sql += database_src.getDatabase() + "." + tableLeft + " ";
+    
+    sql +=  tableLeft + " ";
     
     sql += where;
     sql += getSrcWhere();

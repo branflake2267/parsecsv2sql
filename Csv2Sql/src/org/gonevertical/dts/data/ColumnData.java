@@ -497,10 +497,20 @@ public class ColumnData implements Cloneable {
     int l = 0;
     int r = 0;
     if (s.contains(",")) {
-      String sv = StringUtil.getValue("([0-9]+,[0-9]+)", s);
+      String sv = StringUtil.getValue("([0-9]+,[0-9]+|[0-9]+,[\040]+?[0-9]+)", s);
       String[] a = sv.split(",");
-      l = Integer.parseInt(a[0]);
-      r = Integer.parseInt(a[1]);
+      if (a != null) {
+        if (a[0] != null) {
+          l = Integer.parseInt(a[0].trim());
+        }
+        if (a[1] != null) {
+          r = Integer.parseInt(a[1].trim());
+        }
+      } else {
+        l = 0;
+        r = 0;
+      }
+      
     } else {
       l = s.length();
     }
@@ -732,7 +742,7 @@ public class ColumnData implements Cloneable {
       fieldType = ColumnData.FIELDTYPE_VARCHAR;
     } else if (type.contains("int")) {
       fieldType = ColumnData.FIELDTYPE_INT;
-    } else if (type.contains("double") | type.contains("decimal")) {
+    } else if (type.contains("double") || type.contains("decimal")) {
       fieldType = ColumnData.FIELDTYPE_DECIMAL;
     } else if (type.length() == 0) {
       fieldType = ColumnData.FIELDTYPE_EMPTY;
