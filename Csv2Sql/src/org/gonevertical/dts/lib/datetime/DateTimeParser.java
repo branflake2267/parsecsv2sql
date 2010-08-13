@@ -283,8 +283,11 @@ public class DateTimeParser {
     String s = "";
     if (checkIfPhoneNumber() == true) { // phone number 123-123-1234 is not a date
     	isDate = false;
-    	
-    } else if (checkforFormat_monthYearTogether() == true) {  // keep letter type first - like matching jan or Janurary
+    } else if (checkIfNumber1() == true) { // this is not a date - 1235-1234
+      isDate = false;
+      s = datetime;
+      
+    }  else if (checkforFormat_monthYearTogether() == true) {  // keep letter type first - like matching jan or Janurary
       s = df.format(date);
       isDate = true;
     } else if (checkforFormat_monthYear() == true) {  // keep letter type first - like matching jan or Janurary
