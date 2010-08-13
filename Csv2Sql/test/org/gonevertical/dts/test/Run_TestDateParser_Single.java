@@ -12,7 +12,7 @@ public class Run_TestDateParser_Single {
     
     // 2009-05-14 00:00:00:000000
     
-    parse.test_MySqlDate("20090514000000000000", "2009-05-14 00:00:00");
+    parse.test_MySqlDate("907-200", "2009-05-14 00:00:00");
   }
   
 }
