@@ -808,8 +808,18 @@ public class Optimise_v2 {
    */
   private void setBlanksToNull(ColumnData columnData) {
 
+    // TODO - move this into library
+    String c = "";
+    if (destinationData.getDatabaseData().getDatabaseType() == DatabaseData.TYPE_MYSQL) {
+      c = "`" + columnData.getColumnName() + "`";
+    } else if (destinationData.getDatabaseData().getDatabaseType() == DatabaseData.TYPE_MSSQL)  {
+      c = "[" + columnData.getColumnName() + "]";
+    } else {
+      c = "" + columnData.getColumnName() + "";
+    }
+    
     String sql = "UPDATE `" + destinationData.databaseData.getDatabase() + "`.`" + columnData.getTable() + "` " +
-    		"SET " + columnData.getName() + "=NULL WHERE " + columnData.getName() + "='';";
+    		"SET " + c + "=NULL WHERE " + c + "='';";
     System.out.println(sql);
     ql.update(destinationData.databaseData, sql);
   }
