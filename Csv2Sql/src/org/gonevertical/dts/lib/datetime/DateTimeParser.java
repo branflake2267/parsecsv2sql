@@ -208,6 +208,9 @@ public class DateTimeParser {
     if (checkIfPhoneNumber() == true) { // phone number 123-123-1234 is not a date
     	isDate = false;
     	s = datetime;
+    } else if (checkIfNumber1() == true) { // this is not a date - 1235-1234
+    	isDate = false;
+    	s = datetime;
     } else if (checkforFormat_monthYearTogether() == true) {  // keep letter type first - like matching jan or Janurary
       s = df.format(date);
       isDate = true;
@@ -331,8 +334,23 @@ public class DateTimeParser {
     return s;
   }
   
+  private boolean checkIfNumber1() {
+	  String regex = "^[0-9]+[.,\\-\040/]+?[0-9]+$"; // 123-456 is not a date
+	  boolean found = false;
+  	try {
+      Pattern p = Pattern.compile(regex);
+      Matcher m = p.matcher(datetime);
+      found = m.find();
+    } catch (Exception e) {
+      System.out.println("findMatch: regex error");
+      found = false;
+    }
+  	
+	  return found;
+  }
+  
   private boolean checkIfPhoneNumber() {
-	  String regex = "^[0-9]{3}[.,\\-\040/]+?[0-9]{3}[.,\\-\040/]+?[0-9]{4}$"; //123-123-1234 is not a date
+	  String regex = "^[0-9]{3}[.,\\-\040/]+?[0-9]{3}[.,\\-\040/]+?[0-9]{4}$"; //123-123-1234 | 123-456 is not a date
 	  boolean found = false;
   	try {
       Pattern p = Pattern.compile(regex);
