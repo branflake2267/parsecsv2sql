@@ -283,6 +283,8 @@ public class Optimise_v2 {
     
     columnData.setType(columnType);
     
+    setBlanksToNull(columnData);
+    
     // store it
     alterColumns.add(columnData);
   }
