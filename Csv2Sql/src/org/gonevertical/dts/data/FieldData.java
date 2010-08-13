@@ -103,5 +103,10 @@ public class FieldData implements Comparable<FieldData> {
 	  return index;
 	}
 
+  public void setData(String sourceField, String destinationField) {
+    this.sourceField = sourceField;
+    this.destinationField = destinationField;
+  }
+
 	
 }
