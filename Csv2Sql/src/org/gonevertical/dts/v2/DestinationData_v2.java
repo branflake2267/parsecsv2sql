@@ -206,4 +206,8 @@ public class DestinationData_v2 {
   public boolean getSrcFileIntoColumn() {
     return setSrcFileIntoColumn;
   }
+
+  public DatabaseData getDatabaseData() {
+    return databaseData;
+  }
 }

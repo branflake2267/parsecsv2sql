@@ -11,6 +11,7 @@ import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.ColumnData;
+import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.lib.StringUtil;
 import org.gonevertical.dts.lib.datetime.DateTimeParser;
 import org.gonevertical.dts.lib.sql.MySqlQueryUtil;
@@ -333,18 +334,28 @@ public class Optimise_v2 {
         random = "ORDER BY RAND()";
     }
     
+    // TODO - move this into library
+    String c = "";
+    if (destinationData.getDatabaseData().getDatabaseType() == DatabaseData.TYPE_MYSQL) {
+      c = "`" + columnData.getColumnName() + "`";
+    } else if (destinationData.getDatabaseData().getDatabaseType() == DatabaseData.TYPE_MSSQL)  {
+      c = "[" + columnData.getColumnName() + "]";
+    } else {
+      c = "" + columnData.getColumnName() + "";
+    }
+    
     // sample values that aren't null
     String ignoreNullValues = "";
     if (destinationData.optimise_ignoreNullFieldsWhenExamining == true) {
-      ignoreNullValues = "WHERE (" + columnData.getColumnName() + " IS NOT NULL)";
+      ignoreNullValues = "WHERE (" + c + " IS NOT NULL)";
     }
 
     // column query
-    String sql = "SELECT `" + columnData.getColumnName() + "` " + 
+    String sql = "SELECT " + c + " " + 
         "FROM " + destinationData.databaseData.getDatabase() + "." + columnData.getTable() + " " +
         "" + ignoreNullValues + " " + random + " " + getLimitQuery() + ";"; 
       
-    logger.info("Analyzing Column For Type: " + columnData.getColumnName() + " query: " + sql);
+    logger.info("Analyzing Column For Type: " + c + " query: " + sql);
 
     Connection conn = null;
     Statement select = null;
