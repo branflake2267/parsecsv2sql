@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -16,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.gonevertical.dts.data.ColumnData;
 import org.gonevertical.dts.data.DatabaseData;
 import org.gonevertical.dts.data.FieldData;
+import org.gonevertical.dts.lib.SqlUtil;
 import org.gonevertical.dts.lib.sql.columnlib.ColumnLib;
 import org.gonevertical.dts.lib.sql.columnmulti.ColumnLibFactory;
 import org.gonevertical.dts.lib.sql.querylib.QueryLib;
@@ -109,10 +111,8 @@ public class Transfer implements Runnable, Cloneable {
   // at index
   private long index = 0;
   
-  // not used, but maybe in the future. best way to purge is set date created for all to be copied then erase earlier date
-  // maybe need to set a purge column
-  @Deprecated
-	private Date purgeAtEnd = null;
+
+	private boolean purgeAtEnd = false;
 	
 	/**
 	 * what offset is this thread on
@@ -146,6 +146,8 @@ public class Transfer implements Runnable, Cloneable {
 	private ColumnData[] columnIdentities;
 
   private boolean keepPrimaryKey;
+
+  private Calendar purgeAtEnd_Dt;
   
   /**
    * Transfer data object setup 
@@ -262,8 +264,29 @@ public class Transfer implements Runnable, Cloneable {
       processSrc_Mash();
     }
     
+    purgeStaleRecordsOnDest();
   }
   
+  private void purgeStaleRecordsOnDest() {
+    
+    if (purgeAtEnd == false) {
+      return;
+    }
+  
+    String t = "";
+    if (database_des.getDatabaseType() == DatabaseData.TYPE_MSSQL) {
+      t += database_des.getDatabase() + ".";
+      t += database_des.getTableSchema() + ".";
+    }
+    t +=  tableRight + " ";
+    
+    String dt = SqlUtil.getCalendarAsSqlDt(purgeAtEnd_Dt);
+    
+    String sql = "DELETE FROM " + t + " " +
+    		"WHERE Auto_PurgeAtEnd IS NULL OR Auto_PurgeAtEnd < '" + dt + "';";
+    ql_des.update(database_des, sql);
+  }
+
   public void showDifferenceInTables(String fromTable, String toTable) {
   	this.tableLeft = fromTable;
     this.tableRight = toTable;
@@ -296,6 +319,12 @@ public class Transfer implements Runnable, Cloneable {
     
     for (int i=0; i < columnData_src.length; i++) {
       tl_des.createColumn(database_des, columnData_des[i]);
+    }
+    
+    if (purgeAtEnd == true) {
+      ColumnData c = new ColumnData(tableRight, "Auto_PurgeAtEnd", "DATETIME DEFAULT NULL");
+      tl_des.createColumn(database_des, c);
+      purgeAtEnd_Dt = Calendar.getInstance();
     }
     
   }
@@ -1056,6 +1085,11 @@ public class Transfer implements Runnable, Cloneable {
       }
     }
     
+    if (purgeAtEnd == true) {
+      String dt = SqlUtil.getCalendarAsSqlDt(purgeAtEnd_Dt);
+      sql += ",Auto_PurgeAtEnd='" + dt + "'";
+    }
+    
     return sql;
   }
   
@@ -1383,16 +1417,6 @@ public class Transfer implements Runnable, Cloneable {
   	this.limitOffset = limitOffset;
   }
 
-  /**
-   * TODO I had imaginged a way to purge extra records on the destination datbase, this still need to be done
-   * I decided to set dateupdated the same on the src db before copy, then deleted the less than dateupdated on dest
-   * I'd like to figure out a way with out altering, but it looks like if I add a column would work too.
-   */
-  @Deprecated
-	public void purgeAtEnd() {
-		purgeAtEnd = new Date();
-  }
-
 	/**
 	 * set how many threads to spawn - Warning, this should only be used with connection pooling
 	 *   NOTE: will probably crash connection due to max connections or will hit the file descriptor OS ceiling
@@ -1515,6 +1539,15 @@ public class Transfer implements Runnable, Cloneable {
 
   public void setKeepPrimaryKey(boolean b) {
     this.keepPrimaryKey = b;
+  }
+
+  /**
+   * Maybe I could do this down the road, not sure there is an all in one solution here b/c of
+   * the difference of every transfer
+   * @param b
+   */
+  public void setPurgeAtEnd(boolean b) {
+    this.purgeAtEnd = b;
   }
 
   
