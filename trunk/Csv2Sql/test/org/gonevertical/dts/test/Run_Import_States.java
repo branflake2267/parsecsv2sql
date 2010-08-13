@@ -67,6 +67,7 @@ public class Run_Import_States {
     destinationData.dropTable = true;
     destinationData.optimise = true;
     destinationData.debug = 1;
+    destinationData.setSrcFileIntoColumn(true);
     
     ProcessImport p = new ProcessImport(sourceData, destinationData);
     p.runImport();

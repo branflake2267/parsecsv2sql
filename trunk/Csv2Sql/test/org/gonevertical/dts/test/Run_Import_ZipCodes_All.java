@@ -41,10 +41,15 @@ public class Run_Import_ZipCodes_All {
     sourceData.file = new File(pathToFile);
     
     // des identity fields
-    FieldData[] identities = new FieldData[1];
+    FieldData[] identities = new FieldData[2];
     identities[0] = new FieldData();
+    identities[1] = new FieldData();
+    
     identities[0].sourceField = "zip_code";
     identities[0].destinationField = "zip_code";
+    
+    identities[1].sourceField = "SrcFile";
+    identities[1].destinationField = "SrcFile";
     
     // des change columns
     FieldData[] changeColumns = null;
@@ -64,6 +69,7 @@ public class Run_Import_ZipCodes_All {
     destinationData.dropTable = true;
     destinationData.optimise = true;
     destinationData.optimise_RecordsToExamine = 300;
+    destinationData.setSrcFileIntoColumn(true);
     
     // debug output
     destinationData.debug = 1;
