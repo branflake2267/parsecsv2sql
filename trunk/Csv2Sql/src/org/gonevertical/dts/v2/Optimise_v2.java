@@ -283,6 +283,7 @@ public class Optimise_v2 {
     
     columnData.setType(columnType);
     
+    // be sure that we won't truncate when altering to certian types like int and date
     setBlanksToNull(columnData);
     
     // store it
