@@ -476,6 +476,25 @@ public class FileUtil {
   	return b;
   }
    
- 
+  public static boolean writeToFile(File file, String s) {
+    boolean success = false;
+    BufferedWriter out = null;
+    try {
+      out = new BufferedWriter(new FileWriter(file, false));
+    } catch (IOException e) {
+      e.printStackTrace();
+    }    
+    try {
+      out.write(s);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    try {
+      out.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return success;
+  }
   
 }
