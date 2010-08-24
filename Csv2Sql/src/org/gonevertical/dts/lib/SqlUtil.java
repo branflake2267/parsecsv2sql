@@ -1,5 +1,13 @@
 package org.gonevertical.dts.lib;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Calendar;
 
 import sun.util.calendar.LocalGregorianCalendar.Date;
@@ -50,6 +58,41 @@ public class SqlUtil {
     String s = year + "-" + month + "-" + day + " " + hh + ":" + min + ":" + sec;
     
     return s;
+  }
+  
+  /**
+   * get sql from file
+   * 
+   * @param sfile
+   * @return
+   */
+  public static String getSql(File file) {
+    String buffer = "";
+    FileInputStream fis = null;
+    BufferedInputStream bis = null;
+    DataInputStream dis = null;
+    BufferedReader br = null;
+    try {
+      fis = new FileInputStream(file);
+      bis = new BufferedInputStream(fis);
+      dis = new DataInputStream(bis);
+      br = new BufferedReader(new InputStreamReader(dis));
+      String s = null;
+      while ((s = br.readLine()) != null) {
+        buffer += s;
+      }
+      br.close();
+      fis.close();
+      bis.close();
+      dis.close();
+    } catch (FileNotFoundException e) {
+      //logger.error(e);
+      e.printStackTrace();
+    } catch (IOException e) {
+      //logger.error(e);
+      e.printStackTrace();
+    }
+    return buffer;
   }
   
 }

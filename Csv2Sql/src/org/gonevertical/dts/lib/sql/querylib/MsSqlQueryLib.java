@@ -129,6 +129,7 @@ public class MsSqlQueryLib implements QueryLib {
       result = null;
       conn.close();
     } catch (SQLException e) {
+      logger.warn("" + sql, e);
       System.err.println("Error: queryBoolean(): " + sql);
       setTrackError(e.toString());
       e.printStackTrace();
@@ -161,6 +162,7 @@ public class MsSqlQueryLib implements QueryLib {
       select = null;
       conn.close();
     } catch (SQLException e) {
+      logger.warn("" + sql, e);
       System.err.println("Error: queryInteger(): " + sql);
       setTrackError(e.toString());
       e.printStackTrace();
@@ -184,6 +186,7 @@ public class MsSqlQueryLib implements QueryLib {
       select = null;
       conn.close();
     } catch (SQLException e) {
+      logger.warn("" + sql, e);
       System.err.println("Error: queryInteger(): " + sql);
       setTrackError(e.toString());
       e.printStackTrace();
@@ -214,6 +217,7 @@ public class MsSqlQueryLib implements QueryLib {
       result = null;
       conn.close();
     } catch (SQLException e) {
+      logger.warn("" + sql, e);
       System.err.println("Error: queryString(): " + sql);
       setTrackError(e.toString());
       e.printStackTrace();
@@ -244,6 +248,7 @@ public class MsSqlQueryLib implements QueryLib {
       select = null;
       conn.close();
     } catch (SQLException e) {
+      logger.warn("" + sql, e);
       System.err.println("Error: queryDouble(): " + sql);
       setTrackError(e.toString());
       e.printStackTrace();
@@ -269,6 +274,7 @@ public class MsSqlQueryLib implements QueryLib {
       select = null;
       conn.close();
     } catch (SQLException e) {
+      logger.warn("" + sql, e);
       System.err.println("Error: queryBigDecimal(): " + sql);
       setTrackError(e.toString());
       e.printStackTrace();
@@ -310,6 +316,7 @@ public class MsSqlQueryLib implements QueryLib {
       select = null;
       conn.close();
     } catch (SQLException e) {
+      logger.warn("" + sql, e);
       System.err.println("Error: queryIntegersToCsv(): " + sql);
       setTrackError(e.toString());
       e.printStackTrace();
@@ -346,6 +353,7 @@ public class MsSqlQueryLib implements QueryLib {
       select = null;
       conn.close();
     } catch (SQLException e) {
+      logger.warn("" + sql, e);
       System.err.println("Error: queryStringToCsv(): " + sql);
       setTrackError(e.toString());
       e.printStackTrace();
@@ -374,7 +382,8 @@ public class MsSqlQueryLib implements QueryLib {
       		sql.substring(0, 9).toLowerCase().matches("^([\040]+)?alter.*") == true ||
       		sql.substring(0, 9).toLowerCase().matches("^([\040]+)?create.*") == true || 
       		sql.substring(0, 9).toLowerCase().matches("^([\040]+)?update.*") == true|| 
-      		sql.substring(0, 9).toLowerCase().matches("^([\040]+)?delete.*") == true) { // ms sql is dumb, b/c it can't figure out how to get ID when updating
+      		sql.substring(0, 9).toLowerCase().matches("^([\040]+)?delete.*") == true || 
+      		sql.substring(0, 9).toLowerCase().matches("^([\040]+)?truncate.*") == true) { // ms sql is dumb, b/c it can't figure out how to get ID when updating
       	
       	update.execute(sql);
       	
@@ -395,6 +404,7 @@ public class MsSqlQueryLib implements QueryLib {
       update = null;
       conn.close();
     } catch (SQLException e) {
+      logger.warn("" + sql, e);
       System.err.println("Error: update(): " + sql);
       setTrackError(e.toString());
       e.printStackTrace();
@@ -429,6 +439,7 @@ public class MsSqlQueryLib implements QueryLib {
       update = null;
       conn.close();
     } catch (SQLException e) {
+      logger.warn("" + sql, e);
       System.err.println("Error: update(): " + sql);
       setTrackError(e.toString());
       e.printStackTrace();
@@ -452,6 +463,7 @@ public class MsSqlQueryLib implements QueryLib {
       result = null;
       conn.close();
     } catch (SQLException e) {
+      logger.warn("" + sql, e);
       System.err.println("Mysql Statement Error:" + sql);
       setTrackError(e.toString());
       e.printStackTrace();
@@ -481,6 +493,7 @@ public class MsSqlQueryLib implements QueryLib {
       result = null;
       conn.close();
     } catch (SQLException e) {
+      logger.warn("" + sql, e);
       System.err.println("Mysql Statement Error:" + sql);
       setTrackError(e.toString());
       e.printStackTrace();
@@ -621,6 +634,7 @@ public class MsSqlQueryLib implements QueryLib {
       result = null;
       conn.close();
     } catch (SQLException e) {
+      logger.warn("" + sql, e);
       System.err.println("Mysql Statement Error:" + sql);
       System.err.println("servletConn:" + dd.getConnetionByConext() + " Server: " + dd.getServer());
       setTrackError(e.toString());
