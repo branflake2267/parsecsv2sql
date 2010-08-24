@@ -148,15 +148,22 @@ public class StringUtil {
 			String sc = Character.toString(c);
 
 			//System.out.println("char: " + sc);
+			String slookahead = null;
+			if (i < sql.length() - 1) {
+			  char lookAheadOne = sql.charAt(i+1);
+			  slookahead = Character.toString(lookAheadOne);
+			}
 
-			if (encapsulate == true && marker == i-1) {
+			if (encapsulate == true && slookahead != null && slookahead.equals(",")) { // field='', this is legit
+			  encapsulate = false;
+			} else if (encapsulate == true && marker == i-1) {
 				//skip
 				//System.out.println("\tskip");
 			} else if (sc.equals("'") && encapsulate == false) {
 				encapsulate = true;
 				marker = i;
 				//System.out.println("\tencapsulate = true");
-			} else if (sc.equals("'") && encapsulate == true) {
+			} else if ((sc.equals("'") && encapsulate == true)) {
 				encapsulate = false;
 				//System.out.println("\tencapsulate = false");
 			}
