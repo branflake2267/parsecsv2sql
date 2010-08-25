@@ -596,8 +596,20 @@ public class MsSqlQueryLib implements QueryLib {
   	String[] v = new String[split.length];
   	for (int i=0; i < split.length; i++) {
   		String[] cv = split[i].trim().split("=");
-  		c[i] = cv[0];
-  		v[i] = cv[1];
+  		if (cv == null) {
+  		  logger.warn("fixSyntax_getMiddle() Error On splitting =, indexOf: " + i + " sql:" + sql);
+  		}
+  		try {
+        c[i] = cv[0];
+      } catch (Exception e1) {
+        logger.warn("fixSyntax_getMiddle() column[i] error on split of =, indexOf: " + i + " sql:" + sql);
+      }
+  		try {
+        v[i] = cv[1];
+      } catch (Exception e) {
+        v[i] = null;
+        logger.warn("fixSyntax_getMiddle() value[i] error on split of =, indexOf: " + i + " sql:" + sql);
+      }
   	}
   	
   	String columns = "";
