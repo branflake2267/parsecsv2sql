@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Calendar;
 
-import sun.util.calendar.LocalGregorianCalendar.Date;
-
 public class SqlUtil {
 
   /**
